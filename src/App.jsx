@@ -486,13 +486,26 @@ function FaqItem({ item, open, onToggle }) {
 /* ===== DASHBOARD PAGE ===== */
 
 function Dashboard() {
+  // API health
   const [healthLoading, setHealthLoading] = useState(true);
   const [healthError, setHealthError] = useState(false);
   const [healthData, setHealthData] = useState(null);
 
+  // Auth state
+  const [token, setToken] = useState(
+    () => window.localStorage.getItem("veroapi_token") || ""
+  );
+  const [user, setUser] = useState(null);
+  const [loginEmail, setLoginEmail] = useState("demo@veroapi.dev");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [loginError, setLoginError] = useState("");
+
+  // Test event
   const [sendingEvent, setSendingEvent] = useState(false);
   const [eventMessage, setEventMessage] = useState(null);
 
+  // Check API health
   useEffect(() => {
     let cancelled = false;
 
@@ -520,8 +533,7 @@ function Dashboard() {
     }
 
     checkHealth();
-
-    const interval = setInterval(checkHealth, 30000); // every 30s
+    const interval = setInterval(checkHealth, 30000);
     return () => {
       cancelled = true;
       clearInterval(interval);
@@ -531,6 +543,90 @@ function Dashboard() {
   const apiOnline =
     !healthLoading && !healthError && healthData && healthData.ok;
 
+  // Fetch current user when token changes
+  useEffect(() => {
+    if (!token) {
+      setUser(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadUser() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/v1/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error(`Status ${res.status}`);
+        }
+
+        const data = await res.json();
+        if (!data.ok) {
+          throw new Error("Not ok");
+        }
+
+        if (!cancelled) {
+          setUser(data.user);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setUser(null);
+          setToken("");
+          window.localStorage.removeItem("veroapi_token");
+        }
+      }
+    }
+
+    loadUser();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoginLoading(true);
+    setLoginError("");
+    try {
+      const res = await fetch(`${API_BASE_URL}/v1/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: loginEmail,
+          password: loginPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Login failed");
+      }
+
+      setToken(data.token);
+      window.localStorage.setItem("veroapi_token", data.token);
+      setUser(data.user);
+      setLoginPassword("");
+    } catch (err) {
+      setLoginError(err.message || "Login failed");
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    setToken("");
+    setUser(null);
+    window.localStorage.removeItem("veroapi_token");
+  };
+
   const handleSendTestEvent = async () => {
     setSendingEvent(true);
     setEventMessage(null);
@@ -539,10 +635,11 @@ function Dashboard() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           type: "dashboard.test_event",
-          user_id: "demo_user",
+          user_id: user?.id || "demo_user",
           source: "dashboard",
         }),
       });
@@ -621,7 +718,13 @@ function Dashboard() {
             <h1>Overview</h1>
             <p>High-level view of your traffic, keys, and recent activity.</p>
           </div>
-          <button className="btn primary">Create API key</button>
+          {user ? (
+            <button className="btn ghost" onClick={handleLogout}>
+              Sign out
+            </button>
+          ) : (
+            <button className="btn primary">Create API key</button>
+          )}
         </header>
 
         <div className="dash-grid">
@@ -680,27 +783,55 @@ function Dashboard() {
 
           <div className="dash-card">
             <div className="dash-card-header">
-              <h2>Recent events</h2>
-              <span className="dash-tag soft">Sample data</span>
+              <h2>{user ? "Signed in" : "Sign in to VeroAPI"}</h2>
+              {user && <span className="dash-tag soft">Demo workspace</span>}
             </div>
-            <ul className="dash-events">
-              <li>
-                <span className="dash-event-type">user.signup</span>
-                <span className="dash-event-meta">u_89af • 14 seconds ago</span>
-              </li>
-              <li>
-                <span className="dash-event-type">billing.invoice_paid</span>
-                <span className="dash-event-meta">acct_145 • 1 min ago</span>
-              </li>
-              <li>
-                <span className="dash-event-type">discord.command_run</span>
-                <span className="dash-event-meta">srv_928 • 3 min ago</span>
-              </li>
-              <li>
-                <span className="dash-event-type">webhook.delivered</span>
-                <span className="dash-event-meta">200 OK • 4 min ago</span>
-              </li>
-            </ul>
+
+            {user ? (
+              <div className="dash-login-status">
+                <div className="dash-login-line">
+                  <span className="dash-login-label">Email</span>
+                  <span className="dash-login-value">{user.email}</span>
+                </div>
+                <p className="dash-login-helper">
+                  This is a demo login backed by your VeroAPI backend. Replace
+                  this with real users and workspaces later.
+                </p>
+              </div>
+            ) : (
+              <form className="dash-login-form" onSubmit={handleLogin}>
+                <div className="dash-input-row">
+                  <label>Email</label>
+                  <input
+                    className="dash-input"
+                    type="email"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="dash-input-row">
+                  <label>Password</label>
+                  <input
+                    className="dash-input"
+                    type="password"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                {loginError && (
+                  <p className="dash-login-error">{loginError}</p>
+                )}
+                <button className="btn primary dash-login-btn" type="submit" disabled={loginLoading}>
+                  {loginLoading ? "Signing in…" : "Sign in"}
+                </button>
+                <p className="dash-login-hint">
+                  Use the demo credentials you configured in the backend
+                  environment.
+                </p>
+              </form>
+            )}
           </div>
         </div>
 
@@ -719,7 +850,10 @@ function Dashboard() {
             </li>
             <li>
               <strong>Send an event</strong>
-              <span> – for example, <code>user.signup</code> when a new user joins.</span>
+              <span>
+                {" "}
+                – for example, <code>user.signup</code> when a new user joins.
+              </span>
             </li>
           </ol>
 
@@ -762,4 +896,3 @@ function Footer() {
 }
 
 export default App;
-
