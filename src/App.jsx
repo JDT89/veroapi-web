@@ -716,7 +716,7 @@ function AuthPage() {
   );
 }
 
-/* ========= DOCS PAGE (NO EVENTS/WEBHOOKS) ========= */
+/* ========= DOCS PAGE ========= */
 
 function DocsPage() {
   const baseUrl = `${API_BASE_URL}/v1`;
@@ -957,7 +957,7 @@ const { data } = await vero.post("/text/scramble", {
   );
 }
 
-/* ========= DASHBOARD (SIMPLIFIED) ========= */
+/* ========= DASHBOARD ========= */
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -979,12 +979,12 @@ function Dashboard() {
   const [statsLoading, setStatsLoading] = useState(false);
 
   // Single API key
-  const [apiKey, setApiKey] = useState(null); // we only care about one key
+  const [apiKey, setApiKey] = useState(null); // one key per user
   const [keysLoading, setKeysLoading] = useState(false);
   const [keysError, setKeysError] = useState("");
   const [regenLoading, setRegenLoading] = useState(false);
-  const [newSecret, setNewSecret] = useState("");
   const [copyMessage, setCopyMessage] = useState("");
+  const [showSecret, setShowSecret] = useState(false);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -1082,6 +1082,7 @@ function Dashboard() {
         if (!cancelled) {
           const first = (data.keys || [])[0] || null;
           setApiKey(first);
+          setShowSecret(false);
         }
       } catch (err) {
         if (!cancelled) {
@@ -1151,9 +1152,9 @@ function Dashboard() {
   };
 
   const handleCopySecret = async () => {
-    if (!newSecret) return;
+    if (!apiKey || !apiKey.secret) return;
     try {
-      await navigator.clipboard.writeText(newSecret);
+      await navigator.clipboard.writeText(apiKey.secret);
       setCopyMessage("Copied!");
     } catch {
       setCopyMessage("Unable to copy");
@@ -1166,10 +1167,10 @@ function Dashboard() {
     if (!token) return;
     setRegenLoading(true);
     setKeysError("");
-    setNewSecret("");
+    setCopyMessage("");
 
     try {
-      // If a key exists, revoke it first
+      // If a key exists, revoke it first (backend also deletes any extras)
       if (apiKey && apiKey.id) {
         try {
           await fetch(`${API_BASE_URL}/v1/api-keys/${apiKey.id}`, {
@@ -1195,8 +1196,12 @@ function Dashboard() {
         throw new Error(data.error || "Failed to generate API key");
       }
 
-      setApiKey(data.key);
-      setNewSecret(data.secret);
+      const mergedKey = {
+        ...(data.key || {}),
+        secret: data.secret || (data.key && data.key.secret),
+      };
+      setApiKey(mergedKey);
+      setShowSecret(true);
     } catch (err) {
       setKeysError(err.message || "Failed to generate API key");
     } finally {
@@ -1341,10 +1346,10 @@ function Dashboard() {
                 : "Generate API key"}
             </button>
 
-            {newSecret && (
+            {apiKey && apiKey.secret && (
               <div style={{ marginTop: 10, fontSize: 11 }}>
                 <div className="dash-input-row">
-                  <label>Your new API key (copy now)</label>
+                  <label>Your API key</label>
                   <div
                     style={{
                       display: "flex",
@@ -1355,11 +1360,18 @@ function Dashboard() {
                   >
                     <input
                       className="dash-input"
-                      type="text"
+                      type={showSecret ? "text" : "password"}
                       readOnly
-                      value={newSecret}
+                      value={apiKey.secret}
                       style={{ flex: 1 }}
                     />
+                    <button
+                      type="button"
+                      className="btn outline"
+                      onClick={() => setShowSecret((prev) => !prev)}
+                    >
+                      {showSecret ? "Hide" : "Reveal"}
+                    </button>
                     <button
                       type="button"
                       className="btn outline"
@@ -1369,9 +1381,9 @@ function Dashboard() {
                     </button>
                   </div>
                   <p className="dash-login-hint">
-                    This is the <strong>only time</strong> we show the full
-                    secret. Store it as an environment variable or in your
-                    secret manager.
+                    You can reveal and copy your key from here at any time.
+                    Store it as an environment variable or in your secret
+                    manager.
                   </p>
                 </div>
               </div>
