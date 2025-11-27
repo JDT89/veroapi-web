@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Routes, Route, Link } from "react-router-dom";
 import "./styles.css";
 
-// TODO: set this to your real Render API URL or custom domain
+// Set this to your real Render API URL or custom domain
 // e.g. "https://veroapi-api.onrender.com" or "https://api.veroapi.com"
 const API_BASE_URL = "https://veroapi-api.onrender.com";
 
@@ -22,7 +22,7 @@ function App() {
   );
 }
 
-/* ===== NAVBAR ===== */
+/* ========= NAVBAR ========= */
 
 function Navbar() {
   return (
@@ -56,7 +56,7 @@ function Navbar() {
   );
 }
 
-/* ===== LANDING LAYOUT (HOME) ===== */
+/* ========= LANDING LAYOUT ========= */
 
 function LandingLayout() {
   return (
@@ -92,7 +92,10 @@ function Hero() {
         </p>
 
         <div className="hero-actions">
-          <Link to="/dashboard" className="btn primary hero-primary nav-btn-link">
+          <Link
+            to="/dashboard"
+            className="btn primary hero-primary nav-btn-link"
+          >
             Start free (100k req / mo)
           </Link>
           <a href="#pricing" className="btn outline hero-secondary nav-btn-link">
@@ -116,8 +119,8 @@ function CodePanel() {
   const tabs = ["cURL", "Node.js", "Python"];
   const [active, setActive] = useState("cURL");
 
-  const snippets = {
-    "cURL": `curl ${API_BASE_URL}/v1/events \\
+  const snippets: Record<string, string> = {
+    cURL: `curl ${API_BASE_URL}/v1/events \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "X-Workspace: prod" \\
   -H "Content-Type: application/json" \\
@@ -141,7 +144,7 @@ await vero.post("/events", {
   user_id: "u_123",
   source: "dashboard",
 });`,
-    "Python": `import requests
+    Python: `import requests
 
 session = requests.Session()
 session.headers.update({
@@ -229,7 +232,7 @@ function LatencyCard() {
   );
 }
 
-/* ===== TRUST / FEATURES (LANDING) ===== */
+/* ========= TRUST / FEATURES ========= */
 
 function TrustStrip() {
   const items = [
@@ -366,7 +369,7 @@ function FakeLogs() {
   );
 }
 
-/* ===== PRICING & FAQ ===== */
+/* ========= PRICING & FAQ ========= */
 
 function Pricing() {
   return (
@@ -483,7 +486,7 @@ function FaqItem({ item, open, onToggle }) {
   );
 }
 
-/* ===== DASHBOARD PAGE ===== */
+/* ========= DASHBOARD ========= */
 
 function Dashboard() {
   // API health
@@ -496,10 +499,20 @@ function Dashboard() {
     () => window.localStorage.getItem("veroapi_token") || ""
   );
   const [user, setUser] = useState(null);
-  const [loginEmail, setLoginEmail] = useState("demo@veroapi.dev");
+  const [authMode, setAuthMode] = useState("login"); // "login" | "signup"
+
+  // Login form
+  const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
+
+  // Signup form
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [signupConfirm, setSignupConfirm] = useState("");
+  const [signupLoading, setSignupLoading] = useState(false);
+  const [signupError, setSignupError] = useState("");
 
   // Test event
   const [sendingEvent, setSendingEvent] = useState(false);
@@ -618,6 +631,45 @@ function Dashboard() {
       setLoginError(err.message || "Login failed");
     } finally {
       setLoginLoading(false);
+    }
+  };
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setSignupLoading(true);
+    setSignupError("");
+    try {
+      if (signupPassword !== signupConfirm) {
+        throw new Error("Passwords do not match.");
+      }
+
+      const res = await fetch(`${API_BASE_URL}/v1/auth/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: signupEmail,
+          password: signupPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Signup failed");
+      }
+
+      setToken(data.token);
+      window.localStorage.setItem("veroapi_token", data.token);
+      setUser(data.user);
+      setSignupPassword("");
+      setSignupConfirm("");
+      setAuthMode("login");
+    } catch (err) {
+      setSignupError(err.message || "Signup failed");
+    } finally {
+      setSignupLoading(false);
     }
   };
 
@@ -783,7 +835,7 @@ function Dashboard() {
 
           <div className="dash-card">
             <div className="dash-card-header">
-              <h2>{user ? "Signed in" : "Sign in to VeroAPI"}</h2>
+              <h2>{user ? "Signed in" : "Sign in or create an account"}</h2>
               {user && <span className="dash-tag soft">Demo workspace</span>}
             </div>
 
@@ -794,43 +846,113 @@ function Dashboard() {
                   <span className="dash-login-value">{user.email}</span>
                 </div>
                 <p className="dash-login-helper">
-                  This is a demo login backed by your VeroAPI backend. Replace
-                  this with real users and workspaces later.
+                  This account is stored in your VeroAPI Postgres database.
+                  Later, you can attach workspaces, API keys, and billing.
                 </p>
               </div>
             ) : (
-              <form className="dash-login-form" onSubmit={handleLogin}>
-                <div className="dash-input-row">
-                  <label>Email</label>
-                  <input
-                    className="dash-input"
-                    type="email"
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                    required
-                  />
+              <>
+                <div className="dash-auth-tabs">
+                  <button
+                    className={`dash-auth-tab ${
+                      authMode === "login" ? "active" : ""
+                    }`}
+                    onClick={() => setAuthMode("login")}
+                  >
+                    Log in
+                  </button>
+                  <button
+                    className={`dash-auth-tab ${
+                      authMode === "signup" ? "active" : ""
+                    }`}
+                    onClick={() => setAuthMode("signup")}
+                  >
+                    Sign up
+                  </button>
                 </div>
-                <div className="dash-input-row">
-                  <label>Password</label>
-                  <input
-                    className="dash-input"
-                    type="password"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                {loginError && (
-                  <p className="dash-login-error">{loginError}</p>
+
+                {authMode === "login" ? (
+                  <form className="dash-login-form" onSubmit={handleLogin}>
+                    <div className="dash-input-row">
+                      <label>Email</label>
+                      <input
+                        className="dash-input"
+                        type="email"
+                        value={loginEmail}
+                        onChange={(e) => setLoginEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="dash-input-row">
+                      <label>Password</label>
+                      <input
+                        className="dash-input"
+                        type="password"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                    {loginError && (
+                      <p className="dash-login-error">{loginError}</p>
+                    )}
+                    <button
+                      className="btn primary dash-login-btn"
+                      type="submit"
+                      disabled={loginLoading}
+                    >
+                      {loginLoading ? "Signing in…" : "Sign in"}
+                    </button>
+                  </form>
+                ) : (
+                  <form className="dash-login-form" onSubmit={handleSignup}>
+                    <div className="dash-input-row">
+                      <label>Email</label>
+                      <input
+                        className="dash-input"
+                        type="email"
+                        value={signupEmail}
+                        onChange={(e) => setSignupEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="dash-input-row">
+                      <label>Password</label>
+                      <input
+                        className="dash-input"
+                        type="password"
+                        value={signupPassword}
+                        onChange={(e) => setSignupPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="dash-input-row">
+                      <label>Confirm password</label>
+                      <input
+                        className="dash-input"
+                        type="password"
+                        value={signupConfirm}
+                        onChange={(e) => setSignupConfirm(e.target.value)}
+                        required
+                      />
+                    </div>
+                    {signupError && (
+                      <p className="dash-login-error">{signupError}</p>
+                    )}
+                    <button
+                      className="btn primary dash-login-btn"
+                      type="submit"
+                      disabled={signupLoading}
+                    >
+                      {signupLoading ? "Creating account…" : "Create account"}
+                    </button>
+                    <p className="dash-login-hint">
+                      Accounts are stored securely in your VeroAPI Postgres
+                      database.
+                    </p>
+                  </form>
                 )}
-                <button className="btn primary dash-login-btn" type="submit" disabled={loginLoading}>
-                  {loginLoading ? "Signing in…" : "Sign in"}
-                </button>
-                <p className="dash-login-hint">
-                  Use the demo credentials you configured in the backend
-                  environment.
-                </p>
-              </form>
+              </>
             )}
           </div>
         </div>
@@ -873,7 +995,7 @@ function Dashboard() {
   );
 }
 
-/* ===== FOOTER ===== */
+/* ========= FOOTER ========= */
 
 function Footer() {
   return (
