@@ -55,9 +55,9 @@ button {
 }
 
 main {
-  max-width: 1120px;
-  margin: 0 auto 72px;
-  padding: 88px 7vw 0;
+  /* full-width layout with comfortable padding */
+  margin: 0;
+  padding: 88px 24px 72px;
 }
 
 /* ========= APP BACKDROP ========= */
@@ -82,9 +82,8 @@ main {
 /* ========= NAVBAR ========= */
 
 .nav {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 18px 7vw 0;
+  margin: 0;
+  padding: 18px 24px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -745,7 +744,7 @@ main {
 /* ========= DASHBOARD LAYOUT ========= */
 
 .dash {
-  padding: 32px 7vw 40px;
+  padding: 32px 24px 40px;
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
   gap: 24px;
@@ -971,26 +970,6 @@ main {
   background: rgba(15, 23, 42, 0.9);
 }
 
-.dash-events {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  font-size: 11px;
-}
-
-.dash-events li + li {
-  margin-top: 6px;
-}
-
-.dash-event-type {
-  display: block;
-  font-weight: 500;
-}
-
-.dash-event-meta {
-  color: var(--text-muted);
-}
-
 .dash-steps {
   margin: 0;
   padding-left: 18px;
@@ -1115,9 +1094,8 @@ main {
 /* ========= FOOTER ========= */
 
 .footer {
-  max-width: 1120px;
-  margin: 0 auto 32px;
-  padding: 0 7vw;
+  margin: 0;
+  padding: 0 24px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1239,4 +1217,3 @@ main {
     align-items: flex-start;
   }
 }
-
