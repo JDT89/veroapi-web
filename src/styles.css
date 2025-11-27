@@ -1159,3 +1159,124 @@ body {
   font-size: 11px;
   color: var(--text-soft);
 }
+
+/* ===== Dashboard: API health + test event ===== */
+
+.dash-health {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-soft);
+}
+
+.dash-health-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  margin-right: 6px;
+  display: inline-block;
+  background: rgba(148, 163, 184, 0.6);
+  box-shadow: 0 0 6px rgba(148, 163, 184, 0.4);
+}
+
+.dash-health-dot.ok {
+  background: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.85);
+}
+
+.dash-health-dot.error {
+  background: #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.85);
+}
+
+.dash-health-dot.loading {
+  background: #eab308;
+  box-shadow: 0 0 8px rgba(234, 179, 8, 0.85);
+}
+
+.dash-quickstart-btn {
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.dash-event-status {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-soft);
+}
+
+/* ===== Dashboard: login form ===== */
+
+.dash-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.dash-input-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dash-input-row label {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.dash-input {
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.9);
+  color: var(--text-main);
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.dash-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.4);
+}
+
+.dash-login-error {
+  margin: 0;
+  font-size: 11px;
+  color: #fecaca;
+}
+
+.dash-login-btn {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.dash-login-hint {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.dash-login-status {
+  font-size: 12px;
+}
+
+.dash-login-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.dash-login-label {
+  color: var(--text-muted);
+}
+
+.dash-login-value {
+  font-weight: 500;
+}
+
+.dash-login-helper {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
