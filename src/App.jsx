@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route, Link } from "react-router-dom";
 import "./styles.css";
+
+// TODO: set this to your real Render API URL or custom domain
+// e.g. "https://veroapi-api.onrender.com" or "https://api.veroapi.com"
+const API_BASE_URL = "https://veroapi-api.onrender.com";
 
 function App() {
   return (
@@ -113,18 +117,19 @@ function CodePanel() {
   const [active, setActive] = useState("cURL");
 
   const snippets = {
-    "cURL": `curl https://api.veroapi.com/v1/events \\
+    "cURL": `curl ${API_BASE_URL}/v1/events \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "X-Workspace: prod" \\
+  -H "Content-Type: application/json" \\
   -d '{
     "type": "user.signup",
     "user_id": "u_123",
-    "source": "discord"
+    "source": "dashboard"
   }'`,
     "Node.js": `import axios from "axios";
 
 const vero = axios.create({
-  baseURL: "https://api.veroapi.com/v1",
+  baseURL: "${API_BASE_URL}/v1",
   headers: {
     Authorization: "Bearer YOUR_API_KEY",
     "X-Workspace": "prod",
@@ -134,7 +139,7 @@ const vero = axios.create({
 await vero.post("/events", {
   type: "user.signup",
   user_id: "u_123",
-  source: "discord",
+  source: "dashboard",
 });`,
     "Python": `import requests
 
@@ -145,8 +150,8 @@ session.headers.update({
 })
 
 session.post(
-  "https://api.veroapi.com/v1/events",
-  json={"type": "user.signup", "user_id": "u_123", "source": "discord"},
+  "${API_BASE_URL}/v1/events",
+  json={"type": "user.signup", "user_id": "u_123", "source": "dashboard"},
 )`,
   };
 
@@ -481,23 +486,124 @@ function FaqItem({ item, open, onToggle }) {
 /* ===== DASHBOARD PAGE ===== */
 
 function Dashboard() {
+  const [healthLoading, setHealthLoading] = useState(true);
+  const [healthError, setHealthError] = useState(false);
+  const [healthData, setHealthData] = useState(null);
+
+  const [sendingEvent, setSendingEvent] = useState(false);
+  const [eventMessage, setEventMessage] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function checkHealth() {
+      try {
+        setHealthLoading(true);
+        setHealthError(false);
+        const res = await fetch(`${API_BASE_URL}/v1/health`);
+        if (!res.ok) {
+          throw new Error(`Status ${res.status}`);
+        }
+        const data = await res.json();
+        if (!cancelled) {
+          setHealthData(data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setHealthError(true);
+        }
+      } finally {
+        if (!cancelled) {
+          setHealthLoading(false);
+        }
+      }
+    }
+
+    checkHealth();
+
+    const interval = setInterval(checkHealth, 30000); // every 30s
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const apiOnline =
+    !healthLoading && !healthError && healthData && healthData.ok;
+
+  const handleSendTestEvent = async () => {
+    setSendingEvent(true);
+    setEventMessage(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/v1/events`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "dashboard.test_event",
+          user_id: "demo_user",
+          source: "dashboard",
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Status ${res.status}`);
+      }
+
+      const data = await res.json();
+      setEventMessage(
+        `Test event accepted at ${data.received_at || "VeroAPI backend"}.`
+      );
+    } catch (err) {
+      setEventMessage(
+        "Failed to send test event. Check your API URL and backend status."
+      );
+    } finally {
+      setSendingEvent(false);
+    }
+  };
+
   return (
     <section className="dash">
       <aside className="dash-sidebar">
         <div className="dash-sidebar-header">
           <span className="dash-pill">Workspace</span>
           <div className="dash-workspace-name">
-            <span className="dot-online" />
+            <span
+              className={`dash-health-dot ${
+                healthLoading ? "loading" : apiOnline ? "ok" : "error"
+              }`}
+            />
             veroapi-prod
           </div>
           <div className="dash-env-badge">Production</div>
+          <div className="dash-health">
+            {healthLoading && <span>Checking API health…</span>}
+            {!healthLoading && healthError && (
+              <span>API unreachable from dashboard.</span>
+            )}
+            {!healthLoading && !healthError && (
+              <span>
+                API online • uptime {Math.round(healthData?.uptime || 0)}s
+              </span>
+            )}
+          </div>
         </div>
         <nav className="dash-nav">
           <button className="dash-nav-item active">Overview</button>
-          <button className="dash-nav-item">API keys</button>
-          <button className="dash-nav-item">Usage &amp; limits</button>
-          <button className="dash-nav-item">Webhooks</button>
-          <button className="dash-nav-item">Audit log</button>
+          <button className="dash-nav-item" disabled>
+            API keys (soon)
+          </button>
+          <button className="dash-nav-item" disabled>
+            Usage &amp; limits (soon)
+          </button>
+          <button className="dash-nav-item" disabled>
+            Webhooks (soon)
+          </button>
+          <button className="dash-nav-item" disabled>
+            Audit log (soon)
+          </button>
         </nav>
         <div className="dash-sidebar-foot">
           <p>Next up: connect VeroAPI to your app in 3 steps.</p>
@@ -616,6 +722,17 @@ function Dashboard() {
               <span> – for example, <code>user.signup</code> when a new user joins.</span>
             </li>
           </ol>
+
+          <button
+            className="btn outline dash-quickstart-btn"
+            onClick={handleSendTestEvent}
+            disabled={sendingEvent}
+          >
+            {sendingEvent ? "Sending test event…" : "Send test event to VeroAPI"}
+          </button>
+          {eventMessage && (
+            <p className="dash-event-status">{eventMessage}</p>
+          )}
         </div>
       </div>
     </section>
