@@ -1,3 +1,4 @@
+// src/components/landing/Hero.jsx
 import React from "react";
 import { Link } from "react-router-dom";
 
@@ -88,9 +89,21 @@ function Hero() {
             Read the docs
           </Link>
         </div>
+
         <p className="hero-note">
           No card • One key per user • Rate limits per account, not per project.
         </p>
+
+        {/* Status / uptime widget (anchor target for footer “Status” link) */}
+        <div className="hero-status" id="status">
+          <div className="hero-status-pill">
+            <span className="status-dot status-dot-ok" />
+            <span>All systems operational</span>
+          </div>
+          <span className="hero-status-meta">
+            30d uptime: 99.98% • Primary region: US-East
+          </span>
+        </div>
       </div>
 
       <div className="hero-right">
@@ -101,4 +114,5 @@ function Hero() {
 }
 
 export default Hero;
+
 
