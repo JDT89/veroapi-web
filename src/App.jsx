@@ -728,22 +728,34 @@ function Dashboard() {
 
   const [activeSection, setActiveSection] = useState("overview");
 
-  // Auth state (token + user loaded from API)
+  // Auth state (token + user)
   const [token, setToken] = useState(() => {
     if (typeof window === "undefined") return "";
     return window.localStorage.getItem("veroapi_token") || "";
   });
   const [user, setUser] = useState(null);
 
+  // Workspace name
+  const [workspaceName, setWorkspaceName] = useState("Main workspace");
+  const [workspaceInput, setWorkspaceInput] = useState("Main workspace");
+  const [workspaceLoading, setWorkspaceLoading] = useState(false);
+  const [workspaceSaving, setWorkspaceSaving] = useState(false);
+  const [workspaceError, setWorkspaceError] = useState("");
+
   // API health
   const [healthLoading, setHealthLoading] = useState(true);
   const [healthError, setHealthError] = useState(false);
   const [healthData, setHealthData] = useState(null);
 
-  // Stats
+  // Stats (overview)
   const [stats, setStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsError, setStatsError] = useState("");
+
+  // Usage (per environment)
+  const [usageEnvs, setUsageEnvs] = useState([]);
+  const [usageLoading, setUsageLoading] = useState(false);
+  const [usageError, setUsageError] = useState("");
 
   // API keys
   const [keys, setKeys] = useState([]);
@@ -865,6 +877,52 @@ function Dashboard() {
     };
   }, [token]);
 
+  // Fetch workspace name
+  useEffect(() => {
+    if (!token) {
+      setWorkspaceName("Main workspace");
+      setWorkspaceInput("Main workspace");
+      return;
+    }
+
+    let cancelled = false;
+
+    async function fetchWorkspace() {
+      try {
+        setWorkspaceLoading(true);
+        setWorkspaceError("");
+        const res = await fetch(`${API_BASE_URL}/v1/workspace`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "Failed to load workspace");
+        }
+        if (!cancelled) {
+          const name = data.workspace?.name || "Main workspace";
+          setWorkspaceName(name);
+          setWorkspaceInput(name);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setWorkspaceError(err.message || "Failed to load workspace");
+        }
+      } finally {
+        if (!cancelled) {
+          setWorkspaceLoading(false);
+        }
+      }
+    }
+
+    fetchWorkspace();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+
   // Fetch API keys when token changes
   useEffect(() => {
     if (!token) {
@@ -908,7 +966,7 @@ function Dashboard() {
     };
   }, [token]);
 
-  // Fetch stats when token changes
+  // Fetch stats (overview) when token changes
   useEffect(() => {
     if (!token) {
       setStats(null);
@@ -946,6 +1004,51 @@ function Dashboard() {
 
     fetchStats();
     const interval = setInterval(fetchStats, 30000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [token]);
+
+  // Fetch usage per environment
+  useEffect(() => {
+    if (!token) {
+      setUsageEnvs([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function fetchUsage() {
+      try {
+        setUsageLoading(true);
+        setUsageError("");
+        const res = await fetch(`${API_BASE_URL}/v1/stats/usage`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "Failed to load usage");
+        }
+        if (!cancelled) {
+          setUsageEnvs(data.per_environment || []);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setUsageError(err.message || "Failed to load usage");
+        }
+      } finally {
+        if (!cancelled) {
+          setUsageLoading(false);
+        }
+      }
+    }
+
+    fetchUsage();
+    const interval = setInterval(fetchUsage, 60000);
 
     return () => {
       cancelled = true;
@@ -1124,6 +1227,7 @@ function Dashboard() {
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          "X-Workspace": "prod",
         },
         body: JSON.stringify({
           type: "dashboard.test_event",
@@ -1138,7 +1242,9 @@ function Dashboard() {
 
       const data = await res.json();
       setEventMessage(
-        `Test event accepted at ${data.received_at || "VeroAPI backend"}.`
+        `Test event accepted in "${data.environment}" at ${
+          data.received_at || "VeroAPI backend"
+        }.`
       );
     } catch (err) {
       setEventMessage(
@@ -1149,64 +1255,53 @@ function Dashboard() {
     }
   };
 
-  const requestsLast24h = stats?.requests_last_24h ?? 0;
-  const errorRate = stats?.error_rate ?? 0;
-  const medianLatency = stats?.median_latency_ms ?? 80;
-
-  const handleCreateWebhook = async (e) => {
+  const handleWorkspaceSave = async (e) => {
     e.preventDefault();
-    if (!newWebhookUrl.trim() || !token) return;
-
-    setCreatingWebhook(true);
-    setWebhooksError("");
+    if (!token) return;
+    const name = workspaceInput.trim();
+    if (!name) return;
+    setWorkspaceSaving(true);
+    setWorkspaceError("");
     try {
-      const res = await fetch(`${API_BASE_URL}/v1/webhooks`, {
-        method: "POST",
+      const res = await fetch(`${API_BASE_URL}/v1/workspace`, {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          url: newWebhookUrl.trim(),
-          description: newWebhookDescription.trim(),
-        }),
+        body: JSON.stringify({ name }),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Failed to create webhook");
+        throw new Error(data.error || "Failed to update workspace");
       }
-      setWebhooks((prev) => [data.webhook, ...prev]);
-      setNewWebhookUrl("");
-      setNewWebhookDescription("");
+      const newName = data.workspace?.name || name;
+      setWorkspaceName(newName);
+      setWorkspaceInput(newName);
     } catch (err) {
-      setWebhooksError(err.message || "Failed to create webhook");
+      setWorkspaceError(err.message || "Failed to update workspace");
     } finally {
-      setCreatingWebhook(false);
+      setWorkspaceSaving(false);
     }
   };
 
-  const handleDeactivateWebhook = async (id) => {
-    if (!id || !token) return;
-    setDeactivatingWebhookId(id);
-    setWebhooksError("");
-    try {
-      const res = await fetch(`${API_BASE_URL}/v1/webhooks/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await res.json();
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Failed to deactivate webhook");
-      }
-      setWebhooks((prev) => prev.filter((w) => w.id !== id));
-    } catch (err) {
-      setWebhooksError(err.message || "Failed to deactivate webhook");
-    } finally {
-      setDeactivatingWebhookId(null);
-    }
-  };
+  const requestsLast24h = stats?.requests_last_24h ?? 0;
+  const errorRate = stats?.error_rate ?? 0;
+  const medianLatency = stats?.median_latency_ms ?? 80;
+
+  let headerTitle = "Overview";
+  let headerSubtitle =
+    "High-level view of your traffic, keys, and recent activity.";
+
+  if (activeSection === "usage") {
+    headerTitle = "Usage & limits";
+    headerSubtitle =
+    "Per-environment usage for this workspace. Upgrade later for higher caps.";
+  } else if (activeSection === "webhooks") {
+    headerTitle = "Webhooks";
+    headerSubtitle =
+      "Fan out VeroAPI events to your own services in real time.";
+  }
 
   return (
     <section className="dash">
@@ -1219,9 +1314,11 @@ function Dashboard() {
                 healthLoading ? "loading" : apiOnline ? "ok" : "error"
               }`}
             />
-            veroapi-prod
+            {workspaceLoading ? "Loading…" : workspaceName}
           </div>
-          <div className="dash-env-badge">Production</div>
+          <div className="dash-env-badge">
+            Rate limits per environment (prod / staging / dev)
+          </div>
           <div className="dash-health">
             {healthLoading && <span>Checking API health…</span>}
             {!healthLoading && healthError && (
@@ -1245,14 +1342,19 @@ function Dashboard() {
           </button>
           <button
             className={`dash-nav-item ${
+              activeSection === "usage" ? "active" : ""
+            }`}
+            onClick={() => setActiveSection("usage")}
+          >
+            Usage &amp; limits
+          </button>
+          <button
+            className={`dash-nav-item ${
               activeSection === "webhooks" ? "active" : ""
             }`}
             onClick={() => setActiveSection("webhooks")}
           >
             Webhooks
-          </button>
-          <button className="dash-nav-item" disabled>
-            Usage &amp; limits (soon)
           </button>
           <button className="dash-nav-item" disabled>
             Audit log (soon)
@@ -1271,14 +1373,8 @@ function Dashboard() {
       <div className="dash-main">
         <header className="dash-main-header">
           <div>
-            <h1>
-              {activeSection === "overview" ? "Overview" : "Webhooks"}
-            </h1>
-            <p>
-              {activeSection === "overview"
-                ? "High-level view of your traffic, keys, and recent activity."
-                : "Fan out VeroAPI events to your own services in real time."}
-            </p>
+            <h1>{headerTitle}</h1>
+            <p>{headerSubtitle}</p>
           </div>
           {user ? (
             <button className="btn ghost" onClick={handleLogout}>
@@ -1306,7 +1402,7 @@ function Dashboard() {
                   {statsLoading ? "…" : requestsLast24h.toLocaleString()}
                 </div>
                 <div className="dash-card-sub">
-                  Based on stored <code>/v1/events</code> for this account.
+                  Based on stored <code>/v1/events</code> for this workspace.
                 </div>
               </div>
 
@@ -1455,24 +1551,65 @@ function Dashboard() {
                 </div>
               </div>
 
-              {/* ACCOUNT CARD */}
+              {/* ACCOUNT / WORKSPACE CARD */}
               <div className="dash-card">
                 <div className="dash-card-header">
-                  <h2>Account</h2>
-                  {user && <span className="dash-tag soft">Demo workspace</span>}
+                  <h2>Account & workspace</h2>
+                  {user && (
+                    <span className="dash-tag soft">
+                      {workspaceLoading ? "Loading…" : workspaceName}
+                    </span>
+                  )}
                 </div>
 
                 {user ? (
-                  <div className="dash-login-status">
-                    <div className="dash-login-line">
-                      <span className="dash-login-label">Email</span>
-                      <span className="dash-login-value">{user.email}</span>
+                  <>
+                    <div className="dash-login-status">
+                      <div className="dash-login-line">
+                        <span className="dash-login-label">Email</span>
+                        <span className="dash-login-value">
+                          {user.email}
+                        </span>
+                      </div>
+                      <p className="dash-login-helper">
+                        This account is stored in your VeroAPI Postgres
+                        database. Later, you can attach more workspaces,
+                        environments, and billing.
+                      </p>
                     </div>
-                    <p className="dash-login-helper">
-                      This account is stored in your VeroAPI Postgres database.
-                      Later, you can attach workspaces, API keys, and billing.
-                    </p>
-                  </div>
+
+                    <form
+                      className="dash-login-form"
+                      onSubmit={handleWorkspaceSave}
+                    >
+                      <div className="dash-input-row">
+                        <label>Workspace name</label>
+                        <input
+                          className="dash-input"
+                          type="text"
+                          value={workspaceInput}
+                          onChange={(e) =>
+                            setWorkspaceInput(e.target.value)
+                          }
+                          placeholder="e.g. VeroAPI production"
+                        />
+                      </div>
+                      {workspaceError && (
+                        <p className="dash-login-error">
+                          {workspaceError}
+                        </p>
+                      )}
+                      <button
+                        className="btn outline dash-login-btn"
+                        type="submit"
+                        disabled={workspaceSaving}
+                      >
+                        {workspaceSaving
+                          ? "Saving…"
+                          : "Save workspace name"}
+                      </button>
+                    </form>
+                  </>
                 ) : (
                   <p className="dash-login-helper">
                     Loading your account… if this takes longer than a few
@@ -1522,6 +1659,106 @@ function Dashboard() {
           </>
         )}
 
+        {activeSection === "usage" && (
+          <div className="dash-card wide">
+            <div className="dash-card-header">
+              <h2>Usage &amp; limits</h2>
+              <span className="dash-tag soft">
+                Free plan: 100 req/min, 100k/day per environment
+              </span>
+            </div>
+            {usageError && (
+              <p className="dash-login-error" style={{ marginTop: 4 }}>
+                {usageError}
+              </p>
+            )}
+
+            <div className="dash-table" style={{ marginTop: 12 }}>
+              <div className="dash-table-row head">
+                <span>Environment</span>
+                <span>Last 24 hours</span>
+                <span>Daily limit</span>
+                <span>Usage</span>
+              </div>
+
+              {usageLoading ? (
+                <div className="dash-table-row">
+                  <span>Loading…</span>
+                  <span>—</span>
+                  <span>—</span>
+                  <span>—</span>
+                </div>
+              ) : usageEnvs.length === 0 ? (
+                <div className="dash-table-row">
+                  <span>No usage yet</span>
+                  <span>0</span>
+                  <span>100,000</span>
+                  <span>0%</span>
+                </div>
+              ) : (
+                usageEnvs.map((env) => {
+                  const used = env.last_24h || 0;
+                  const limit = env.limit_per_day || 100000;
+                  const pct = Math.min(
+                    100,
+                    Math.round((used / limit) * 100)
+                  );
+
+                  return (
+                    <div className="dash-table-row" key={env.environment}>
+                      <span>{env.environment}</span>
+                      <span>{used.toLocaleString()}</span>
+                      <span>{limit.toLocaleString()}</span>
+                      <span>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 4,
+                          }}
+                        >
+                          <div
+                            style={{
+                              height: 6,
+                              borderRadius: 999,
+                              background: "rgba(255,255,255,0.08)",
+                              overflow: "hidden",
+                            }}
+                          >
+                            <div
+                              style={{
+                                height: "100%",
+                                width: `${pct}%`,
+                                borderRadius: 999,
+                                background:
+                                  pct < 70
+                                    ? "#22c55e"
+                                    : pct < 90
+                                    ? "#eab308"
+                                    : "#ef4444",
+                                transition: "width 0.3s ease",
+                              }}
+                            />
+                          </div>
+                          <span style={{ fontSize: 11, opacity: 0.85 }}>
+                            {pct}% of daily limit
+                          </span>
+                        </div>
+                      </span>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <p className="dash-login-hint" style={{ marginTop: 16 }}>
+              Later, you can introduce paid plans with higher per-environment
+              limits and additional workspaces—without changing your client's
+              integration (they already send <code>X-Workspace</code>).
+            </p>
+          </div>
+        )}
+
         {activeSection === "webhooks" && (
           <div className="dash-card wide">
             <div className="dash-card-header">
@@ -1550,7 +1787,9 @@ function Dashboard() {
                   type="text"
                   placeholder="e.g. Production backend, Discord worker, etc."
                   value={newWebhookDescription}
-                  onChange={(e) => setNewWebhookDescription(e.target.value)}
+                  onChange={(e) =>
+                    setNewWebhookDescription(e.target.value)
+                  }
                 />
               </div>
               {webhooksError && (
@@ -1640,7 +1879,9 @@ function Dashboard() {
                           type="button"
                           className="btn ghost"
                           style={{ padding: "2px 8px", fontSize: 10 }}
-                          onClick={() => handleDeactivateWebhook(wh.id)}
+                          onClick={() =>
+                            handleDeactivateWebhook(wh.id)
+                          }
                           disabled={deactivatingWebhookId === wh.id}
                         >
                           {deactivatingWebhookId === wh.id
@@ -1751,3 +1992,4 @@ function Footer() {
 }
 
 export default App;
+
