@@ -69,7 +69,7 @@ function Hero() {
         <p className="hero-pill" id="status">
           <span className="pill-dot" />
           <span>
-            All systems operational • Uptime: 99.98%
+            All systems operational
           </span>
         </p>
 
