@@ -726,6 +726,8 @@ function AuthPage() {
 function Dashboard() {
   const navigate = useNavigate();
 
+  const [activeSection, setActiveSection] = useState("overview");
+
   // Auth state (token + user loaded from API)
   const [token, setToken] = useState(() => {
     if (typeof window === "undefined") return "";
@@ -752,6 +754,20 @@ function Dashboard() {
   const [newSecret, setNewSecret] = useState("");
   const [copyMessage, setCopyMessage] = useState("");
   const [revokingId, setRevokingId] = useState(null);
+
+  // Webhooks
+  const [webhooks, setWebhooks] = useState([]);
+  const [webhooksLoading, setWebhooksLoading] = useState(false);
+  const [webhooksError, setWebhooksError] = useState("");
+  const [newWebhookUrl, setNewWebhookUrl] = useState("");
+  const [newWebhookDescription, setNewWebhookDescription] = useState("");
+  const [creatingWebhook, setCreatingWebhook] = useState(false);
+  const [deactivatingWebhookId, setDeactivatingWebhookId] = useState(null);
+
+  // Webhook deliveries
+  const [deliveries, setDeliveries] = useState([]);
+  const [deliveriesLoading, setDeliveriesLoading] = useState(false);
+  const [deliveriesError, setDeliveriesError] = useState("");
 
   // Test event
   const [sendingEvent, setSendingEvent] = useState(false);
@@ -937,6 +953,84 @@ function Dashboard() {
     };
   }, [token]);
 
+  // Fetch webhooks + deliveries when token changes
+  useEffect(() => {
+    if (!token) {
+      setWebhooks([]);
+      setDeliveries([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function fetchWebhooks() {
+      try {
+        setWebhooksLoading(true);
+        setWebhooksError("");
+        const res = await fetch(`${API_BASE_URL}/v1/webhooks`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "Failed to load webhooks");
+        }
+        if (!cancelled) {
+          setWebhooks(data.webhooks || []);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setWebhooksError(err.message || "Failed to load webhooks");
+        }
+      } finally {
+        if (!cancelled) {
+          setWebhooksLoading(false);
+        }
+      }
+    }
+
+    async function fetchDeliveries() {
+      try {
+        setDeliveriesLoading(true);
+        setDeliveriesError("");
+        const res = await fetch(
+          `${API_BASE_URL}/v1/webhooks/deliveries?limit=20`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "Failed to load deliveries");
+        }
+        if (!cancelled) {
+          setDeliveries(data.deliveries || []);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setDeliveriesError(err.message || "Failed to load deliveries");
+        }
+      } finally {
+        if (!cancelled) {
+          setDeliveriesLoading(false);
+        }
+      }
+    }
+
+    fetchWebhooks();
+    fetchDeliveries();
+
+    const interval = setInterval(fetchDeliveries, 30000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [token]);
+
   const handleLogout = () => {
     setToken("");
     setUser(null);
@@ -1059,6 +1153,61 @@ function Dashboard() {
   const errorRate = stats?.error_rate ?? 0;
   const medianLatency = stats?.median_latency_ms ?? 80;
 
+  const handleCreateWebhook = async (e) => {
+    e.preventDefault();
+    if (!newWebhookUrl.trim() || !token) return;
+
+    setCreatingWebhook(true);
+    setWebhooksError("");
+    try {
+      const res = await fetch(`${API_BASE_URL}/v1/webhooks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          url: newWebhookUrl.trim(),
+          description: newWebhookDescription.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Failed to create webhook");
+      }
+      setWebhooks((prev) => [data.webhook, ...prev]);
+      setNewWebhookUrl("");
+      setNewWebhookDescription("");
+    } catch (err) {
+      setWebhooksError(err.message || "Failed to create webhook");
+    } finally {
+      setCreatingWebhook(false);
+    }
+  };
+
+  const handleDeactivateWebhook = async (id) => {
+    if (!id || !token) return;
+    setDeactivatingWebhookId(id);
+    setWebhooksError("");
+    try {
+      const res = await fetch(`${API_BASE_URL}/v1/webhooks/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Failed to deactivate webhook");
+      }
+      setWebhooks((prev) => prev.filter((w) => w.id !== id));
+    } catch (err) {
+      setWebhooksError(err.message || "Failed to deactivate webhook");
+    } finally {
+      setDeactivatingWebhookId(null);
+    }
+  };
+
   return (
     <section className="dash">
       <aside className="dash-sidebar">
@@ -1086,12 +1235,24 @@ function Dashboard() {
           </div>
         </div>
         <nav className="dash-nav">
-          <button className="dash-nav-item active">Overview</button>
-          <button className="dash-nav-item" disabled>
-            Usage &amp; limits (soon)
+          <button
+            className={`dash-nav-item ${
+              activeSection === "overview" ? "active" : ""
+            }`}
+            onClick={() => setActiveSection("overview")}
+          >
+            Overview
+          </button>
+          <button
+            className={`dash-nav-item ${
+              activeSection === "webhooks" ? "active" : ""
+            }`}
+            onClick={() => setActiveSection("webhooks")}
+          >
+            Webhooks
           </button>
           <button className="dash-nav-item" disabled>
-            Webhooks (soon)
+            Usage &amp; limits (soon)
           </button>
           <button className="dash-nav-item" disabled>
             Audit log (soon)
@@ -1110,8 +1271,14 @@ function Dashboard() {
       <div className="dash-main">
         <header className="dash-main-header">
           <div>
-            <h1>Overview</h1>
-            <p>High-level view of your traffic, keys, and recent activity.</p>
+            <h1>
+              {activeSection === "overview" ? "Overview" : "Webhooks"}
+            </h1>
+            <p>
+              {activeSection === "overview"
+                ? "High-level view of your traffic, keys, and recent activity."
+                : "Fan out VeroAPI events to your own services in real time."}
+            </p>
           </div>
           {user ? (
             <button className="btn ghost" onClick={handleLogout}>
@@ -1124,141 +1291,341 @@ function Dashboard() {
           )}
         </header>
 
-        {statsError && (
-          <p className="dash-login-error" style={{ marginTop: 4 }}>
-            {statsError}
-          </p>
+        {activeSection === "overview" && (
+          <>
+            {statsError && (
+              <p className="dash-login-error" style={{ marginTop: 4 }}>
+                {statsError}
+              </p>
+            )}
+
+            <div className="dash-grid">
+              <div className="dash-card">
+                <div className="dash-card-label">Requests (last 24 hours)</div>
+                <div className="dash-card-value">
+                  {statsLoading ? "…" : requestsLast24h.toLocaleString()}
+                </div>
+                <div className="dash-card-sub">
+                  Based on stored <code>/v1/events</code> for this account.
+                </div>
+              </div>
+
+              <div className="dash-card">
+                <div className="dash-card-label">Error rate</div>
+                <div className="dash-card-value">
+                  {statsLoading ? "…" : `${errorRate.toFixed(2)}%`}
+                </div>
+                <div className="dash-card-sub">
+                  Rejected vs accepted events (tracking coming next).
+                </div>
+              </div>
+
+              <div className="dash-card">
+                <div className="dash-card-label">Median latency</div>
+                <div className="dash-card-value">
+                  {statsLoading ? "…" : `${medianLatency} ms`}
+                </div>
+                <div className="dash-card-sub">
+                  Sampled across your recent requests.
+                </div>
+              </div>
+            </div>
+
+            <div className="dash-columns">
+              {/* API KEYS CARD */}
+              <div className="dash-card wide">
+                <div className="dash-card-header">
+                  <h2>API keys</h2>
+                  <span className="dash-tag">
+                    {keysLoading ? "Loading…" : "Redacted for safety"}
+                  </span>
+                </div>
+
+                <form className="dash-login-form" onSubmit={handleCreateKey}>
+                  <div className="dash-input-row">
+                    <label>Label</label>
+                    <input
+                      className="dash-input"
+                      type="text"
+                      placeholder="e.g. Backend server, Discord bot"
+                      value={newLabel}
+                      onChange={(e) => setNewLabel(e.target.value)}
+                      required
+                    />
+                  </div>
+                  {keysError && (
+                    <p className="dash-login-error">{keysError}</p>
+                  )}
+                  <button
+                    className="btn primary dash-login-btn"
+                    type="submit"
+                    disabled={creatingKey || !token}
+                  >
+                    {creatingKey ? "Creating key…" : "Create API key"}
+                  </button>
+                </form>
+
+                {newSecret && (
+                  <div style={{ marginTop: 10, fontSize: 11 }}>
+                    <div className="dash-input-row">
+                      <label>Your new API key (copy now)</label>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 6,
+                          alignItems: "center",
+                          marginTop: 4,
+                        }}
+                      >
+                        <input
+                          className="dash-input"
+                          type="text"
+                          readOnly
+                          value={newSecret}
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          className="btn outline"
+                          onClick={handleCopySecret}
+                        >
+                          {copyMessage || "Copy"}
+                        </button>
+                      </div>
+                      <p className="dash-login-hint">
+                        This is the <strong>only time</strong> we show the full
+                        secret. Store it in your secret manager.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="dash-table" style={{ marginTop: 12 }}>
+                  <div className="dash-table-row head">
+                    <span>Label</span>
+                    <span>Prefix</span>
+                    <span>Created</span>
+                    <span>Last used</span>
+                  </div>
+
+                  {keysLoading ? (
+                    <div className="dash-table-row">
+                      <span>Loading…</span>
+                      <span>—</span>
+                      <span>—</span>
+                      <span>—</span>
+                    </div>
+                  ) : keys.length === 0 ? (
+                    <div className="dash-table-row">
+                      <span>No keys yet</span>
+                      <span>—</span>
+                      <span>—</span>
+                      <span>—</span>
+                    </div>
+                  ) : (
+                    keys.map((key) => (
+                      <div className="dash-table-row" key={key.id}>
+                        <span>{key.label}</span>
+                        <span>{key.prefix}</span>
+                        <span>{formatTime(key.created_at)}</span>
+                        <span>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              gap: 8,
+                              alignItems: "center",
+                            }}
+                          >
+                            <span>{formatTime(key.last_used_at)}</span>
+                            <button
+                              type="button"
+                              className="btn ghost"
+                              style={{ padding: "2px 8px", fontSize: 10 }}
+                              onClick={() => handleRevokeKey(key.id)}
+                              disabled={revokingId === key.id}
+                            >
+                              {revokingId === key.id ? "Revoking…" : "Revoke"}
+                            </button>
+                          </div>
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* ACCOUNT CARD */}
+              <div className="dash-card">
+                <div className="dash-card-header">
+                  <h2>Account</h2>
+                  {user && <span className="dash-tag soft">Demo workspace</span>}
+                </div>
+
+                {user ? (
+                  <div className="dash-login-status">
+                    <div className="dash-login-line">
+                      <span className="dash-login-label">Email</span>
+                      <span className="dash-login-value">{user.email}</span>
+                    </div>
+                    <p className="dash-login-helper">
+                      This account is stored in your VeroAPI Postgres database.
+                      Later, you can attach workspaces, API keys, and billing.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="dash-login-helper">
+                    Loading your account… if this takes longer than a few
+                    seconds, check that your VeroAPI backend is running and your
+                    token is valid.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="dash-card">
+              <div className="dash-card-header">
+                <h2>Quickstart</h2>
+              </div>
+              <ol className="dash-steps">
+                <li>
+                  <strong>Grab your API key</strong>
+                  <span> – keys are scoped by workspace and environment.</span>
+                </li>
+                <li>
+                  <strong>Paste into your app</strong>
+                  <span> – use the snippets from the homepage or docs.</span>
+                </li>
+                <li>
+                  <strong>Send an event</strong>
+                  <span>
+                    {" "}
+                    – for example, <code>user.signup</code> when a new user
+                    joins.
+                  </span>
+                </li>
+              </ol>
+
+              <button
+                className="btn outline dash-quickstart-btn"
+                onClick={handleSendTestEvent}
+                disabled={sendingEvent}
+              >
+                {sendingEvent
+                  ? "Sending test event…"
+                  : "Send test event to VeroAPI"}
+              </button>
+              {eventMessage && (
+                <p className="dash-event-status">{eventMessage}</p>
+              )}
+            </div>
+          </>
         )}
 
-        <div className="dash-grid">
-          <div className="dash-card">
-            <div className="dash-card-label">Requests (last 24 hours)</div>
-            <div className="dash-card-value">
-              {statsLoading ? "…" : requestsLast24h.toLocaleString()}
-            </div>
-            <div className="dash-card-sub">
-              Based on stored <code>/v1/events</code> for this account.
-            </div>
-          </div>
-
-          <div className="dash-card">
-            <div className="dash-card-label">Error rate</div>
-            <div className="dash-card-value">
-              {statsLoading ? "…" : `${errorRate.toFixed(2)}%`}
-            </div>
-            <div className="dash-card-sub">
-              Rejected vs accepted events (tracking coming next).
-            </div>
-          </div>
-
-          <div className="dash-card">
-            <div className="dash-card-label">Median latency</div>
-            <div className="dash-card-value">
-              {statsLoading ? "…" : `${medianLatency} ms`}
-            </div>
-            <div className="dash-card-sub">
-              Sampled across your recent requests.
-            </div>
-          </div>
-        </div>
-
-        <div className="dash-columns">
-          {/* API KEYS CARD */}
+        {activeSection === "webhooks" && (
           <div className="dash-card wide">
             <div className="dash-card-header">
-              <h2>API keys</h2>
-              <span className="dash-tag">
-                {keysLoading ? "Loading…" : "Redacted for safety"}
+              <h2>Webhooks</h2>
+              <span className="dash-tag soft">
+                Deliver VeroAPI events to your own services
               </span>
             </div>
 
-            <form className="dash-login-form" onSubmit={handleCreateKey}>
+            <form className="dash-login-form" onSubmit={handleCreateWebhook}>
               <div className="dash-input-row">
-                <label>Label</label>
+                <label>Webhook URL</label>
                 <input
                   className="dash-input"
-                  type="text"
-                  placeholder="e.g. Backend server, Discord bot"
-                  value={newLabel}
-                  onChange={(e) => setNewLabel(e.target.value)}
+                  type="url"
+                  placeholder="https://your-service.com/webhooks/vero"
+                  value={newWebhookUrl}
+                  onChange={(e) => setNewWebhookUrl(e.target.value)}
                   required
                 />
               </div>
-              {keysError && (
-                <p className="dash-login-error">{keysError}</p>
+              <div className="dash-input-row">
+                <label>Description (optional)</label>
+                <input
+                  className="dash-input"
+                  type="text"
+                  placeholder="e.g. Production backend, Discord worker, etc."
+                  value={newWebhookDescription}
+                  onChange={(e) => setNewWebhookDescription(e.target.value)}
+                />
+              </div>
+              {webhooksError && (
+                <p className="dash-login-error">{webhooksError}</p>
               )}
               <button
                 className="btn primary dash-login-btn"
                 type="submit"
-                disabled={creatingKey || !token}
+                disabled={creatingWebhook || !token}
               >
-                {creatingKey ? "Creating key…" : "Create API key"}
+                {creatingWebhook ? "Creating webhook…" : "Add webhook"}
               </button>
+              <p className="dash-login-hint">
+                We sign each request with <code>X-VeroAPI-Signature</code> so
+                you can verify authenticity.
+              </p>
             </form>
 
-            {newSecret && (
-              <div style={{ marginTop: 10, fontSize: 11 }}>
-                <div className="dash-input-row">
-                  <label>Your new API key (copy now)</label>
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: 6,
-                      alignItems: "center",
-                      marginTop: 4,
-                    }}
-                  >
-                    <input
-                      className="dash-input"
-                      type="text"
-                      readOnly
-                      value={newSecret}
-                      style={{ flex: 1 }}
-                    />
-                    <button
-                      type="button"
-                      className="btn outline"
-                      onClick={handleCopySecret}
-                    >
-                      {copyMessage || "Copy"}
-                    </button>
-                  </div>
-                  <p className="dash-login-hint">
-                    This is the <strong>only time</strong> we show the full
-                    secret. Store it in your secret manager.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <div className="dash-table" style={{ marginTop: 12 }}>
+            <div
+              style={{
+                marginTop: 18,
+                marginBottom: 6,
+                fontSize: 12,
+                opacity: 0.85,
+              }}
+            >
+              Active endpoints
+            </div>
+            <div className="dash-table">
               <div className="dash-table-row head">
-                <span>Label</span>
-                <span>Prefix</span>
+                <span>URL</span>
+                <span>Description</span>
                 <span>Created</span>
-                <span>Last used</span>
+                <span>Last delivery</span>
               </div>
 
-              {keysLoading ? (
+              {webhooksLoading ? (
                 <div className="dash-table-row">
                   <span>Loading…</span>
                   <span>—</span>
                   <span>—</span>
                   <span>—</span>
                 </div>
-              ) : keys.length === 0 ? (
+              ) : webhooks.length === 0 ? (
                 <div className="dash-table-row">
-                  <span>No keys yet</span>
+                  <span>No active webhooks</span>
                   <span>—</span>
                   <span>—</span>
                   <span>—</span>
                 </div>
               ) : (
-                keys.map((key) => (
-                  <div className="dash-table-row" key={key.id}>
-                    <span>{key.label}</span>
-                    <span>{key.prefix}</span>
-                    <span>{formatTime(key.created_at)}</span>
+                webhooks.map((wh) => (
+                  <div className="dash-table-row" key={wh.id}>
+                    <span
+                      title={wh.url}
+                      style={{
+                        maxWidth: 220,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {wh.url}
+                    </span>
+                    <span
+                      style={{
+                        maxWidth: 180,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {wh.description || "—"}
+                    </span>
+                    <span>{formatTime(wh.created_at)}</span>
                     <span>
                       <div
                         style={{
@@ -1268,15 +1635,17 @@ function Dashboard() {
                           alignItems: "center",
                         }}
                       >
-                        <span>{formatTime(key.last_used_at)}</span>
+                        <span>{formatTime(wh.last_delivery_at)}</span>
                         <button
                           type="button"
                           className="btn ghost"
                           style={{ padding: "2px 8px", fontSize: 10 }}
-                          onClick={() => handleRevokeKey(key.id)}
-                          disabled={revokingId === key.id}
+                          onClick={() => handleDeactivateWebhook(wh.id)}
+                          disabled={deactivatingWebhookId === wh.id}
                         >
-                          {revokingId === key.id ? "Revoking…" : "Revoke"}
+                          {deactivatingWebhookId === wh.id
+                            ? "Deactivating…"
+                            : "Deactivate"}
                         </button>
                       </div>
                     </span>
@@ -1284,69 +1653,76 @@ function Dashboard() {
                 ))
               )}
             </div>
-          </div>
 
-          {/* ACCOUNT CARD */}
-          <div className="dash-card">
-            <div className="dash-card-header">
-              <h2>Account</h2>
-              {user && <span className="dash-tag soft">Demo workspace</span>}
+            <div
+              style={{
+                marginTop: 24,
+                marginBottom: 6,
+                fontSize: 12,
+                opacity: 0.85,
+              }}
+            >
+              Recent deliveries
             </div>
-
-            {user ? (
-              <div className="dash-login-status">
-                <div className="dash-login-line">
-                  <span className="dash-login-label">Email</span>
-                  <span className="dash-login-value">{user.email}</span>
-                </div>
-                <p className="dash-login-helper">
-                  This account is stored in your VeroAPI Postgres database.
-                  Later, you can attach workspaces, API keys, and billing.
-                </p>
+            <div className="dash-table">
+              <div className="dash-table-row head">
+                <span>Status</span>
+                <span>Endpoint</span>
+                <span>Event type</span>
+                <span>When</span>
               </div>
-            ) : (
-              <p className="dash-login-helper">
-                Loading your account… if this takes longer than a few seconds,
-                check that your VeroAPI backend is running and your token is
-                valid.
+
+              {deliveriesLoading ? (
+                <div className="dash-table-row">
+                  <span>Loading…</span>
+                  <span>—</span>
+                  <span>—</span>
+                  <span>—</span>
+                </div>
+              ) : deliveries.length === 0 ? (
+                <div className="dash-table-row">
+                  <span>No deliveries yet</span>
+                  <span>—</span>
+                  <span>—</span>
+                  <span>—</span>
+                </div>
+              ) : (
+                deliveries.map((d) => (
+                  <div className="dash-table-row" key={d.id}>
+                    <span
+                      style={{
+                        color:
+                          d.status_code && d.status_code >= 400
+                            ? "#f97373"
+                            : "#4ade80",
+                      }}
+                    >
+                      {d.status_code ?? "ERR"}
+                    </span>
+                    <span
+                      title={d.webhook_url || ""}
+                      style={{
+                        maxWidth: 220,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {d.webhook_url || "—"}
+                    </span>
+                    <span>{d.event_type || "—"}</span>
+                    <span>{formatTime(d.created_at)}</span>
+                  </div>
+                ))
+              )}
+            </div>
+            {deliveriesError && (
+              <p className="dash-login-error" style={{ marginTop: 4 }}>
+                {deliveriesError}
               </p>
             )}
           </div>
-        </div>
-
-        <div className="dash-card">
-          <div className="dash-card-header">
-            <h2>Quickstart</h2>
-          </div>
-          <ol className="dash-steps">
-            <li>
-              <strong>Grab your API key</strong>
-              <span> – keys are scoped by workspace and environment.</span>
-            </li>
-            <li>
-              <strong>Paste into your app</strong>
-              <span> – use the snippets from the homepage or docs.</span>
-            </li>
-            <li>
-              <strong>Send an event</strong>
-              <span>
-                {" "}
-                – for example, <code>user.signup</code> when a new user joins.
-              </span>
-            </li>
-          </ol>
-
-          <button
-            className="btn outline dash-quickstart-btn"
-            onClick={handleSendTestEvent}
-            disabled={sendingEvent}
-          >
-            {sendingEvent ? "Sending test event…" : "Send test event to VeroAPI"}
-          </button>
-          {eventMessage && (
-            <p className="dash-event-status">{eventMessage}</p>
-          )}
-        </div>
+        )}
       </div>
     </section>
   );
@@ -1375,4 +1751,3 @@ function Footer() {
 }
 
 export default App;
-
