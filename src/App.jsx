@@ -11,7 +11,8 @@ function App() {
     <div className="app-root">
       <div className="halo-bg" />
       <Navbar />
-      <main>
+      {/* NOTE: page container class here */}
+      <main className="page">
         <Routes>
           <Route path="/" element={<LandingLayout />} />
           <Route path="/dashboard" element={<Dashboard />} />
@@ -119,7 +120,6 @@ function CodePanel() {
   const tabs = ["cURL", "Node.js", "Python"];
   const [active, setActive] = useState("cURL");
 
-  // plain JS object – no TypeScript types here
   const snippets = {
     cURL: `curl ${API_BASE_URL}/v1/events \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
