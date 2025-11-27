@@ -65,10 +65,15 @@ function Hero() {
   return (
     <section className="hero">
       <div className="hero-left">
-        <p className="hero-pill">
+        {/* Pill now includes uptime/status and is the #status anchor */}
+        <p className="hero-pill" id="status">
           <span className="pill-dot" />
-          New • API utilities for builders & bot devs
+          <span>
+            New • API utilities for builders &amp; bot devs • All systems
+            operational • 30d uptime: 99.98%
+          </span>
         </p>
+
         <h1>
           One API key.
           <br />
@@ -76,6 +81,7 @@ function Hero() {
           <br />
           Zero infrastructure.
         </h1>
+
         <p className="hero-sub">
           VeroAPI gives you a single account-level key and a growing library of
           “random” but ridiculously useful endpoints for apps and Discord bots.
@@ -93,17 +99,6 @@ function Hero() {
         <p className="hero-note">
           No card • One key per user • Rate limits per account, not per project.
         </p>
-
-        {/* Status / uptime widget (anchor target for footer “Status” link) */}
-        <div className="hero-status" id="status">
-          <div className="hero-status-pill">
-            <span className="status-dot status-dot-ok" />
-            <span>All systems operational</span>
-          </div>
-          <span className="hero-status-meta">
-            30d uptime: 99.98% • Primary region: US-East
-          </span>
-        </div>
       </div>
 
       <div className="hero-right">
@@ -114,5 +109,3 @@ function Hero() {
 }
 
 export default Hero;
-
-
