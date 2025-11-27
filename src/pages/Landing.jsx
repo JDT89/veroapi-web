@@ -1,4 +1,5 @@
-import React from "react";
+// src/pages/Landing.jsx
+import React, { useState } from "react";
 import Hero from "../components/landing/Hero";
 import EndpointGallery from "../components/landing/EndpointGallery";
 
@@ -7,57 +8,47 @@ function LandingPage() {
     <>
       <Hero />
       <EndpointGallery />
-      <FeatureGrid />
       <ExperienceStrip />
+      <FeatureGrid />
       <Pricing />
       <FAQ />
     </>
   );
 }
 
-/* ===== Existing sections from the old App.jsx ===== */
+/* ===== Landing sections ===== */
 
 function FeatureGrid() {
   const features = [
     {
       icon: "🔑",
       title: "One key, all endpoints",
-      text: "Forget juggling workspaces or environments. Every account gets one primary key that works across the entire API.",
+      text: "Forget juggling workspaces or environments. Every account gets a single primary key that works across the entire API.",
     },
     {
       icon: "📦",
       title: "Random but useful",
-      text: "Scramble words, compute XP, generate prompts, and more. Add VeroAPI wherever you’d normally write boring utility code.",
+      text: "Scramble words, compute XP, generate prompts and more. Replace boring helper utilities with a hosted endpoint instead.",
     },
     {
       icon: "🧱",
-      title: "Perfect for bots",
-      text: "Drop HTTP calls into your Discord bots or apps. Offload heavy or repetitive logic to VeroAPI and keep your codebase slim.",
+      title: "Perfect for bots & games",
+      text: "Call VeroAPI from your Discord bots, games or tools and offload repetitive or heavy logic to us.",
     },
     {
       icon: "📊",
       title: "Per-account rate limits",
-      text: "Limits are attached to your account, not environments. Easy to reason about, easy to upgrade later.",
-    },
-    {
-      icon: "🚀",
-      title: "Fast to integrate",
-      text: "Copy a snippet, paste your key, hit deploy. No SDK mandatory, just clean JSON over HTTPS.",
-    },
-    {
-      icon: "⚙️",
-      title: "Backend handled for you",
-      text: "We worry about infra, you just hit endpoints. When you’re ready to scale, swap plans instead of rewriting glue code.",
+      text: "Limits attach to your account, not to specific workspaces or environments. Easy to reason about, easy to upgrade.",
     },
   ];
 
   return (
     <section className="features" id="features">
       <div className="section-heading">
-        <h2>Turn “random helpers” into a real API layer.</h2>
+        <h2>Turn helper functions into a real API layer.</h2>
         <p>
-          Every time you almost write a helper function, consider replacing it
-          with a VeroAPI endpoint instead.
+          Any time you almost write a little utility function, consider routing it
+          through VeroAPI instead and keep your codebase focused.
         </p>
       </div>
       <div className="features-grid">
@@ -74,13 +65,20 @@ function FeatureGrid() {
 }
 
 function ExperienceStrip() {
+  const rows = [
+    { status: "200", route: "/v1/text/scramble", ms: 42 },
+    { status: "200", route: "/v1/fun/word", ms: 35 },
+    { status: "429", route: "/v1/discord/rewards/roll", ms: 4 },
+    { status: "200", route: "/v1/text/slugify", ms: 31 },
+  ];
+
   return (
     <section className="dx-strip" id="dx">
       <div className="dx-left">
         <h2>Developer experience that feels like cheating.</h2>
         <p>
-          No dashboards full of noisy charts. Just your account, one API key,
-          simple docs, and endpoints that do exactly what they promise.
+          No noisy dashboards. Just your account, one API key, simple docs and endpoints
+          that do exactly what they promise.
         </p>
         <ul className="dx-list">
           <li>One-click key generation &amp; regeneration from your dashboard.</li>
@@ -89,46 +87,33 @@ function ExperienceStrip() {
         </ul>
       </div>
       <div className="dx-right">
-        <FakeLogs />
+        <div className="logs-card">
+          <div className="logs-header">
+            <div className="logs-title">Recent requests</div>
+            <span className="logs-pill">Live tail</span>
+          </div>
+          <div className="logs-table">
+            {rows.map((row, idx) => (
+              <div className="logs-row" key={idx}>
+                <span
+                  className={`logs-status ${
+                    row.status === "200" ? "ok" : "error"
+                  }`}
+                >
+                  {row.status}
+                </span>
+                <span className="logs-route">{row.route}</span>
+                <span className="logs-region">account-limit</span>
+                <span className="logs-ms">{row.ms} ms</span>
+              </div>
+            ))}
+          </div>
+          <p className="logs-footnote">
+            Rate limiting is applied per account, not per workspace or environment.
+          </p>
+        </div>
       </div>
     </section>
-  );
-}
-
-function FakeLogs() {
-  const rows = [
-    { status: 200, route: "POST /v1/text/scramble", ms: 47 },
-    { status: 200, route: "POST /v1/discord/xp/next-level", ms: 63 },
-    { status: 429, route: "POST /v1/text/scramble", ms: 11 },
-    { status: 200, route: "GET /v1/fun/prompt", ms: 92 },
-  ];
-
-  return (
-    <div className="logs-card">
-      <div className="logs-header">
-        <span className="logs-title">Live account traffic</span>
-        <span className="logs-pill">Sample stream</span>
-      </div>
-      <div className="logs-table">
-        {rows.map((row, i) => (
-          <div className="logs-row" key={i}>
-            <span
-              className={`logs-status ${
-                row.status >= 400 ? "error" : "ok"
-              }`}
-            >
-              {row.status}
-            </span>
-            <span className="logs-route">{row.route}</span>
-            <span className="logs-region">account-limit</span>
-            <span className="logs-ms">{row.ms} ms</span>
-          </div>
-        ))}
-      </div>
-      <p className="logs-footnote">
-        Rate limiting is applied per account, not per workspace or environment.
-      </p>
-    </div>
   );
 }
 
@@ -138,8 +123,8 @@ function Pricing() {
       <div className="section-heading">
         <h2>Simple plans. No per-environment math.</h2>
         <p>
-          Every plan includes exactly one API key per account. Upgrade when you
-          need more throughput, not more complexity.
+          Every plan includes exactly one API key per account. Upgrade when you need
+          more throughput, not more complexity.
         </p>
       </div>
 
@@ -148,43 +133,41 @@ function Pricing() {
           <span className="pricing-tag">Free</span>
           <h3>Playground</h3>
           <p className="pricing-price">$0</p>
-          <p className="pricing-sub">Test the waters and prototype bots.</p>
+          <p className="pricing-sub">Test the waters and prototype bots or games.</p>
           <ul>
             <li>1 API key per account</li>
-            <li>Generous per-account rate limit</li>
-            <li>Core endpoints</li>
+            <li>Generous free monthly requests</li>
+            <li>Access to core endpoints</li>
           </ul>
-          <a href="/auth" className="btn outline block">
-            Start in Playground
-          </a>
+          <button className="btn outline block">Start free</button>
         </div>
 
         <div className="pricing-card pricing-featured">
           <span className="pricing-tag accent">Most popular</span>
-          <h3>Builder</h3>
+          <h3>Pro</h3>
           <p className="pricing-price">$19</p>
-          <p className="pricing-sub">For serious apps &amp; Discord bots.</p>
+          <p className="pricing-sub">
+            For serious bots, games and small SaaS projects.
+          </p>
           <ul>
-            <li>1 API key per account</li>
-            <li>Higher rate limits</li>
-            <li>Priority on new endpoint requests</li>
+            <li>Higher per-account rate limits</li>
+            <li>Priority access to new endpoints</li>
+            <li>Email / Discord support</li>
           </ul>
-          <a href="/auth" className="btn primary block">
-            Upgrade to Builder
-          </a>
+          <button className="btn primary block">Upgrade to Pro</button>
         </div>
 
         <div className="pricing-card">
           <span className="pricing-tag">Custom</span>
-          <h3>Studio</h3>
+          <h3>Scale</h3>
           <p className="pricing-price">Let’s talk</p>
           <p className="pricing-sub">
-            Need custom endpoints or dedicated capacity?
+            Need custom endpoints or dedicated capacity for your product?
           </p>
           <ul>
-            <li>Tailored endpoints for your product</li>
-            <li>Custom per-account quota</li>
-            <li>Slack/Discord support</li>
+            <li>Tailored endpoints for your use case</li>
+            <li>Custom per-account quotas</li>
+            <li>Slack / Discord support channel</li>
           </ul>
           <button className="btn ghost block">Contact us</button>
         </div>
@@ -197,41 +180,42 @@ function FAQ() {
   const items = [
     {
       q: "Why only one API key per account?",
-      a: "It keeps everything simple: one key to manage, one key to rotate, one place to apply rate limits. You can regenerate it at any time from the dashboard.",
+      a: "It keeps everything simple: one key to manage, one key to secure, one place for limits. You can regenerate it any time from the dashboard.",
     },
     {
       q: "How is rate limiting applied?",
-      a: "All limits are attached to your account, regardless of which endpoints you use. This means you don’t have to think about environments, workspaces, or projects.",
+      a: "All limits are attached to your account, regardless of how many bots, games, or tools call the API. You don’t have to think about environments or workspaces.",
     },
     {
       q: "Can I use VeroAPI with multiple bots or apps?",
-      a: "Yes. Use the same key across all your bots and services, or keep it backend-only and proxy requests from wherever you need.",
+      a: "Yes. Use the same key across all your bots and services. Just keep it backend-only and never expose it in client-side code.",
     },
     {
       q: "What kind of endpoints will you add?",
-      a: "We’re focusing on random-but-useful building blocks: text utilities, Discord/bot helpers, game math, and other pieces you’d rather not reinvent.",
+      a: "We’re focused on random-but-useful building blocks: text utilities, helper math for XP and rewards, and tooling for games and bots.",
     },
   ];
 
-  const [open, setOpen] = React.useState(0);
+  const [openIndex, setOpenIndex] = useState(0);
 
   return (
     <section className="faq" id="faq">
       <div className="section-heading">
         <h2>Questions, answered.</h2>
         <p>
-          VeroAPI is designed to feel lightweight for solo builders and still
-          make sense at scale.
+          If you’re not sure whether VeroAPI fits your stack, these should help. Still
+          unsure? Reach out and we’ll talk it through.
         </p>
       </div>
-
       <div className="faq-list">
-        {items.map((item, i) => (
+        {items.map((item, idx) => (
           <FaqItem
             key={item.q}
             item={item}
-            open={open === i}
-            onToggle={() => setOpen(open === i ? -1 : i)}
+            open={openIndex === idx}
+            onToggle={() =>
+              setOpenIndex(openIndex === idx ? -1 : idx)
+            }
           />
         ))}
       </div>
@@ -252,3 +236,4 @@ function FaqItem({ item, open, onToggle }) {
 }
 
 export default LandingPage;
+
