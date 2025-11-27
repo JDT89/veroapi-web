@@ -5,6 +5,8 @@ import "./styles.css";
 // Set this to your real Render API URL or custom domain
 const API_BASE_URL = "https://veroapi-api.onrender.com";
 
+/* ========= ROOT APP ========= */
+
 function App() {
   return (
     <div className="app-root">
@@ -94,10 +96,7 @@ function Hero() {
         </p>
 
         <div className="hero-actions">
-          <Link
-            to="/auth"
-            className="btn primary hero-primary nav-btn-link"
-          >
+          <Link to="/auth" className="btn primary hero-primary nav-btn-link">
             Start free (100k req / mo)
           </Link>
           <a href="#pricing" className="btn outline hero-secondary nav-btn-link">
@@ -148,16 +147,16 @@ await vero.post("/events", {
 });`,
     Python: `import requests
 
-session = requests.Session()
+session = requests.Session();
 session.headers.update({
   "Authorization": "Bearer YOUR_API_KEY",
   "X-Workspace": "prod",
-})
+});
 
 session.post(
   "${API_BASE_URL}/v1/events",
   json={"type": "user.signup", "user_id": "u_123", "source": "dashboard"},
-)`,
+);`,
   };
 
   const [copied, setCopied] = useState(false);
@@ -600,7 +599,7 @@ function AuthPage() {
             in your VeroAPI Postgres database.
           </p>
           <ul className="auth-bullets">
-            <li>One account for all environments & workspaces.</li>
+            <li>One account for all environments &amp; workspaces.</li>
             <li>Tokens stored locally in your browser, not on this UI.</li>
             <li>Ready to wire into Stripe or your own billing later.</li>
           </ul>
@@ -727,16 +726,27 @@ function AuthPage() {
 function Dashboard() {
   const navigate = useNavigate();
 
+  // Auth state (token + user loaded from API)
+  const [token, setToken] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return window.localStorage.getItem("veroapi_token") || "";
+  });
+  const [user, setUser] = useState(null);
+
   // API health
   const [healthLoading, setHealthLoading] = useState(true);
   const [healthError, setHealthError] = useState(false);
   const [healthData, setHealthData] = useState(null);
 
-  // Auth state (token + user loaded from API)
-  const [token, setToken] = useState(
-    () => window.localStorage.getItem("veroapi_token") || ""
-  );
-  const [user, setUser] = useState(null);
+  // API keys
+  const [keys, setKeys] = useState([]);
+  const [keysLoading, setKeysLoading] = useState(false);
+  const [keysError, setKeysError] = useState("");
+  const [newLabel, setNewLabel] = useState("");
+  const [creatingKey, setCreatingKey] = useState(false);
+  const [newSecret, setNewSecret] = useState("");
+  const [copyMessage, setCopyMessage] = useState("");
+  const [revokingId, setRevokingId] = useState(null);
 
   // Test event
   const [sendingEvent, setSendingEvent] = useState(false);
@@ -820,7 +830,9 @@ function Dashboard() {
         if (!cancelled) {
           setUser(null);
           setToken("");
-          window.localStorage.removeItem("veroapi_token");
+          if (typeof window !== "undefined") {
+            window.localStorage.removeItem("veroapi_token");
+          }
         }
       }
     }
@@ -832,11 +844,131 @@ function Dashboard() {
     };
   }, [token]);
 
+  // Fetch API keys when token changes
+  useEffect(() => {
+    if (!token) {
+      setKeys([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function fetchKeys() {
+      try {
+        setKeysLoading(true);
+        setKeysError("");
+        const res = await fetch(`${API_BASE_URL}/v1/api-keys`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "Failed to load API keys");
+        }
+        if (!cancelled) {
+          setKeys(data.keys || []);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setKeysError(err.message || "Failed to load API keys");
+        }
+      } finally {
+        if (!cancelled) {
+          setKeysLoading(false);
+        }
+      }
+    }
+
+    fetchKeys();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+
   const handleLogout = () => {
     setToken("");
     setUser(null);
-    window.localStorage.removeItem("veroapi_token");
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem("veroapi_token");
+    }
     navigate("/auth");
+  };
+
+  const formatTime = (value) => {
+    if (!value) return "—";
+    try {
+      return new Date(value).toLocaleString();
+    } catch {
+      return value;
+    }
+  };
+
+  const handleCreateKey = async (e) => {
+    e.preventDefault();
+    if (!newLabel.trim() || !token) return;
+
+    setCreatingKey(true);
+    setKeysError("");
+    setNewSecret("");
+    try {
+      const res = await fetch(`${API_BASE_URL}/v1/api-keys`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ label: newLabel.trim() }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Failed to create API key");
+      }
+
+      setKeys((prev) => [data.key, ...prev]);
+      setNewSecret(data.secret);
+      setNewLabel("");
+    } catch (err) {
+      setKeysError(err.message || "Failed to create API key");
+    } finally {
+      setCreatingKey(false);
+    }
+  };
+
+  const handleRevokeKey = async (id) => {
+    if (!id || !token) return;
+    setRevokingId(id);
+    setKeysError("");
+    try {
+      const res = await fetch(`${API_BASE_URL}/v1/api-keys/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Failed to revoke API key");
+      }
+      setKeys((prev) => prev.filter((k) => k.id !== id));
+    } catch (err) {
+      setKeysError(err.message || "Failed to revoke API key");
+    } finally {
+      setRevokingId(null);
+    }
+  };
+
+  const handleCopySecret = async () => {
+    if (!newSecret) return;
+    try {
+      await navigator.clipboard.writeText(newSecret);
+      setCopyMessage("Copied!");
+    } catch {
+      setCopyMessage("Unable to copy");
+    }
+    setTimeout(() => setCopyMessage(""), 1200);
   };
 
   const handleSendTestEvent = async () => {
@@ -902,9 +1034,6 @@ function Dashboard() {
         <nav className="dash-nav">
           <button className="dash-nav-item active">Overview</button>
           <button className="dash-nav-item" disabled>
-            API keys (soon)
-          </button>
-          <button className="dash-nav-item" disabled>
             Usage &amp; limits (soon)
           </button>
           <button className="dash-nav-item" disabled>
@@ -962,39 +1091,130 @@ function Dashboard() {
         </div>
 
         <div className="dash-columns">
+          {/* API KEYS CARD */}
           <div className="dash-card wide">
             <div className="dash-card-header">
               <h2>API keys</h2>
-              <span className="dash-tag">Redacted for safety</span>
+              <span className="dash-tag">
+                {keysLoading ? "Loading…" : "Redacted for safety"}
+              </span>
             </div>
-            <div className="dash-table">
+
+            <form className="dash-login-form" onSubmit={handleCreateKey}>
+              <div className="dash-input-row">
+                <label>Label</label>
+                <input
+                  className="dash-input"
+                  type="text"
+                  placeholder="e.g. Backend server, Discord bot"
+                  value={newLabel}
+                  onChange={(e) => setNewLabel(e.target.value)}
+                  required
+                />
+              </div>
+              {keysError && (
+                <p className="dash-login-error">{keysError}</p>
+              )}
+              <button
+                className="btn primary dash-login-btn"
+                type="submit"
+                disabled={creatingKey || !token}
+              >
+                {creatingKey ? "Creating key…" : "Create API key"}
+              </button>
+            </form>
+
+            {newSecret && (
+              <div style={{ marginTop: 10, fontSize: 11 }}>
+                <div className="dash-input-row">
+                  <label>Your new API key (copy now)</label>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 6,
+                      alignItems: "center",
+                      marginTop: 4,
+                    }}
+                  >
+                    <input
+                      className="dash-input"
+                      type="text"
+                      readOnly
+                      value={newSecret}
+                      style={{ flex: 1 }}
+                    />
+                    <button
+                      type="button"
+                      className="btn outline"
+                      onClick={handleCopySecret}
+                    >
+                      {copyMessage || "Copy"}
+                    </button>
+                  </div>
+                  <p className="dash-login-hint">
+                    This is the <strong>only time</strong> we show the full
+                    secret. Store it in your secret manager.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="dash-table" style={{ marginTop: 12 }}>
               <div className="dash-table-row head">
                 <span>Label</span>
                 <span>Prefix</span>
-                <span>Scope</span>
+                <span>Created</span>
                 <span>Last used</span>
               </div>
-              <div className="dash-table-row">
-                <span>Backend server</span>
-                <span>vero_live_9f3…</span>
-                <span>Full workspace</span>
-                <span>3 minutes ago</span>
-              </div>
-              <div className="dash-table-row">
-                <span>Discord bot</span>
-                <span>vero_live_31b…</span>
-                <span>Events only</span>
-                <span>9 minutes ago</span>
-              </div>
-              <div className="dash-table-row">
-                <span>Staging</span>
-                <span>vero_test_7ad…</span>
-                <span>Test traffic</span>
-                <span>2 hours ago</span>
-              </div>
+
+              {keysLoading ? (
+                <div className="dash-table-row">
+                  <span>Loading…</span>
+                  <span>—</span>
+                  <span>—</span>
+                  <span>—</span>
+                </div>
+              ) : keys.length === 0 ? (
+                <div className="dash-table-row">
+                  <span>No keys yet</span>
+                  <span>—</span>
+                  <span>—</span>
+                  <span>—</span>
+                </div>
+              ) : (
+                keys.map((key) => (
+                  <div className="dash-table-row" key={key.id}>
+                    <span>{key.label}</span>
+                    <span>{key.prefix}</span>
+                    <span>{formatTime(key.created_at)}</span>
+                    <span>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 8,
+                          alignItems: "center",
+                        }}
+                      >
+                        <span>{formatTime(key.last_used_at)}</span>
+                        <button
+                          type="button"
+                          className="btn ghost"
+                          style={{ padding: "2px 8px", fontSize: 10 }}
+                          onClick={() => handleRevokeKey(key.id)}
+                          disabled={revokingId === key.id}
+                        >
+                          {revokingId === key.id ? "Revoking…" : "Revoke"}
+                        </button>
+                      </div>
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
+          {/* ACCOUNT CARD */}
           <div className="dash-card">
             <div className="dash-card-header">
               <h2>Account</h2>
