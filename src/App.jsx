@@ -497,20 +497,17 @@ function AuthPage() {
   const navigate = useNavigate();
   const [authMode, setAuthMode] = useState("login");
 
-  // login state
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
 
-  // signup state
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupConfirm, setSignupConfirm] = useState("");
   const [signupLoading, setSignupLoading] = useState(false);
   const [signupError, setSignupError] = useState("");
 
-  // If already have a token, go straight to dashboard
   useEffect(() => {
     const existing = window.localStorage.getItem("veroapi_token");
     if (existing) {
@@ -728,36 +725,34 @@ function Dashboard() {
 
   const [activeSection, setActiveSection] = useState("overview");
 
-  // Auth state (token + user)
   const [token, setToken] = useState(() => {
     if (typeof window === "undefined") return "";
     return window.localStorage.getItem("veroapi_token") || "";
   });
   const [user, setUser] = useState(null);
 
-  // Workspace name
   const [workspaceName, setWorkspaceName] = useState("Main workspace");
   const [workspaceInput, setWorkspaceInput] = useState("Main workspace");
   const [workspaceLoading, setWorkspaceLoading] = useState(false);
   const [workspaceSaving, setWorkspaceSaving] = useState(false);
   const [workspaceError, setWorkspaceError] = useState("");
 
-  // API health
   const [healthLoading, setHealthLoading] = useState(true);
   const [healthError, setHealthError] = useState(false);
   const [healthData, setHealthData] = useState(null);
 
-  // Stats (overview)
   const [stats, setStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsError, setStatsError] = useState("");
 
-  // Usage (per environment)
   const [usageEnvs, setUsageEnvs] = useState([]);
   const [usageLoading, setUsageLoading] = useState(false);
   const [usageError, setUsageError] = useState("");
 
-  // API keys
+  const [eventsList, setEventsList] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [eventsError, setEventsError] = useState("");
+
   const [keys, setKeys] = useState([]);
   const [keysLoading, setKeysLoading] = useState(false);
   const [keysError, setKeysError] = useState("");
@@ -767,7 +762,6 @@ function Dashboard() {
   const [copyMessage, setCopyMessage] = useState("");
   const [revokingId, setRevokingId] = useState(null);
 
-  // Webhooks
   const [webhooks, setWebhooks] = useState([]);
   const [webhooksLoading, setWebhooksLoading] = useState(false);
   const [webhooksError, setWebhooksError] = useState("");
@@ -776,23 +770,19 @@ function Dashboard() {
   const [creatingWebhook, setCreatingWebhook] = useState(false);
   const [deactivatingWebhookId, setDeactivatingWebhookId] = useState(null);
 
-  // Webhook deliveries
   const [deliveries, setDeliveries] = useState([]);
   const [deliveriesLoading, setDeliveriesLoading] = useState(false);
   const [deliveriesError, setDeliveriesError] = useState("");
 
-  // Test event
   const [sendingEvent, setSendingEvent] = useState(false);
   const [eventMessage, setEventMessage] = useState(null);
 
-  // Redirect to /auth if there is no token
   useEffect(() => {
     if (!token) {
       navigate("/auth");
     }
   }, [token, navigate]);
 
-  // Check API health
   useEffect(() => {
     let cancelled = false;
 
@@ -830,7 +820,6 @@ function Dashboard() {
   const apiOnline =
     !healthLoading && !healthError && healthData && healthData.ok;
 
-  // Fetch current user when token changes
   useEffect(() => {
     if (!token) {
       setUser(null);
@@ -877,7 +866,6 @@ function Dashboard() {
     };
   }, [token]);
 
-  // Fetch workspace name
   useEffect(() => {
     if (!token) {
       setWorkspaceName("Main workspace");
@@ -923,7 +911,6 @@ function Dashboard() {
     };
   }, [token]);
 
-  // Fetch API keys when token changes
   useEffect(() => {
     if (!token) {
       setKeys([]);
@@ -966,7 +953,6 @@ function Dashboard() {
     };
   }, [token]);
 
-  // Fetch stats (overview) when token changes
   useEffect(() => {
     if (!token) {
       setStats(null);
@@ -1011,7 +997,6 @@ function Dashboard() {
     };
   }, [token]);
 
-  // Fetch usage per environment
   useEffect(() => {
     if (!token) {
       setUsageEnvs([]);
@@ -1056,7 +1041,53 @@ function Dashboard() {
     };
   }, [token]);
 
-  // Fetch webhooks + deliveries when token changes
+  useEffect(() => {
+    if (!token) {
+      setEventsList([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function fetchEvents() {
+      try {
+        setEventsLoading(true);
+        setEventsError("");
+        const res = await fetch(
+          `${API_BASE_URL}/v1/events/recent?limit=50`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "Failed to load events");
+        }
+        if (!cancelled) {
+          setEventsList(data.events || []);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setEventsError(err.message || "Failed to load events");
+        }
+      } finally {
+        if (!cancelled) {
+          setEventsLoading(false);
+        }
+      }
+    }
+
+    fetchEvents();
+    const interval = setInterval(fetchEvents, 30000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [token]);
+
   useEffect(() => {
     if (!token) {
       setWebhooks([]);
@@ -1125,7 +1156,6 @@ function Dashboard() {
 
     fetchWebhooks();
     fetchDeliveries();
-
     const interval = setInterval(fetchDeliveries, 30000);
 
     return () => {
@@ -1285,6 +1315,63 @@ function Dashboard() {
     }
   };
 
+  const handleCreateWebhook = async (e) => {
+    e.preventDefault();
+    if (!token) return;
+    const url = newWebhookUrl.trim();
+    if (!url) return;
+
+    setCreatingWebhook(true);
+    setWebhooksError("");
+    try {
+      const res = await fetch(`${API_BASE_URL}/v1/webhooks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          url,
+          description: newWebhookDescription.trim() || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Failed to create webhook");
+      }
+      setWebhooks((prev) => [data.webhook, ...prev]);
+      setNewWebhookUrl("");
+      setNewWebhookDescription("");
+    } catch (err) {
+      setWebhooksError(err.message || "Failed to create webhook");
+    } finally {
+      setCreatingWebhook(false);
+    }
+  };
+
+  const handleDeactivateWebhook = async (id) => {
+    if (!token || !id) return;
+    setDeactivatingWebhookId(id);
+    setWebhooksError("");
+    try {
+      const res = await fetch(`${API_BASE_URL}/v1/webhooks/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Failed to deactivate webhook");
+      }
+      setWebhooks((prev) => prev.filter((w) => w.id !== id));
+    } catch (err) {
+      setWebhooksError(err.message || "Failed to deactivate webhook");
+    } finally {
+      setDeactivatingWebhookId(null);
+    }
+  };
+
   const requestsLast24h = stats?.requests_last_24h ?? 0;
   const errorRate = stats?.error_rate ?? 0;
   const medianLatency = stats?.median_latency_ms ?? 80;
@@ -1296,11 +1383,15 @@ function Dashboard() {
   if (activeSection === "usage") {
     headerTitle = "Usage & limits";
     headerSubtitle =
-    "Per-environment usage for this workspace. Upgrade later for higher caps.";
+      "Per-environment usage for this workspace. Upgrade later for higher caps.";
   } else if (activeSection === "webhooks") {
     headerTitle = "Webhooks";
     headerSubtitle =
       "Fan out VeroAPI events to your own services in real time.";
+  } else if (activeSection === "events") {
+    headerTitle = "Events";
+    headerSubtitle =
+      "Recent events flowing through this workspace, across environments.";
   }
 
   return (
@@ -1339,6 +1430,14 @@ function Dashboard() {
             onClick={() => setActiveSection("overview")}
           >
             Overview
+          </button>
+          <button
+            className={`dash-nav-item ${
+              activeSection === "events" ? "active" : ""
+            }`}
+            onClick={() => setActiveSection("events")}
+          >
+            Events
           </button>
           <button
             className={`dash-nav-item ${
@@ -1428,7 +1527,6 @@ function Dashboard() {
             </div>
 
             <div className="dash-columns">
-              {/* API KEYS CARD */}
               <div className="dash-card wide">
                 <div className="dash-card-header">
                   <h2>API keys</h2>
@@ -1551,7 +1649,6 @@ function Dashboard() {
                 </div>
               </div>
 
-              {/* ACCOUNT / WORKSPACE CARD */}
               <div className="dash-card">
                 <div className="dash-card-header">
                   <h2>Account & workspace</h2>
@@ -1657,6 +1754,66 @@ function Dashboard() {
               )}
             </div>
           </>
+        )}
+
+        {activeSection === "events" && (
+          <div className="dash-card wide">
+            <div className="dash-card-header">
+              <h2>Recent events</h2>
+              <span className="dash-tag soft">
+                Last {eventsList.length || 0} events across environments
+              </span>
+            </div>
+            {eventsError && (
+              <p className="dash-login-error" style={{ marginTop: 4 }}>
+                {eventsError}
+              </p>
+            )}
+
+            <div className="dash-table" style={{ marginTop: 12 }}>
+              <div className="dash-table-row head">
+                <span>Type</span>
+                <span>User</span>
+                <span>Source</span>
+                <span>Environment</span>
+                <span>When</span>
+              </div>
+
+              {eventsLoading ? (
+                <div className="dash-table-row">
+                  <span>Loading…</span>
+                  <span>—</span>
+                  <span>—</span>
+                  <span>—</span>
+                  <span>—</span>
+                </div>
+              ) : eventsList.length === 0 ? (
+                <div className="dash-table-row">
+                  <span>No events yet</span>
+                  <span>—</span>
+                  <span>—</span>
+                  <span>—</span>
+                  <span>—</span>
+                </div>
+              ) : (
+                eventsList.map((ev) => (
+                  <div className="dash-table-row" key={ev.id}>
+                    <span>{ev.type}</span>
+                    <span>{ev.user_id || "—"}</span>
+                    <span>{ev.source || "—"}</span>
+                    <span>{ev.environment}</span>
+                    <span>{formatTime(ev.created_at)}</span>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <p className="dash-login-hint" style={{ marginTop: 16 }}>
+              This table is backed by your <code>vero_events</code> table in
+              Postgres. Later we can add filtering, search, and per-tenant
+              drilldown.
+            </p>
+          </div>
         )}
 
         {activeSection === "usage" && (
