@@ -91,7 +91,7 @@ main.page {
   z-index: 10;
   width: 100%;
   margin: 0;
-  padding: 12px 0; /* full-width strip, no side padding */
+  padding: 12px 0;
   box-sizing: border-box;
 
   background:
@@ -103,7 +103,6 @@ main.page {
   backdrop-filter: blur(18px);
 }
 
-/* inner container aligned to page width */
 .nav-inner {
   max-width: var(--page-max-width);
   margin: 0 auto;
@@ -768,7 +767,7 @@ main.page {
 /* ========= DASHBOARD LAYOUT ========= */
 
 .dash {
-  padding: 32px 0 40px; /* no horizontal padding - uses page container */
+  padding: 32px 0 40px;
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
   gap: 24px;
@@ -1016,7 +1015,7 @@ main.page {
   color: var(--text-soft);
 }
 
-/* ========= DASHBOARD AUTH ========= */
+/* ========= DASHBOARD AUTH (SHARED WITH AUTH PAGE) ========= */
 
 .dash-login-form {
   display: flex;
@@ -1113,6 +1112,46 @@ main.page {
 .dash-auth-tab.active {
   background: rgba(30, 64, 175, 0.9);
   color: #e5e7eb;
+}
+
+/* ========= AUTH PAGE LAYOUT ========= */
+
+.auth-page {
+  margin-top: 40px;
+}
+
+.auth-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 24px;
+  align-items: center;
+}
+
+.auth-copy h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+
+.auth-copy p {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--text-soft);
+}
+
+.auth-bullets {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.auth-bullets li + li {
+  margin-top: 4px;
+}
+
+.auth-card {
+  max-width: 360px;
+  margin-left: auto;
 }
 
 /* ========= FOOTER ========= */
@@ -1214,6 +1253,14 @@ main.page {
   .dash-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .auth-inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .auth-card {
+    margin: 0;
+  }
 }
 
 @media (max-width: 720px) {
@@ -1242,4 +1289,3 @@ main.page {
     align-items: flex-start;
   }
 }
-
