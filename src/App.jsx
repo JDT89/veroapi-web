@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Routes, Route, Link, useNavigate } from "react-router-dom";
 import "./styles.css";
 
-// Set this to your real Render API URL or custom domain
+// Point this at your Fastify backend (Render URL or custom domain)
 const API_BASE_URL = "https://veroapi-api.onrender.com";
 
 /* ========= ROOT APP ========= */
@@ -83,30 +83,30 @@ function Hero() {
       <div className="hero-left">
         <p className="hero-pill">
           <span className="pill-dot" />
-          New • Global API layer for modern products
+          New • API utilities for builders & bot devs
         </p>
         <h1>
-          The dark-mode API
+          One API key.
           <br />
-          your users never see,
+          Dozens of endpoints.
           <br />
-          but always feel.
+          Zero infrastructure.
         </h1>
         <p className="hero-sub">
-          VeroAPI routes, secures, and observes every request so your team ships
-          features faster—without touching infra or glue code.
+          VeroAPI gives you a single account-level key and a growing library of
+          “random” but ridiculously useful endpoints for apps and Discord bots.
         </p>
 
         <div className="hero-actions">
           <Link to="/auth" className="btn primary hero-primary nav-btn-link">
-            Start free (100k req / mo)
+            Start free (1 key per account)
           </Link>
-          <a href="#pricing" className="btn outline hero-secondary nav-btn-link">
-            View pricing
-          </a>
+          <Link to="/docs" className="btn outline hero-secondary nav-btn-link">
+            Read the docs
+          </Link>
         </div>
         <p className="hero-note">
-          No credit card • 3-click setup • Built for high-growth teams
+          No card • One key per user • Rate limits per account, not per project.
         </p>
       </div>
 
@@ -122,15 +122,13 @@ function CodePanel() {
   const tabs = ["cURL", "Node.js", "Python"];
   const [active, setActive] = useState("cURL");
 
+  // Example random endpoint: text scramble
   const snippets = {
-    cURL: `curl ${API_BASE_URL}/v1/events \\
+    cURL: `curl ${API_BASE_URL}/v1/text/scramble \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
-  -H "X-Workspace: prod" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "type": "user.signup",
-    "user_id": "u_123",
-    "source": "dashboard"
+    "word": "veroapi"
   }'`,
     "Node.js": `import axios from "axios";
 
@@ -138,27 +136,27 @@ const vero = axios.create({
   baseURL: "${API_BASE_URL}/v1",
   headers: {
     Authorization: "Bearer YOUR_API_KEY",
-    "X-Workspace": "prod",
   },
 });
 
-await vero.post("/events", {
-  type: "user.signup",
-  user_id: "u_123",
-  source: "dashboard",
-});`,
+const res = await vero.post("/text/scramble", {
+  word: "veroapi",
+});
+
+console.log(res.data.scrambled);`,
     Python: `import requests
 
 session = requests.Session()
 session.headers.update({
   "Authorization": "Bearer YOUR_API_KEY",
-  "X-Workspace": "prod",
 })
 
-session.post(
-  "${API_BASE_URL}/v1/events",
-  json={"type": "user.signup", "user_id": "u_123", "source": "dashboard"},
-)`,
+res = session.post(
+  "${API_BASE_URL}/v1/text/scramble",
+  json={"word": "veroapi"},
+)
+
+print(res.json()["scrambled"])`,
   };
 
   const [copied, setCopied] = useState(false);
@@ -193,9 +191,9 @@ session.post(
       </pre>
       <div className="code-footer">
         <span className="status-dot" />
-        <span>Live edge cluster</span>
+        <span>Per-account rate limiting</span>
         <span>•</span>
-        <span>Auto-retry &amp; idempotency</span>
+        <span>Single API key per user</span>
       </div>
     </div>
   );
@@ -205,30 +203,30 @@ function LatencyCard() {
   return (
     <div className="latency-card">
       <div className="latency-main">
-        <span className="latency-label">Global median latency</span>
-        <span className="latency-value">82 ms</span>
+        <span className="latency-label">Sample endpoint latency</span>
+        <span className="latency-value">86 ms</span>
       </div>
       <div className="latency-bars">
         <div className="bar-row">
-          <span>US-East</span>
+          <span>Text APIs</span>
           <div className="bar-track">
             <span className="bar-fill short" />
           </div>
-          <span className="bar-ms">47 ms</span>
+          <span className="bar-ms">52 ms</span>
         </div>
         <div className="bar-row">
-          <span>EU-West</span>
+          <span>Bot helpers</span>
           <div className="bar-track">
             <span className="bar-fill mid" />
           </div>
-          <span className="bar-ms">73 ms</span>
+          <span className="bar-ms">79 ms</span>
         </div>
         <div className="bar-row">
-          <span>AP-Southeast</span>
+          <span>Fun endpoints</span>
           <div className="bar-track">
             <span className="bar-fill long" />
           </div>
-          <span className="bar-ms">110 ms</span>
+          <span className="bar-ms">121 ms</span>
         </div>
       </div>
     </div>
@@ -239,10 +237,10 @@ function LatencyCard() {
 
 function TrustStrip() {
   const items = [
-    { label: "Requests this month", value: "3.1B+" },
-    { label: "Average uptime", value: "99.99%" },
-    { label: "Teams on VeroAPI", value: "2,400+" },
-    { label: "Countries served", value: "90+" },
+    { label: "Endpoints (launch)", value: "3" },
+    { label: "Planned endpoints", value: "20+" },
+    { label: "One key per user", value: "Always" },
+    { label: "Rate limiting", value: "Per account" },
   ];
   return (
     <section className="trust-strip">
@@ -259,44 +257,44 @@ function TrustStrip() {
 function FeatureGrid() {
   const features = [
     {
-      icon: "🧩",
-      title: "Composable REST & webhooks",
-      text: "Events, commands, and scheduled jobs—modeled as simple, composable resources instead of scattered glue code.",
+      icon: "🔑",
+      title: "One key, all endpoints",
+      text: "Forget juggling workspaces, environments, and projects. Every account gets one primary key that works across the entire API.",
     },
     {
-      icon: "🛰️",
-      title: "Multi-region by design",
-      text: "Every request is routed to the closest healthy region with built-in failover and no config to babysit.",
+      icon: "📦",
+      title: "Random but useful",
+      text: "Scramble words, compute XP, generate prompts, and more. Add VeroAPI wherever you’d normally write boring utility code.",
     },
     {
-      icon: "🧬",
-      title: "Schema-safe payloads",
-      text: "Versioned schemas, validation, and type-safe SDKs so you never ship a breaking change by accident.",
+      icon: "🧱",
+      title: "Perfect for bots",
+      text: "Drop HTTP calls into your Discord bots or apps. Offload heavy or repetitive logic to VeroAPI and keep your codebase slim.",
     },
     {
-      icon: "🕶️",
-      title: "Secrets stay secret",
-      text: "Scoped API keys, fine-grained roles, and per-project firewalls keep your data away from prying eyes.",
+      icon: "📊",
+      title: "Per-account rate limits",
+      text: "Limits are attached to your account, not environments. Easy to reason about, easy to upgrade later.",
     },
     {
-      icon: "📡",
-      title: "Observability on tap",
-      text: "Query logs, latency, and error codes across all tenants with a single search—no third-party tools needed.",
+      icon: "🚀",
+      title: "Fast to integrate",
+      text: "Copy a snippet, paste your key, hit deploy. No SDK mandatory, just clean JSON over HTTPS.",
     },
     {
       icon: "⚙️",
-      title: "Zero-downtime deploys",
-      text: "Config changes roll out safely with automatic canaries and instant rollback if something looks off.",
+      title: "Backend handled for you",
+      text: "We worry about infra, you just hit endpoints. When you’re ready to scale, swap plans instead of rewriting glue code.",
     },
   ];
 
   return (
     <section className="features" id="features">
       <div className="section-heading">
-        <h2>Built to disappear into your product.</h2>
+        <h2>Turn “random helpers” into a real API layer.</h2>
         <p>
-          Your users never see VeroAPI, but they feel the speed, reliability,
-          and polish in every interaction.
+          Every time you almost write a helper function, consider replacing it
+          with a VeroAPI endpoint instead.
         </p>
       </div>
       <div className="features-grid">
@@ -316,16 +314,15 @@ function ExperienceStrip() {
   return (
     <section className="dx-strip" id="dx">
       <div className="dx-left">
-        <h2>Developer experience that respects your time.</h2>
+        <h2>Developer experience that feels like cheating.</h2>
         <p>
-          Opinionated when it matters, invisible when it doesn’t. From the first
-          curl command to production traffic, everything feels like it was
-          designed by someone who ships code for a living.
+          No dashboards full of noisy charts. Just your account, one API key,
+          simple docs, and endpoints that do exactly what they promise.
         </p>
         <ul className="dx-list">
-          <li>Copy-paste snippets for every major language &amp; framework.</li>
-          <li>Self-healing webhooks with automatic retries and signing.</li>
-          <li>OpenAPI spec and generated types right in your editor.</li>
+          <li>One-click key generation &amp; regeneration from your dashboard.</li>
+          <li>Copy-paste examples for your language or framework.</li>
+          <li>Clear errors with human-readable messages.</li>
         </ul>
       </div>
       <div className="dx-right">
@@ -337,17 +334,17 @@ function ExperienceStrip() {
 
 function FakeLogs() {
   const rows = [
-    { status: 202, route: "POST /v1/events", ms: 54, region: "us-east-1" },
-    { status: 200, route: "GET /v1/workspaces", ms: 91, region: "eu-west-2" },
-    { status: 204, route: "POST /v1/webhooks", ms: 63, region: "ap-south-1" },
-    { status: 429, route: "POST /v1/events", ms: 12, region: "us-east-1" },
+    { status: 200, route: "POST /v1/text/scramble", ms: 47 },
+    { status: 200, route: "POST /v1/discord/xp/next-level", ms: 63 },
+    { status: 429, route: "POST /v1/text/scramble", ms: 11 },
+    { status: 200, route: "GET /v1/fun/prompt", ms: 92 },
   ];
 
   return (
     <div className="logs-card">
       <div className="logs-header">
-        <span className="logs-title">Live traffic</span>
-        <span className="logs-pill">Streaming</span>
+        <span className="logs-title">Live account traffic</span>
+        <span className="logs-pill">Sample stream</span>
       </div>
       <div className="logs-table">
         {rows.map((row, i) => (
@@ -360,13 +357,13 @@ function FakeLogs() {
               {row.status}
             </span>
             <span className="logs-route">{row.route}</span>
-            <span className="logs-region">{row.region}</span>
+            <span className="logs-region">account-limit</span>
             <span className="logs-ms">{row.ms} ms</span>
           </div>
         ))}
       </div>
       <p className="logs-footnote">
-        Every request is searchable in under 3 seconds. No extra logging stack.
+        Rate limiting is applied per account, not per workspace or environment.
       </p>
     </div>
   );
@@ -378,57 +375,57 @@ function Pricing() {
   return (
     <section className="pricing" id="pricing">
       <div className="section-heading">
-        <h2>Start free. Grow without friction.</h2>
+        <h2>Simple plans. No per-environment math.</h2>
         <p>
-          Developer-friendly pricing that scales with your traffic, not your
-          anxiety levels.
+          Every plan includes exactly one API key per account. Upgrade when you
+          need more throughput, not more complexity.
         </p>
       </div>
 
       <div className="pricing-grid">
         <div className="pricing-card">
           <span className="pricing-tag">Free</span>
-          <h3>Sandbox</h3>
+          <h3>Playground</h3>
           <p className="pricing-price">$0</p>
-          <p className="pricing-sub">Perfect for prototypes &amp; side projects.</p>
+          <p className="pricing-sub">Test the waters and prototype bots.</p>
           <ul>
-            <li>100k requests / month</li>
-            <li>Single workspace</li>
-            <li>Basic email support</li>
+            <li>1 API key per account</li>
+            <li>Generous per-account rate limit</li>
+            <li>Core endpoints</li>
           </ul>
           <Link to="/auth" className="btn outline block">
-            Start in sandbox
+            Start in Playground
           </Link>
         </div>
 
         <div className="pricing-card pricing-featured">
           <span className="pricing-tag accent">Most popular</span>
-          <h3>Scale</h3>
-          <p className="pricing-price">$39</p>
-          <p className="pricing-sub">Up to 5M requests / month.</p>
+          <h3>Builder</h3>
+          <p className="pricing-price">$19</p>
+          <p className="pricing-sub">For serious apps &amp; Discord bots.</p>
           <ul>
-            <li>Unlimited workspaces</li>
-            <li>Custom rate limits &amp; routing</li>
-            <li>Priority support &amp; Slack channel</li>
+            <li>1 API key per account</li>
+            <li>Higher rate limits</li>
+            <li>Priority on new endpoint requests</li>
           </ul>
           <Link to="/auth" className="btn primary block">
-            Upgrade to Scale
+            Upgrade to Builder
           </Link>
         </div>
 
         <div className="pricing-card">
-          <span className="pricing-tag">Enterprise</span>
-          <h3>Orbit</h3>
+          <span className="pricing-tag">Custom</span>
+          <h3>Studio</h3>
           <p className="pricing-price">Let’s talk</p>
           <p className="pricing-sub">
-            For banks, unicorns, and serious infra folks.
+            Need custom endpoints or dedicated capacity?
           </p>
           <ul>
-            <li>Dedicated region &amp; VPC peering</li>
-            <li>Custom SLAs &amp; compliance</li>
-            <li>Solution architecture support</li>
+            <li>Tailored endpoints for your product</li>
+            <li>Custom per-account quota</li>
+            <li>Slack/Discord support</li>
           </ul>
-          <button className="btn ghost block">Talk to sales</button>
+          <button className="btn ghost block">Contact us</button>
         </div>
       </div>
     </section>
@@ -438,20 +435,20 @@ function Pricing() {
 function FAQ() {
   const items = [
     {
-      q: "How fast can I go from signup to first request?",
-      a: "Most teams send their first successful request in under 90 seconds. Create a workspace, copy your API key, and paste one of the snippets from the hero.",
+      q: "Why only one API key per account?",
+      a: "It keeps everything simple: one key to manage, one key to rotate, one place to apply rate limits. You can regenerate it at any time from the dashboard.",
     },
     {
-      q: "Can I keep using my existing infra?",
-      a: "Yes. VeroAPI is designed as a thin API layer on top of your existing databases, queues, and services. You control your data—VeroAPI only coordinates.",
+      q: "How is rate limiting applied?",
+      a: "All limits are attached to your account, regardless of which endpoints you use. This means you don’t have to think about environments, workspaces, or projects.",
     },
     {
-      q: "What happens if I hit my rate limits?",
-      a: "You’ll see 429 responses with structured error bodies and real-time alerts in the dashboard. You can raise limits instantly on paid plans.",
+      q: "Can I use VeroAPI with multiple bots or apps?",
+      a: "Yes. Use the same key across all your bots and services, or keep it backend-only and proxy requests from wherever you need.",
     },
     {
-      q: "Do you support multi-tenant or white-label use cases?",
-      a: "Absolutely. Workspaces and keys map cleanly to your tenants, and our audit logs keep you compliant while you scale.",
+      q: "What kind of endpoints will you add?",
+      a: "We’re focusing on random-but-useful building blocks: text utilities, Discord/bot helpers, game math, and other pieces you’d rather not reinvent.",
     },
   ];
 
@@ -462,8 +459,8 @@ function FAQ() {
       <div className="section-heading">
         <h2>Questions, answered.</h2>
         <p>
-          If you’re betting a product on VeroAPI, we want you to sleep extremely
-          well at night.
+          VeroAPI is designed to feel lightweight for solo builders and still
+          make sense at scale.
         </p>
       </div>
 
@@ -594,20 +591,20 @@ function AuthPage() {
         <div className="auth-copy">
           <h1>Sign in to VeroAPI</h1>
           <p>
-            Access your dashboard, API keys, and workspaces. Your account lives
-            in your VeroAPI Postgres database.
+            Access your account, manage your single API key, and see usage at a
+            glance. Rate limits are tied to your login, not to projects.
           </p>
           <ul className="auth-bullets">
-            <li>One account for all environments &amp; workspaces.</li>
-            <li>Tokens stored locally in your browser, not on this UI.</li>
-            <li>Ready to wire into Stripe or your own billing later.</li>
+            <li>One API key per account (easy to rotate).</li>
+            <li>Perfect for solo builders, bots, and side projects.</li>
+            <li>Ready to plug into usage-based billing later.</li>
           </ul>
         </div>
 
         <div className="auth-card dash-card">
           <div className="dash-card-header">
             <h2>{authMode === "login" ? "Welcome back" : "Create an account"}</h2>
-            <span className="dash-tag soft">VeroAPI dashboard</span>
+            <span className="dash-tag soft">VeroAPI account</span>
           </div>
 
           <div className="dash-auth-tabs">
@@ -662,8 +659,7 @@ function AuthPage() {
                 {loginLoading ? "Signing in…" : "Sign in"}
               </button>
               <p className="dash-login-hint">
-                Forgot your password? Swap to your own auth provider later—this
-                flow is fully yours.
+                You can always regenerate your key later from the dashboard.
               </p>
             </form>
           ) : (
@@ -709,8 +705,8 @@ function AuthPage() {
                 {signupLoading ? "Creating account…" : "Create account"}
               </button>
               <p className="dash-login-hint">
-                Accounts are stored securely in your VeroAPI Postgres database.
-                Later you can attach workspaces, environments, and billing.
+                Each account automatically gets one primary API key once you
+                generate it from the dashboard.
               </p>
             </form>
           )}
@@ -720,74 +716,56 @@ function AuthPage() {
   );
 }
 
-/* ========= DOCS PAGE – GITBOOK STYLE ========= */
+/* ========= DOCS PAGE (NO EVENTS/WEBHOOKS) ========= */
 
 function DocsPage() {
   const baseUrl = `${API_BASE_URL}/v1`;
 
-  const curlExample = `curl ${baseUrl}/events \\
+  const curlExample = `curl ${baseUrl}/text/scramble \\
   -H "Authorization: Bearer vero_live_xxx" \\
-  -H "X-Workspace: prod" \\
   -H "Content-Type: application/json" \\
-  -d '{
-    "type": "user.signup",
-    "user_id": "u_123",
-    "source": "web-app"
-  }'`;
+  -d '{"word":"veroapi"}'`;
 
-  const nodeExample = `import axios from "axios";
+  const snippetsNode = `import axios from "axios";
 
 const vero = axios.create({
   baseURL: "${baseUrl}",
   headers: {
     Authorization: "Bearer vero_live_xxx",
-    "X-Workspace": "prod",
   },
 });
 
-await vero.post("/events", {
-  type: "user.signup",
-  user_id: "u_123",
-  source: "web-app",
+const { data } = await vero.post("/text/scramble", {
+  word: "veroapi",
 });`;
-
-  const errorExample = `{
-  "ok": false,
-  "error": "Rate limit exceeded for environment 'prod'"
-}`;
-
-  const [activeId, setActiveId] = useState("getting-started");
 
   const sections = {
     "getting-started": {
       title: "Getting started",
-      tagline: "Create a workspace, grab an API key, and send your first event.",
+      tagline: "Create an account, grab your one API key, and call an endpoint.",
       render: () => (
         <>
           <p className="docs-section-description">
-            VeroAPI gives you a single HTTPS endpoint for all of your product
-            events. You can plug it into your backend, frontend, Discord bot, or
-            any other service that speaks HTTP.
+            VeroAPI is a toolbox of HTTP endpoints for builders and bot devs.
+            Every account gets a single primary API key that works across the
+            whole API. No workspaces, no environments, no extra concepts.
           </p>
           <ol className="docs-list">
             <li>
-              <strong>Create an account</strong> – click <em>Get API key</em>{" "}
-              on the homepage and sign up.
+              <strong>Create an account</strong> – click{" "}
+              <em>Get API key</em> on the homepage and sign up.
             </li>
             <li>
-              <strong>Name your workspace</strong> – this usually maps 1:1 to
-              your product or tenant.
+              <strong>Open the dashboard</strong> – sign in and generate your
+              primary API key.
             </li>
             <li>
-              <strong>Create an API key</strong> from the{" "}
-              <strong>Overview → API keys</strong> section of the dashboard.
+              <strong>Store the key safely</strong> – in an env var or secret
+              manager.
             </li>
             <li>
-              <strong>Paste the key</strong> into your app as a secret
-              (environment variable).
-            </li>
-            <li>
-              <strong>Send an event</strong> to <code>POST /events</code>.
+              <strong>Call a sample endpoint</strong> – like{" "}
+              <code>POST /text/scramble</code>.
             </li>
           </ol>
 
@@ -797,21 +775,21 @@ await vero.post("/events", {
           </pre>
 
           <p className="docs-note">
-            All requests must use HTTPS. Your deployment will usually live on
-            your own Render or custom domain; update the base URL accordingly.
+            All endpoints live under <code>/v1</code>. You send JSON and get
+            JSON back—all over HTTPS.
           </p>
         </>
       ),
     },
     auth: {
       title: "Authentication",
-      tagline: "Every request is authenticated with a Bearer API key.",
+      tagline: "Use your single account-level API key with a Bearer header.",
       render: () => (
         <>
           <p className="docs-section-description">
-            VeroAPI uses simple Bearer tokens. Keys are created in the dashboard
-            and sent with each request using the{" "}
-            <code>Authorization</code> header.
+            Every user gets exactly one primary API key. You can regenerate it
+            from the dashboard, but you’ll never have to manage multiple keys,
+            workspaces, or environments.
           </p>
 
           <div className="docs-keyline">Authorization header</div>
@@ -820,177 +798,82 @@ await vero.post("/events", {
           </pre>
 
           <ul className="docs-list">
-            <li>Keys are tied to your account and workspace.</li>
+            <li>Keys are tied directly to your account.</li>
             <li>
-              Prefixes (e.g. <code>vero_live</code>) help you quickly identify
-              keys without exposing the full secret.
+              When you regenerate a key, the old one stops working immediately.
             </li>
-            <li>
-              You can revoke keys instantly from the dashboard if they leak.
-            </li>
+            <li>Never put the key in client-side code; keep it server-side.</li>
           </ul>
 
           <p className="docs-note">
-            Never hardcode keys in your frontend. Store them in your backend or
-            secret manager and let your server talk to VeroAPI.
+            The dashboard is where you’ll generate and rotate your key. Treat it
+            like a password for your API usage.
           </p>
         </>
       ),
     },
-    environments: {
-      title: "Environments & rate limits",
-      tagline: "Keep prod safe while you experiment in staging or dev.",
+    "rate-limits": {
+      title: "Rate limits",
+      tagline: "Usage is tracked per account, not per workspace or project.",
       render: () => (
         <>
           <p className="docs-section-description">
-            Environments are lightweight tags you send in the{" "}
-            <code>X-Workspace</code> header. They let you isolate traffic and
-            quotas without managing separate projects.
+            Rate limits are attached to <strong>your account</strong>. It
+            doesn’t matter which endpoints you call—the same quota applies.
           </p>
 
-          <div className="docs-keyline">Environment header</div>
-          <pre className="code-body">
-            <code>{`X-Workspace: prod
-X-Workspace: staging
-X-Workspace: dev`}</code>
-          </pre>
-
-          <p className="docs-section-description">
-            On the free tier, each environment gets:
-          </p>
           <ul className="docs-list">
-            <li>100 requests / minute</li>
-            <li>100,000 requests / day</li>
+            <li>
+              Free tier: generous per-minute and per-day limits suitable for
+              testing and small bots.
+            </li>
+            <li>
+              Paid tiers: higher ceilings, with the same simple “per account”
+              model.
+            </li>
           </ul>
 
           <p className="docs-note">
-            Rate limits are evaluated <strong>per environment</strong>. If{" "}
-            <code>staging</code> hits its limit, <code>prod</code> is unaffected.
+            If you hit a limit, VeroAPI will return <code>429</code> with a
+            JSON error body. Upgrade your plan or back off requests.
           </p>
         </>
       ),
     },
-    "events-api": {
-      title: "Events API",
-      tagline: "Send product events to a single endpoint: POST /events.",
+    "sample-endpoints": {
+      title: "Sample endpoints",
+      tagline: "A taste of the kind of helpers VeroAPI provides.",
       render: () => (
         <>
           <p className="docs-section-description">
-            Use the Events API to record anything meaningful that happens in
-            your product: signups, logins, upgrades, cancellations, or custom
-            events.
+            Endpoints are intentionally small and focused. You wire them into
+            your app or bot wherever you’d normally write one-off helpers.
           </p>
 
-          <div className="docs-keyline">Endpoint</div>
-          <pre className="code-body">
-            <code>{`POST ${baseUrl}/events`}</code>
-          </pre>
-
-          <div className="docs-keyline">Request body</div>
-          <pre className="code-body">
-            <code>{`{
-  "type": "user.signup",
-  "user_id": "u_123",
-  "source": "web-app",
-  "environment": "prod",      // optional, falls back to X-Workspace header
-  "meta": {
-    "plan": "pro",
-    "referrer": "discord"
-  }
-}`}</code>
-          </pre>
-
-          <p className="docs-section-description">
-            At minimum, you should send <code>type</code> and either{" "}
-            <code>user_id</code> or <code>anonymous_id</code>. Everything else is
-            optional and can be used for segmentation later.
-          </p>
-
-          <div className="docs-keyline">cURL example</div>
+          <div className="docs-keyline">POST /text/scramble</div>
           <pre className="code-body">
             <code>{curlExample}</code>
           </pre>
 
           <div className="docs-keyline">Node.js example</div>
           <pre className="code-body">
-            <code>{nodeExample}</code>
+            <code>{snippetsNode}</code>
           </pre>
-        </>
-      ),
-    },
-    webhooks: {
-      title: "Webhooks",
-      tagline: "Stream events from VeroAPI into your own services.",
-      render: () => (
-        <>
-          <p className="docs-section-description">
-            Webhooks let you react to events in real time—no polling required.
-            Configure endpoints in the dashboard, then VeroAPI will deliver
-            events whenever they occur.
-          </p>
 
-          <div className="docs-keyline">Delivery format</div>
+          <p className="docs-section-description">
+            Example response:
+          </p>
           <pre className="code-body">
-            <code>{`POST https://your-service.com/webhooks/vero
-Content-Type: application/json
-X-VeroAPI-Signature: t=TIMESTAMP,v1=HMAC_HEX`}</code>
+            <code>{`{
+  "ok": true,
+  "word": "veroapi",
+  "scrambled": "eorivap"
+}`}</code>
           </pre>
-
-          <p className="docs-section-description">
-            The JSON payload contains the original event plus metadata VeroAPI
-            adds for you (ID, timestamps, environment, and retries).
-          </p>
-
-          <div className="docs-keyline">Verifying signatures</div>
-          <p className="docs-section-description">
-            Each webhook endpoint has a signing secret shown once in the
-            dashboard. Use it to compute an HMAC and compare it to the{" "}
-            <code>X-VeroAPI-Signature</code> header.
-          </p>
 
           <p className="docs-note">
-            If your endpoint is down or slow, VeroAPI automatically retries
-            using an exponential backoff strategy. You can inspect delivery
-            attempts in the dashboard.
-          </p>
-        </>
-      ),
-    },
-    errors: {
-      title: "Errors",
-      tagline: "Consistent JSON errors you can rely on in logs and tooling.",
-      render: () => (
-        <>
-          <p className="docs-section-description">
-            All non-2xx responses from VeroAPI follow the same shape. This makes
-            them easy to log, alert on, and map to user-facing messages.
-          </p>
-
-          <div className="docs-keyline">Error format</div>
-          <pre className="code-body">
-            <code>{errorExample}</code>
-          </pre>
-
-          <p className="docs-section-description">Common error cases:</p>
-          <ul className="docs-list">
-            <li>
-              <code>401 Unauthorized</code> – missing or invalid API key.
-            </li>
-            <li>
-              <code>403 Forbidden</code> – key exists but cannot access this
-              workspace.
-            </li>
-            <li>
-              <code>422 Unprocessable Entity</code> – malformed event payload.
-            </li>
-            <li>
-              <code>429 Too Many Requests</code> – environment rate limit hit.
-            </li>
-          </ul>
-
-          <p className="docs-note">
-            For user-facing copy, you can map these to friendlier messages while
-            keeping the raw error for logs and observability.
+            As you add more endpoints (Discord helpers, game math, fun
+            utilities), you’ll document them here in the same style.
           </p>
         </>
       ),
@@ -1000,27 +883,22 @@ X-VeroAPI-Signature: t=TIMESTAMP,v1=HMAC_HEX`}</code>
   const navGroups = [
     {
       heading: "Introduction",
-      items: [
-        { id: "getting-started", label: "Getting started" },
-      ],
+      items: [{ id: "getting-started", label: "Getting started" }],
     },
     {
-      heading: "Core concepts",
+      heading: "Account & auth",
       items: [
         { id: "auth", label: "Authentication" },
-        { id: "environments", label: "Environments & limits" },
+        { id: "rate-limits", label: "Rate limits" },
       ],
     },
     {
       heading: "API reference",
-      items: [
-        { id: "events-api", label: "Events API" },
-        { id: "webhooks", label: "Webhooks" },
-        { id: "errors", label: "Errors" },
-      ],
+      items: [{ id: "sample-endpoints", label: "Sample endpoints" }],
     },
   ];
 
+  const [activeId, setActiveId] = useState("getting-started");
   const activeSection = sections[activeId];
 
   return (
@@ -1079,71 +957,43 @@ X-VeroAPI-Signature: t=TIMESTAMP,v1=HMAC_HEX`}</code>
   );
 }
 
-/* ========= DASHBOARD ========= */
+/* ========= DASHBOARD (SIMPLIFIED) ========= */
 
 function Dashboard() {
   const navigate = useNavigate();
 
-  const [activeSection, setActiveSection] = useState("overview");
-
-  const [token, setToken] = useState(() => {
-    if (typeof window === "undefined") return "";
-    return window.localStorage.getItem("veroapi_token") || "";
-  });
+  const [token, setToken] = useState(() =>
+    typeof window === "undefined"
+      ? ""
+      : window.localStorage.getItem("veroapi_token") || ""
+  );
   const [user, setUser] = useState(null);
 
-  const [workspaceName, setWorkspaceName] = useState("Main workspace");
-  const [workspaceInput, setWorkspaceInput] = useState("Main workspace");
-  const [workspaceLoading, setWorkspaceLoading] = useState(false);
-  const [workspaceSaving, setWorkspaceSaving] = useState(false);
-  const [workspaceError, setWorkspaceError] = useState("");
-
+  // API health
   const [healthLoading, setHealthLoading] = useState(true);
   const [healthError, setHealthError] = useState(false);
   const [healthData, setHealthData] = useState(null);
 
+  // Simple stats (optional backend support)
   const [stats, setStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(false);
-  const [statsError, setStatsError] = useState("");
 
-  const [usageEnvs, setUsageEnvs] = useState([]);
-  const [usageLoading, setUsageLoading] = useState(false);
-  const [usageError, setUsageError] = useState("");
-
-  const [eventsList, setEventsList] = useState([]);
-  const [eventsLoading, setEventsLoading] = useState(false);
-  const [eventsError, setEventsError] = useState("");
-
-  const [keys, setKeys] = useState([]);
+  // Single API key
+  const [apiKey, setApiKey] = useState(null); // we only care about one key
   const [keysLoading, setKeysLoading] = useState(false);
   const [keysError, setKeysError] = useState("");
-  const [newLabel, setNewLabel] = useState("");
-  const [creatingKey, setCreatingKey] = useState(false);
+  const [regenLoading, setRegenLoading] = useState(false);
   const [newSecret, setNewSecret] = useState("");
   const [copyMessage, setCopyMessage] = useState("");
-  const [revokingId, setRevokingId] = useState(null);
 
-  const [webhooks, setWebhooks] = useState([]);
-  const [webhooksLoading, setWebhooksLoading] = useState(false);
-  const [webhooksError, setWebhooksError] = useState("");
-  const [newWebhookUrl, setNewWebhookUrl] = useState("");
-  const [newWebhookDescription, setNewWebhookDescription] = useState("");
-  const [creatingWebhook, setCreatingWebhook] = useState(false);
-  const [deactivatingWebhookId, setDeactivatingWebhookId] = useState(null);
-
-  const [deliveries, setDeliveries] = useState([]);
-  const [deliveriesLoading, setDeliveriesLoading] = useState(false);
-  const [deliveriesError, setDeliveriesError] = useState("");
-
-  const [sendingEvent, setSendingEvent] = useState(false);
-  const [eventMessage, setEventMessage] = useState(null);
-
+  // Redirect if not logged in
   useEffect(() => {
     if (!token) {
       navigate("/auth");
     }
   }, [token, navigate]);
 
+  // Fetch API health
   useEffect(() => {
     let cancelled = false;
 
@@ -1152,21 +1002,13 @@ function Dashboard() {
         setHealthLoading(true);
         setHealthError(false);
         const res = await fetch(`${API_BASE_URL}/v1/health`);
-        if (!res.ok) {
-          throw new Error(`Status ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`Status ${res.status}`);
         const data = await res.json();
-        if (!cancelled) {
-          setHealthData(data);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setHealthError(true);
-        }
+        if (!cancelled) setHealthData(data);
+      } catch {
+        if (!cancelled) setHealthError(true);
       } finally {
-        if (!cancelled) {
-          setHealthLoading(false);
-        }
+        if (!cancelled) setHealthLoading(false);
       }
     }
 
@@ -1181,6 +1023,7 @@ function Dashboard() {
   const apiOnline =
     !healthLoading && !healthError && healthData && healthData.ok;
 
+  // Fetch user
   useEffect(() => {
     if (!token) {
       setUser(null);
@@ -1192,128 +1035,71 @@ function Dashboard() {
     async function loadUser() {
       try {
         const res = await fetch(`${API_BASE_URL}/v1/auth/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
-
-        if (!res.ok) {
-          throw new Error(`Status ${res.status}`);
-        }
-
+        if (!res.ok) throw new Error(`Status ${res.status}`);
         const data = await res.json();
-        if (!data.ok) {
-          throw new Error("Not ok");
-        }
-
-        if (!cancelled) {
-          setUser(data.user);
-        }
-      } catch (err) {
+        if (!data.ok) throw new Error("Not ok");
+        if (!cancelled) setUser(data.user);
+      } catch {
         if (!cancelled) {
           setUser(null);
           setToken("");
           if (typeof window !== "undefined") {
             window.localStorage.removeItem("veroapi_token");
           }
+          navigate("/auth");
         }
       }
     }
 
     loadUser();
-
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [token, navigate]);
 
+  // Fetch single API key (we’ll just use the first one if multiple exist)
   useEffect(() => {
     if (!token) {
-      setWorkspaceName("Main workspace");
-      setWorkspaceInput("Main workspace");
+      setApiKey(null);
       return;
     }
 
     let cancelled = false;
 
-    async function fetchWorkspace() {
-      try {
-        setWorkspaceLoading(true);
-        setWorkspaceError("");
-        const res = await fetch(`${API_BASE_URL}/v1/workspace`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
-        if (!res.ok || !data.ok) {
-          throw new Error(data.error || "Failed to load workspace");
-        }
-        if (!cancelled) {
-          const name = data.workspace?.name || "Main workspace";
-          setWorkspaceName(name);
-          setWorkspaceInput(name);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setWorkspaceError(err.message || "Failed to load workspace");
-        }
-      } finally {
-        if (!cancelled) {
-          setWorkspaceLoading(false);
-        }
-      }
-    }
-
-    fetchWorkspace();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [token]);
-
-  useEffect(() => {
-    if (!token) {
-      setKeys([]);
-      return;
-    }
-
-    let cancelled = false;
-
-    async function fetchKeys() {
+    async function fetchKey() {
       try {
         setKeysLoading(true);
         setKeysError("");
         const res = await fetch(`${API_BASE_URL}/v1/api-keys`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
         if (!res.ok || !data.ok) {
-          throw new Error(data.error || "Failed to load API keys");
+          throw new Error(data.error || "Failed to load API key");
         }
         if (!cancelled) {
-          setKeys(data.keys || []);
+          const first = (data.keys || [])[0] || null;
+          setApiKey(first);
         }
       } catch (err) {
         if (!cancelled) {
-          setKeysError(err.message || "Failed to load API keys");
+          setKeysError(err.message || "Failed to load API key");
+          setApiKey(null);
         }
       } finally {
-        if (!cancelled) {
-          setKeysLoading(false);
-        }
+        if (!cancelled) setKeysLoading(false);
       }
     }
 
-    fetchKeys();
-
+    fetchKey();
     return () => {
       cancelled = true;
     };
   }, [token]);
 
+  // Fetch stats (if you wired /v1/stats/overview)
   useEffect(() => {
     if (!token) {
       setStats(null);
@@ -1325,214 +1111,26 @@ function Dashboard() {
     async function fetchStats() {
       try {
         setStatsLoading(true);
-        setStatsError("");
         const res = await fetch(`${API_BASE_URL}/v1/stats/overview`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        if (!res.ok || !data.ok) {
-          throw new Error(data.error || "Failed to load stats");
-        }
-        if (!cancelled) {
-          setStats(data);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setStatsError(err.message || "Failed to load stats");
-        }
+        if (!res.ok || !data.ok) throw new Error();
+        if (!cancelled) setStats(data);
+      } catch {
+        if (!cancelled) setStats(null);
       } finally {
-        if (!cancelled) {
-          setStatsLoading(false);
-        }
+        if (!cancelled) setStatsLoading(false);
       }
     }
 
     fetchStats();
     const interval = setInterval(fetchStats, 30000);
-
     return () => {
       cancelled = true;
       clearInterval(interval);
     };
   }, [token]);
-
-  useEffect(() => {
-    if (!token) {
-      setUsageEnvs([]);
-      return;
-    }
-
-    let cancelled = false;
-
-    async function fetchUsage() {
-      try {
-        setUsageLoading(true);
-        setUsageError("");
-        const res = await fetch(`${API_BASE_URL}/v1/stats/usage`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
-        if (!res.ok || !data.ok) {
-          throw new Error(data.error || "Failed to load usage");
-        }
-        if (!cancelled) {
-          setUsageEnvs(data.per_environment || []);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setUsageError(err.message || "Failed to load usage");
-        }
-      } finally {
-        if (!cancelled) {
-          setUsageLoading(false);
-        }
-      }
-    }
-
-    fetchUsage();
-    const interval = setInterval(fetchUsage, 60000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, [token]);
-
-  useEffect(() => {
-    if (!token) {
-      setEventsList([]);
-      return;
-    }
-
-    let cancelled = false;
-
-    async function fetchEvents() {
-      try {
-        setEventsLoading(true);
-        setEventsError("");
-        const res = await fetch(
-          `${API_BASE_URL}/v1/events/recent?limit=50`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const data = await res.json();
-        if (!res.ok || !data.ok) {
-          throw new Error(data.error || "Failed to load events");
-        }
-        if (!cancelled) {
-          setEventsList(data.events || []);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setEventsError(err.message || "Failed to load events");
-        }
-      } finally {
-        if (!cancelled) {
-          setEventsLoading(false);
-        }
-      }
-    }
-
-    fetchEvents();
-    const interval = setInterval(fetchEvents, 30000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, [token]);
-
-  useEffect(() => {
-    if (!token) {
-      setWebhooks([]);
-      setDeliveries([]);
-      return;
-    }
-
-    let cancelled = false;
-
-    async function fetchWebhooks() {
-      try {
-        setWebhooksLoading(true);
-        setWebhooksError("");
-        const res = await fetch(`${API_BASE_URL}/v1/webhooks`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
-        if (!res.ok || !data.ok) {
-          throw new Error(data.error || "Failed to load webhooks");
-        }
-        if (!cancelled) {
-          setWebhooks(data.webhooks || []);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setWebhooksError(err.message || "Failed to load webhooks");
-        }
-      } finally {
-        if (!cancelled) {
-          setWebhooksLoading(false);
-        }
-      }
-    }
-
-    async function fetchDeliveries() {
-      try {
-        setDeliveriesLoading(true);
-        setDeliveriesError("");
-        const res = await fetch(
-          `${API_BASE_URL}/v1/webhooks/deliveries?limit=20`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const data = await res.json();
-        if (!res.ok || !data.ok) {
-          throw new Error(data.error || "Failed to load deliveries");
-        }
-        if (!cancelled) {
-          setDeliveries(data.deliveries || []);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setDeliveriesError(err.message || "Failed to load deliveries");
-        }
-      } finally {
-        if (!cancelled) {
-          setDeliveriesLoading(false);
-        }
-      }
-    }
-
-    fetchWebhooks();
-    fetchDeliveries();
-    const interval = setInterval(fetchDeliveries, 30000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, [token]);
-
-  const handleLogout = () => {
-    setToken("");
-    setUser(null);
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem("veroapi_token");
-    }
-    navigate("/auth");
-  };
 
   const formatTime = (value) => {
     if (!value) return "—";
@@ -1543,61 +1141,13 @@ function Dashboard() {
     }
   };
 
-  const [keysErrorState, setKeysErrorState] = useState("");
-
-  const handleCreateKey = async (e) => {
-    e.preventDefault();
-    if (!newLabel.trim() || !token) return;
-
-    setCreatingKey(true);
-    setKeysError("");
-    setNewSecret("");
-    try {
-      const res = await fetch(`${API_BASE_URL}/v1/api-keys`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ label: newLabel.trim() }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Failed to create API key");
-      }
-
-      setKeys((prev) => [data.key, ...prev]);
-      setNewSecret(data.secret);
-      setNewLabel("");
-    } catch (err) {
-      setKeysError(err.message || "Failed to create API key");
-    } finally {
-      setCreatingKey(false);
+  const handleLogout = () => {
+    setToken("");
+    setUser(null);
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem("veroapi_token");
     }
-  };
-
-  const handleRevokeKey = async (id) => {
-    if (!id || !token) return;
-    setRevokingId(id);
-    setKeysError("");
-    try {
-      const res = await fetch(`${API_BASE_URL}/v1/api-keys/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await res.json();
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Failed to revoke API key");
-      }
-      setKeys((prev) => prev.filter((k) => k.id !== id));
-    } catch (err) {
-      setKeysError(err.message || "Failed to revoke API key");
-    } finally {
-      setRevokingId(null);
-    }
+    navigate("/auth");
   };
 
   const handleCopySecret = async () => {
@@ -1611,167 +1161,66 @@ function Dashboard() {
     setTimeout(() => setCopyMessage(""), 1200);
   };
 
-  const handleSendTestEvent = async () => {
-    setSendingEvent(true);
-    setEventMessage(null);
-    try {
-      const res = await fetch(`${API_BASE_URL}/v1/events`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          "X-Workspace": "prod",
-        },
-        body: JSON.stringify({
-          type: "dashboard.test_event",
-          user_id: user?.id || "demo_user",
-          source: "dashboard",
-        }),
-      });
+  // Generate or regenerate the single key
+  const handleGenerateOrRegenerate = async () => {
+    if (!token) return;
+    setRegenLoading(true);
+    setKeysError("");
+    setNewSecret("");
 
-      if (!res.ok) {
-        throw new Error(`Status ${res.status}`);
+    try {
+      // If a key exists, revoke it first
+      if (apiKey && apiKey.id) {
+        try {
+          await fetch(`${API_BASE_URL}/v1/api-keys/${apiKey.id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        } catch {
+          // ignore errors; we'll still try to create a new one
+        }
       }
 
-      const data = await res.json();
-      setEventMessage(
-        `Test event accepted in "${data.environment}" at ${
-          data.received_at || "VeroAPI backend"
-        }.`
-      );
-    } catch (err) {
-      setEventMessage(
-        "Failed to send test event. Check your API URL and backend status."
-      );
-    } finally {
-      setSendingEvent(false);
-    }
-  };
-
-  const handleWorkspaceSave = async (e) => {
-    e.preventDefault();
-    if (!token) return;
-    const name = workspaceInput.trim();
-    if (!name) return;
-    setWorkspaceSaving(true);
-    setWorkspaceError("");
-    try {
-      const res = await fetch(`${API_BASE_URL}/v1/workspace`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ name }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Failed to update workspace");
-      }
-      const newName = data.workspace?.name || name;
-      setWorkspaceName(newName);
-      setWorkspaceInput(newName);
-    } catch (err) {
-      setWorkspaceError(err.message || "Failed to update workspace");
-    } finally {
-      setWorkspaceSaving(false);
-    }
-  };
-
-  const handleCreateWebhook = async (e) => {
-    e.preventDefault();
-    if (!token) return;
-    const url = newWebhookUrl.trim();
-    if (!url) return;
-
-    setCreatingWebhook(true);
-    setWebhooksError("");
-    try {
-      const res = await fetch(`${API_BASE_URL}/v1/webhooks`, {
+      const res = await fetch(`${API_BASE_URL}/v1/api-keys`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          url,
-          description: newWebhookDescription.trim() || undefined,
-        }),
+        body: JSON.stringify({ label: "Primary key" }),
       });
+
       const data = await res.json();
       if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Failed to create webhook");
+        throw new Error(data.error || "Failed to generate API key");
       }
-      setWebhooks((prev) => [data.webhook, ...prev]);
-      setNewWebhookUrl("");
-      setNewWebhookDescription("");
+
+      setApiKey(data.key);
+      setNewSecret(data.secret);
     } catch (err) {
-      setWebhooksError(err.message || "Failed to create webhook");
+      setKeysError(err.message || "Failed to generate API key");
     } finally {
-      setCreatingWebhook(false);
+      setRegenLoading(false);
     }
   };
 
-  const handleDeactivateWebhook = async (id) => {
-    if (!token || !id) return;
-    setDeactivatingWebhookId(id);
-    setWebhooksError("");
-    try {
-      const res = await fetch(`${API_BASE_URL}/v1/webhooks/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await res.json();
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Failed to deactivate webhook");
-      }
-      setWebhooks((prev) => prev.filter((w) => w.id !== id));
-    } catch (err) {
-      setWebhooksError(err.message || "Failed to deactivate webhook");
-    } finally {
-      setDeactivatingWebhookId(null);
-    }
-  };
-
-  const requestsLast24h = stats?.requests_last_24h ?? 0;
-  const errorRate = stats?.error_rate ?? 0;
-  const medianLatency = stats?.median_latency_ms ?? 80;
-
-  let headerTitle = "Overview";
-  let headerSubtitle =
-    "High-level view of your traffic, keys, and recent activity.";
-
-  if (activeSection === "usage") {
-    headerTitle = "Usage & limits";
-    headerSubtitle =
-      "Per-environment usage for this workspace. Upgrade later for higher caps.";
-  } else if (activeSection === "webhooks") {
-    headerTitle = "Webhooks";
-    headerSubtitle =
-      "Fan out VeroAPI events to your own services in real time.";
-  } else if (activeSection === "events") {
-    headerTitle = "Events";
-    headerSubtitle =
-      "Recent events flowing through this workspace, across environments.";
-  }
+  const requestsLast24h = stats?.requests_last_24h ?? null;
 
   return (
     <section className="dash">
       <aside className="dash-sidebar">
         <div className="dash-sidebar-header">
-          <span className="dash-pill">Workspace</span>
+          <span className="dash-pill">Account</span>
           <div className="dash-workspace-name">
             <span
               className={`dash-health-dot ${
                 healthLoading ? "loading" : apiOnline ? "ok" : "error"
               }`}
             />
-            {workspaceLoading ? "Loading…" : workspaceName}
+            {user ? user.email : "Loading…"}
           </div>
           <div className="dash-env-badge">
-            Rate limits per environment (prod / staging / dev)
+            1 primary API key • Rate limit per account
           </div>
           <div className="dash-health">
             {healthLoading && <span>Checking API health…</span>}
@@ -1785,49 +1234,17 @@ function Dashboard() {
             )}
           </div>
         </div>
+
         <nav className="dash-nav">
-          <button
-            className={`dash-nav-item ${
-              activeSection === "overview" ? "active" : ""
-            }`}
-            onClick={() => setActiveSection("overview")}
-          >
-            Overview
-          </button>
-          <button
-            className={`dash-nav-item ${
-              activeSection === "events" ? "active" : ""
-            }`}
-            onClick={() => setActiveSection("events")}
-          >
-            Events
-          </button>
-          <button
-            className={`dash-nav-item ${
-              activeSection === "usage" ? "active" : ""
-            }`}
-            onClick={() => setActiveSection("usage")}
-          >
-            Usage &amp; limits
-          </button>
-          <button
-            className={`dash-nav-item ${
-              activeSection === "webhooks" ? "active" : ""
-            }`}
-            onClick={() => setActiveSection("webhooks")}
-          >
-            Webhooks
-          </button>
-          <button className="dash-nav-item" disabled>
-            Audit log (soon)
-          </button>
+          <button className="dash-nav-item active">Overview</button>
         </nav>
+
         <div className="dash-sidebar-foot">
-          <p>Next up: connect VeroAPI to your app in 3 steps.</p>
+          <p>How to use VeroAPI:</p>
           <ol>
-            <li>Create a key</li>
-            <li>Paste into your app</li>
-            <li>Send your first event</li>
+            <li>Generate your primary key</li>
+            <li>Paste into your app/bot</li>
+            <li>Call any supported endpoint</li>
           </ol>
         </div>
       </aside>
@@ -1835,8 +1252,11 @@ function Dashboard() {
       <div className="dash-main">
         <header className="dash-main-header">
           <div>
-            <h1>{headerTitle}</h1>
-            <p>{headerSubtitle}</p>
+            <h1>Overview</h1>
+            <p>
+              Manage your single API key and see a quick snapshot of account
+              usage.
+            </p>
           </div>
           {user ? (
             <button className="btn ghost" onClick={handleLogout}>
@@ -1849,637 +1269,159 @@ function Dashboard() {
           )}
         </header>
 
-        {activeSection === "overview" && (
-          <>
-            {statsError && (
+        <div className="dash-grid">
+          <div className="dash-card">
+            <div className="dash-card-label">API status</div>
+            <div className="dash-card-value">
+              {healthLoading
+                ? "Checking…"
+                : apiOnline
+                ? "Online"
+                : "Unavailable"}
+            </div>
+            <div className="dash-card-sub">
+              Health is based on the <code>/v1/health</code> endpoint.
+            </div>
+          </div>
+
+          <div className="dash-card">
+            <div className="dash-card-label">Requests (last 24h)</div>
+            <div className="dash-card-value">
+              {statsLoading
+                ? "…"
+                : requestsLast24h === null
+                ? "—"
+                : requestsLast24h.toLocaleString()}
+            </div>
+            <div className="dash-card-sub">
+              This is optional and depends on how you implement stats on the
+              backend.
+            </div>
+          </div>
+
+          <div className="dash-card">
+            <div className="dash-card-label">Plan</div>
+            <div className="dash-card-value">Playground</div>
+            <div className="dash-card-sub">
+              1 API key per account • Upgrade later for higher limits.
+            </div>
+          </div>
+        </div>
+
+        <div className="dash-columns">
+          <div className="dash-card wide">
+            <div className="dash-card-header">
+              <h2>Primary API key</h2>
+              <span className="dash-tag">
+                {keysLoading ? "Loading…" : apiKey ? "Active" : "Not created"}
+              </span>
+            </div>
+
+            {keysError && (
               <p className="dash-login-error" style={{ marginTop: 4 }}>
-                {statsError}
+                {keysError}
               </p>
             )}
 
-            <div className="dash-grid">
-              <div className="dash-card">
-                <div className="dash-card-label">Requests (last 24 hours)</div>
-                <div className="dash-card-value">
-                  {statsLoading ? "…" : requestsLast24h.toLocaleString()}
-                </div>
-                <div className="dash-card-sub">
-                  Based on stored <code>/v1/events</code> for this workspace.
-                </div>
-              </div>
+            <p className="dash-login-helper">
+              Each account can have exactly one API key at a time. When you
+              regenerate, the old key stops working immediately.
+            </p>
 
-              <div className="dash-card">
-                <div className="dash-card-label">Error rate</div>
-                <div className="dash-card-value">
-                  {statsLoading ? "…" : `${errorRate.toFixed(2)}%`}
-                </div>
-                <div className="dash-card-sub">
-                  Rejected vs accepted events (tracking coming next).
-                </div>
-              </div>
+            <button
+              className="btn primary dash-login-btn"
+              type="button"
+              onClick={handleGenerateOrRegenerate}
+              disabled={regenLoading}
+            >
+              {regenLoading
+                ? "Working…"
+                : apiKey
+                ? "Regenerate API key"
+                : "Generate API key"}
+            </button>
 
-              <div className="dash-card">
-                <div className="dash-card-label">Median latency</div>
-                <div className="dash-card-value">
-                  {statsLoading ? "…" : `${medianLatency} ms`}
-                </div>
-                <div className="dash-card-sub">
-                  Sampled across your recent requests.
-                </div>
-              </div>
-            </div>
-
-            <div className="dash-columns">
-              <div className="dash-card wide">
-                <div className="dash-card-header">
-                  <h2>API keys</h2>
-                  <span className="dash-tag">
-                    {keysLoading ? "Loading…" : "Redacted for safety"}
-                  </span>
-                </div>
-
-                <form className="dash-login-form" onSubmit={handleCreateKey}>
-                  <div className="dash-input-row">
-                    <label>Label</label>
+            {newSecret && (
+              <div style={{ marginTop: 10, fontSize: 11 }}>
+                <div className="dash-input-row">
+                  <label>Your new API key (copy now)</label>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 6,
+                      alignItems: "center",
+                      marginTop: 4,
+                    }}
+                  >
                     <input
                       className="dash-input"
                       type="text"
-                      placeholder="e.g. Backend server, Discord bot"
-                      value={newLabel}
-                      onChange={(e) => setNewLabel(e.target.value)}
-                      required
+                      readOnly
+                      value={newSecret}
+                      style={{ flex: 1 }}
                     />
+                    <button
+                      type="button"
+                      className="btn outline"
+                      onClick={handleCopySecret}
+                    >
+                      {copyMessage || "Copy"}
+                    </button>
                   </div>
-                  {keysError && (
-                    <p className="dash-login-error">{keysError}</p>
-                  )}
-                  <button
-                    className="btn primary dash-login-btn"
-                    type="submit"
-                    disabled={creatingKey || !token}
-                  >
-                    {creatingKey ? "Creating key…" : "Create API key"}
-                  </button>
-                </form>
+                  <p className="dash-login-hint">
+                    This is the <strong>only time</strong> we show the full
+                    secret. Store it as an environment variable or in your
+                    secret manager.
+                  </p>
+                </div>
+              </div>
+            )}
 
-                {newSecret && (
-                  <div style={{ marginTop: 10, fontSize: 11 }}>
-                    <div className="dash-input-row">
-                      <label>Your new API key (copy now)</label>
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: 6,
-                          alignItems: "center",
-                          marginTop: 4,
-                        }}
-                      >
-                        <input
-                          className="dash-input"
-                          type="text"
-                          readOnly
-                          value={newSecret}
-                          style={{ flex: 1 }}
-                        />
-                        <button
-                          type="button"
-                          className="btn outline"
-                          onClick={handleCopySecret}
-                        >
-                          {copyMessage || "Copy"}
-                        </button>
-                      </div>
-                      <p className="dash-login-hint">
-                        This is the <strong>only time</strong> we show the full
-                        secret. Store it in your secret manager.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="dash-table" style={{ marginTop: 12 }}>
+            {apiKey && (
+              <div style={{ marginTop: 16 }}>
+                <div className="dash-table">
                   <div className="dash-table-row head">
                     <span>Label</span>
                     <span>Prefix</span>
                     <span>Created</span>
                     <span>Last used</span>
                   </div>
-
-                  {keysLoading ? (
-                    <div className="dash-table-row">
-                      <span>Loading…</span>
-                      <span>—</span>
-                      <span>—</span>
-                      <span>—</span>
-                    </div>
-                  ) : keys.length === 0 ? (
-                    <div className="dash-table-row">
-                      <span>No keys yet</span>
-                      <span>—</span>
-                      <span>—</span>
-                      <span>—</span>
-                    </div>
-                  ) : (
-                    keys.map((key) => (
-                      <div className="dash-table-row" key={key.id}>
-                        <span>{key.label}</span>
-                        <span>{key.prefix}</span>
-                        <span>{formatTime(key.created_at)}</span>
-                        <span>
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              gap: 8,
-                              alignItems: "center",
-                            }}
-                          >
-                            <span>{formatTime(key.last_used_at)}</span>
-                            <button
-                              type="button"
-                              className="btn ghost"
-                              style={{ padding: "2px 8px", fontSize: 10 }}
-                              onClick={() => handleRevokeKey(key.id)}
-                              disabled={revokingId === key.id}
-                            >
-                              {revokingId === key.id ? "Revoking…" : "Revoke"}
-                            </button>
-                          </div>
-                        </span>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              <div className="dash-card">
-                <div className="dash-card-header">
-                  <h2>Account & workspace</h2>
-                  {user && (
-                    <span className="dash-tag soft">
-                      {workspaceLoading ? "Loading…" : workspaceName}
-                    </span>
-                  )}
-                </div>
-
-                {user ? (
-                  <>
-                    <div className="dash-login-status">
-                      <div className="dash-login-line">
-                        <span className="dash-login-label">Email</span>
-                        <span className="dash-login-value">
-                          {user.email}
-                        </span>
-                      </div>
-                      <p className="dash-login-helper">
-                        This account is stored in your VeroAPI Postgres
-                        database. Later, you can attach more workspaces,
-                        environments, and billing.
-                      </p>
-                    </div>
-
-                    <form
-                      className="dash-login-form"
-                      onSubmit={handleWorkspaceSave}
-                    >
-                      <div className="dash-input-row">
-                        <label>Workspace name</label>
-                        <input
-                          className="dash-input"
-                          type="text"
-                          value={workspaceInput}
-                          onChange={(e) =>
-                            setWorkspaceInput(e.target.value)
-                          }
-                          placeholder="e.g. VeroAPI production"
-                        />
-                      </div>
-                      {workspaceError && (
-                        <p className="dash-login-error">
-                          {workspaceError}
-                        </p>
-                      )}
-                      <button
-                        className="btn outline dash-login-btn"
-                        type="submit"
-                        disabled={workspaceSaving}
-                      >
-                        {workspaceSaving
-                          ? "Saving…"
-                          : "Save workspace name"}
-                      </button>
-                    </form>
-                  </>
-                ) : (
-                  <p className="dash-login-helper">
-                    Loading your account… if this takes longer than a few
-                    seconds, check that your VeroAPI backend is running and your
-                    token is valid.
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="dash-card">
-              <div className="dash-card-header">
-                <h2>Quickstart</h2>
-              </div>
-              <ol className="dash-steps">
-                <li>
-                  <strong>Grab your API key</strong>
-                  <span> – keys are scoped by workspace and environment.</span>
-                </li>
-                <li>
-                  <strong>Paste into your app</strong>
-                  <span> – use the snippets from the homepage or docs.</span>
-                </li>
-                <li>
-                  <strong>Send an event</strong>
-                  <span>
-                    {" "}
-                    – for example, <code>user.signup</code> when a new user
-                    joins.
-                  </span>
-                </li>
-              </ol>
-
-              <button
-                className="btn outline dash-quickstart-btn"
-                onClick={handleSendTestEvent}
-                disabled={sendingEvent}
-              >
-                {sendingEvent
-                  ? "Sending test event…"
-                  : "Send test event to VeroAPI"}
-              </button>
-              {eventMessage && (
-                <p className="dash-event-status">{eventMessage}</p>
-              )}
-            </div>
-          </>
-        )}
-
-        {activeSection === "events" && (
-          <div className="dash-card wide">
-            <div className="dash-card-header">
-              <h2>Recent events</h2>
-              <span className="dash-tag soft">
-                Last {eventsList.length || 0} events across environments
-              </span>
-            </div>
-            {eventsError && (
-              <p className="dash-login-error" style={{ marginTop: 4 }}>
-                {eventsError}
-              </p>
-            )}
-
-            <div className="dash-table" style={{ marginTop: 12 }}>
-              <div className="dash-table-row head">
-                <span>Type</span>
-                <span>User</span>
-                <span>Source</span>
-                <span>Environment</span>
-              </div>
-
-              {eventsLoading ? (
-                <div className="dash-table-row">
-                  <span>Loading…</span>
-                  <span>—</span>
-                  <span>—</span>
-                  <span>—</span>
-                </div>
-              ) : eventsList.length === 0 ? (
-                <div className="dash-table-row">
-                  <span>No events yet</span>
-                  <span>—</span>
-                  <span>—</span>
-                  <span>—</span>
-                </div>
-              ) : (
-                eventsList.map((ev) => (
-                  <div className="dash-table-row" key={ev.id}>
-                    <span>{ev.type}</span>
-                    <span>{ev.user_id || "—"}</span>
-                    <span>{ev.source || "—"}</span>
-                    <span>{ev.environment}</span>
+                  <div className="dash-table-row">
+                    <span>{apiKey.label || "Primary key"}</span>
+                    <span>{apiKey.prefix}</span>
+                    <span>{formatTime(apiKey.created_at)}</span>
+                    <span>{formatTime(apiKey.last_used_at)}</span>
                   </div>
-                ))
-              )}
-            </div>
+                </div>
+              </div>
+            )}
+          </div>
 
-            <p className="dash-login-hint" style={{ marginTop: 16 }}>
-              This table is backed by your <code>vero_events</code> table in
-              Postgres. Later we can add filtering, search, and per-tenant
-              drilldown.
+          <div className="dash-card">
+            <div className="dash-card-header">
+              <h2>Quickstart</h2>
+              <span className="dash-tag soft">Random endpoints</span>
+            </div>
+            <ol className="dash-steps">
+              <li>
+                <strong>Generate your key</strong> from this page.
+              </li>
+              <li>
+                <strong>Paste into your app</strong> as an env var, e.g.{" "}
+                <code>VEROAPI_KEY</code>.
+              </li>
+              <li>
+                <strong>Call an endpoint</strong> like{" "}
+                <code>POST /v1/text/scramble</code>.
+              </li>
+            </ol>
+            <p className="dash-login-hint" style={{ marginTop: 10 }}>
+              As you add more endpoints (Discord XP helpers, game rewards,
+              etc.), you’ll document them in the Docs tab and call them with the
+              exact same key.
             </p>
           </div>
-        )}
-
-        {activeSection === "usage" && (
-          <div className="dash-card wide">
-            <div className="dash-card-header">
-              <h2>Usage &amp; limits</h2>
-              <span className="dash-tag soft">
-                Free plan: 100 req/min, 100k/day per environment
-              </span>
-            </div>
-            {usageError && (
-              <p className="dash-login-error" style={{ marginTop: 4 }}>
-                {usageError}
-              </p>
-            )}
-
-            <div className="dash-table" style={{ marginTop: 12 }}>
-              <div className="dash-table-row head">
-                <span>Environment</span>
-                <span>Last 24 hours</span>
-                <span>Daily limit</span>
-                <span>Usage</span>
-              </div>
-
-              {usageLoading ? (
-                <div className="dash-table-row">
-                  <span>Loading…</span>
-                  <span>—</span>
-                  <span>—</span>
-                  <span>—</span>
-                </div>
-              ) : usageEnvs.length === 0 ? (
-                <div className="dash-table-row">
-                  <span>No usage yet</span>
-                  <span>0</span>
-                  <span>100,000</span>
-                  <span>0%</span>
-                </div>
-              ) : (
-                usageEnvs.map((env) => {
-                  const used = env.last_24h || 0;
-                  const limit = env.limit_per_day || 100000;
-                  const pct = Math.min(
-                    100,
-                    Math.round((used / limit) * 100)
-                  );
-
-                  return (
-                    <div className="dash-table-row" key={env.environment}>
-                      <span>{env.environment}</span>
-                      <span>{used.toLocaleString()}</span>
-                      <span>{limit.toLocaleString()}</span>
-                      <span>
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 4,
-                          }}
-                        >
-                          <div
-                            style={{
-                              height: 6,
-                              borderRadius: 999,
-                              background: "rgba(255,255,255,0.08)",
-                              overflow: "hidden",
-                            }}
-                          >
-                            <div
-                              style={{
-                                height: "100%",
-                                width: `${pct}%`,
-                                borderRadius: 999,
-                                background:
-                                  pct < 70
-                                    ? "#22c55e"
-                                    : pct < 90
-                                    ? "#eab308"
-                                    : "#ef4444",
-                                transition: "width 0.3s ease",
-                              }}
-                            />
-                          </div>
-                          <span style={{ fontSize: 11, opacity: 0.85 }}>
-                            {pct}% of daily limit
-                          </span>
-                        </div>
-                      </span>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-
-            <p className="dash-login-hint" style={{ marginTop: 16 }}>
-              Later, you can introduce paid plans with higher per-environment
-              limits and additional workspaces—without changing your client's
-              integration (they already send <code>X-Workspace</code>).
-            </p>
-          </div>
-        )}
-
-        {activeSection === "webhooks" && (
-          <div className="dash-card wide">
-            <div className="dash-card-header">
-              <h2>Webhooks</h2>
-              <span className="dash-tag soft">
-                Deliver VeroAPI events to your own services
-              </span>
-            </div>
-
-            <form className="dash-login-form" onSubmit={handleCreateWebhook}>
-              <div className="dash-input-row">
-                <label>Webhook URL</label>
-                <input
-                  className="dash-input"
-                  type="url"
-                  placeholder="https://your-service.com/webhooks/vero"
-                  value={newWebhookUrl}
-                  onChange={(e) => setNewWebhookUrl(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="dash-input-row">
-                <label>Description (optional)</label>
-                <input
-                  className="dash-input"
-                  type="text"
-                  placeholder="e.g. Production backend, Discord worker, etc."
-                  value={newWebhookDescription}
-                  onChange={(e) =>
-                    setNewWebhookDescription(e.target.value)
-                  }
-                />
-              </div>
-              {webhooksError && (
-                <p className="dash-login-error">{webhooksError}</p>
-              )}
-              <button
-                className="btn primary dash-login-btn"
-                type="submit"
-                disabled={creatingWebhook || !token}
-              >
-                {creatingWebhook ? "Creating webhook…" : "Add webhook"}
-              </button>
-              <p className="dash-login-hint">
-                We sign each request with <code>X-VeroAPI-Signature</code> so
-                you can verify authenticity.
-              </p>
-            </form>
-
-            <div
-              style={{
-                marginTop: 18,
-                marginBottom: 6,
-                fontSize: 12,
-                opacity: 0.85,
-              }}
-            >
-              Active endpoints
-            </div>
-            <div className="dash-table">
-              <div className="dash-table-row head">
-                <span>URL</span>
-                <span>Description</span>
-                <span>Created</span>
-                <span>Last delivery</span>
-              </div>
-
-              {webhooksLoading ? (
-                <div className="dash-table-row">
-                  <span>Loading…</span>
-                  <span>—</span>
-                  <span>—</span>
-                  <span>—</span>
-                </div>
-              ) : webhooks.length === 0 ? (
-                <div className="dash-table-row">
-                  <span>No active webhooks</span>
-                  <span>—</span>
-                  <span>—</span>
-                  <span>—</span>
-                </div>
-              ) : (
-                webhooks.map((wh) => (
-                  <div className="dash-table-row" key={wh.id}>
-                    <span
-                      title={wh.url}
-                      style={{
-                        maxWidth: 220,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {wh.url}
-                    </span>
-                    <span
-                      style={{
-                        maxWidth: 180,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {wh.description || "—"}
-                    </span>
-                    <span>{formatTime(wh.created_at)}</span>
-                    <span>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          gap: 8,
-                          alignItems: "center",
-                        }}
-                      >
-                        <span>{formatTime(wh.last_delivery_at)}</span>
-                        <button
-                          type="button"
-                          className="btn ghost"
-                          style={{ padding: "2px 8px", fontSize: 10 }}
-                          onClick={() =>
-                            handleDeactivateWebhook(wh.id)
-                          }
-                          disabled={deactivatingWebhookId === wh.id}
-                        >
-                          {deactivatingWebhookId === wh.id
-                            ? "Deactivating…"
-                            : "Deactivate"}
-                        </button>
-                      </div>
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-
-            <div
-              style={{
-                marginTop: 24,
-                marginBottom: 6,
-                fontSize: 12,
-                opacity: 0.85,
-              }}
-            >
-              Recent deliveries
-            </div>
-            <div className="dash-table">
-              <div className="dash-table-row head">
-                <span>Status</span>
-                <span>Endpoint</span>
-                <span>Event type</span>
-                <span>When</span>
-              </div>
-
-              {deliveriesLoading ? (
-                <div className="dash-table-row">
-                  <span>Loading…</span>
-                  <span>—</span>
-                  <span>—</span>
-                  <span>—</span>
-                </div>
-              ) : deliveries.length === 0 ? (
-                <div className="dash-table-row">
-                  <span>No deliveries yet</span>
-                  <span>—</span>
-                  <span>—</span>
-                  <span>—</span>
-                </div>
-              ) : (
-                deliveries.map((d) => (
-                  <div className="dash-table-row" key={d.id}>
-                    <span
-                      style={{
-                        color:
-                          d.status_code && d.status_code >= 400
-                            ? "#f97373"
-                            : "#4ade80",
-                      }}
-                    >
-                      {d.status_code ?? "ERR"}
-                    </span>
-                    <span
-                      title={d.webhook_url || ""}
-                      style={{
-                        maxWidth: 220,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {d.webhook_url || "—"}
-                    </span>
-                    <span>{d.event_type || "—"}</span>
-                    <span>{formatTime(d.created_at)}</span>
-                  </div>
-                ))
-              )}
-            </div>
-            {deliveriesError && (
-              <p className="dash-login-error" style={{ marginTop: 4 }}>
-                {deliveriesError}
-              </p>
-            )}
-          </div>
-        )}
+        </div>
       </div>
     </section>
   );
