@@ -3,6 +3,7 @@ import { Routes, Route, Link } from "react-router-dom";
 import "./styles.css";
 
 // Set this to your real Render API URL or custom domain
+// e.g. "https://veroapi-api.onrender.com" or "https://api.veroapi.com"
 const API_BASE_URL = "https://veroapi-api.onrender.com";
 
 function App() {
@@ -25,7 +26,7 @@ function App() {
 
 function Navbar() {
   return (
-    <header className="nav-shell">
+    <header className="nav">
       <div className="nav-inner">
         <div className="nav-left">
           <Link to="/" className="nav-brand-link">
@@ -1019,4 +1020,3 @@ function Footer() {
 }
 
 export default App;
-
