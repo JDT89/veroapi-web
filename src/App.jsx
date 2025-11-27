@@ -723,74 +723,96 @@ function AuthPage() {
 /* ========= DOCS PAGE ========= */
 
 function DocsPage() {
+  const baseUrl = `${API_BASE_URL}/v1`;
+
+  const curlExample = `curl ${baseUrl}/events \\
+  -H "Authorization: Bearer vero_live_xxx" \\
+  -H "X-Workspace: prod" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "type": "user.signup",
+    "user_id": "u_123",
+    "source": "web-app"
+  }'`;
+
+  const nodeExample = `import axios from "axios";
+
+const vero = axios.create({
+  baseURL: "${baseUrl}",
+  headers: {
+    Authorization: "Bearer vero_live_xxx",
+    "X-Workspace": "prod",
+  },
+});
+
+await vero.post("/events", {
+  type: "user.signup",
+  user_id: "u_123",
+  source: "web-app",
+});`;
+
+  const errorExample = `{
+  "ok": false,
+  "error": "Rate limit exceeded for environment 'prod'"
+}`;
+
   return (
     <section className="auth-page">
       <div className="auth-inner">
         <div className="auth-copy">
           <h1>VeroAPI Docs</h1>
           <p>
-            Everything you need to send your first event, verify webhooks, and
-            understand how workspaces &amp; rate limits work.
+            Use VeroAPI as the event + webhook layer for your product. These
+            docs cover everything you need to send your first event in under 2
+            minutes.
           </p>
           <ul className="auth-bullets">
-            <li>Authenticate with API keys created in the dashboard.</li>
-            <li>Send events to <code>/v1/events</code> with JSON payloads.</li>
-            <li>Use <code>X-Workspace</code> to scope traffic by environment.</li>
+            <li>Step 1 – Create an account &amp; workspace.</li>
+            <li>Step 2 – Create an API key from the dashboard.</li>
+            <li>Step 3 – Send events to <code>/v1/events</code>.</li>
           </ul>
         </div>
 
         <div className="auth-card dash-card">
           <div className="dash-card-header">
-            <h2>Getting started</h2>
-            <span className="dash-tag soft">v1 REST API</span>
+            <h2>1. Base URL & authentication</h2>
+            <span className="dash-tag soft">REST v1</span>
           </div>
 
           <div className="dash-login-form">
             <div className="dash-input-row">
               <label>Base URL</label>
               <p className="dash-login-helper">
-                All requests are made over HTTPS:
+                All requests are made over HTTPS. For your deployment:
               </p>
               <pre className="code-body">
-                <code>{API_BASE_URL + "/v1"}</code>
+                <code>{baseUrl}</code>
               </pre>
             </div>
 
             <div className="dash-input-row">
               <label>Authentication</label>
               <p className="dash-login-helper">
-                Create an API key in your dashboard, then send it in the{" "}
+                Create an API key from the dashboard (
+                <strong>Overview → API keys</strong>), then send it in the{" "}
                 <code>Authorization</code> header:
               </p>
               <pre className="code-body">
-                <code>{`Authorization: Bearer vero_...`}</code>
+                <code>{`Authorization: Bearer vero_live_xxx`}</code>
               </pre>
-            </div>
-
-            <div className="dash-input-row">
-              <label>Send your first event</label>
-              <p className="dash-login-helper">
-                Fire a <code>user.signup</code> event and it will show up in the
-                Events tab:
+              <p className="dash-login-hint">
+                Keys are scoped to your account and workspace. The secret value
+                is shown only once—store it in your secret manager.
               </p>
-              <pre className="code-body">
-                <code>{`curl ${API_BASE_URL}/v1/events \\
-  -H "Authorization: Bearer YOUR_API_KEY" \\
-  -H "X-Workspace: prod" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "type": "user.signup",
-    "user_id": "u_123",
-    "source": "dashboard"
-  }'`}</code>
-              </pre>
             </div>
 
+            <hr style={{ borderColor: "rgba(148,163,184,0.2)", margin: "16px 0" }} />
+
             <div className="dash-input-row">
-              <label>Workspaces &amp; environments</label>
+              <label>Environments (workspaces)</label>
               <p className="dash-login-helper">
-                Environments are lightweight tags on your events, controlled via
-                the <code>X-Workspace</code> header:
+                Environments are lightweight tags attached via{" "}
+                <code>X-Workspace</code>. Common examples:
               </p>
               <pre className="code-body">
                 <code>{`X-Workspace: prod
@@ -798,16 +820,74 @@ X-Workspace: staging
 X-Workspace: dev`}</code>
               </pre>
               <p className="dash-login-hint">
-                Rate limits are applied <strong>per environment</strong> so you
-                can test safely without burning through prod quota.
+                Rate limits are applied <strong>per environment</strong>, so you
+                can test in <code>staging</code> without burning through{" "}
+                <code>prod</code> quota.
               </p>
             </div>
 
+            <hr style={{ borderColor: "rgba(148,163,184,0.2)", margin: "16px 0" }} />
+
             <div className="dash-input-row">
-              <label>Webhooks</label>
+              <label>Send your first event</label>
               <p className="dash-login-helper">
-                When you enable webhooks in the dashboard, each event is
-                delivered to your endpoint with a signed payload:
+                Fire a <code>user.signup</code> event and you’ll see it appear
+                in the <strong>Events</strong> tab of the dashboard:
+              </p>
+              <pre className="code-body">
+                <code>{curlExample}</code>
+              </pre>
+            </div>
+
+            <div className="dash-input-row">
+              <label>Node.js example</label>
+              <pre className="code-body">
+                <code>{nodeExample}</code>
+              </pre>
+            </div>
+
+            <hr style={{ borderColor: "rgba(148,163,184,0.2)", margin: "16px 0" }} />
+
+            <div className="dash-input-row">
+              <label>Rate limits</label>
+              <p className="dash-login-helper">
+                On the free tier, each environment gets a generous default:
+              </p>
+              <ul className="auth-bullets" style={{ marginTop: 4 }}>
+                <li>100 requests / minute</li>
+                <li>100,000 requests / day</li>
+              </ul>
+              <p className="dash-login-hint">
+                If you exceed these, you’ll receive <code>429</code> responses.
+                You can see usage per environment in{" "}
+                <strong>Usage &amp; limits</strong> in the dashboard.
+              </p>
+            </div>
+
+            <hr style={{ borderColor: "rgba(148,163,184,0.2)", margin: "16px 0" }} />
+
+            <div className="dash-input-row">
+              <label>Errors</label>
+              <p className="dash-login-helper">
+                Errors are simple and predictable. Every error has{" "}
+                <code>ok: false</code> and a human-readable message:
+              </p>
+              <pre className="code-body">
+                <code>{errorExample}</code>
+              </pre>
+              <p className="dash-login-hint">
+                You can safely bubble this up to logs or your own monitoring
+                system. For user-facing messages, map them to your own copy.
+              </p>
+            </div>
+
+            <hr style={{ borderColor: "rgba(148,163,184,0.2)", margin: "16px 0" }} />
+
+            <div className="dash-input-row">
+              <label>Webhooks (high level)</label>
+              <p className="dash-login-helper">
+                When you enable webhooks in the dashboard, events are delivered
+                to your HTTPS endpoint with a signed payload:
               </p>
               <pre className="code-body">
                 <code>{`POST https://your-service.com/webhooks/vero
@@ -816,8 +896,22 @@ X-VeroAPI-Signature: t=TIMESTAMP,v1=HMAC_HEX`}</code>
               </pre>
               <p className="dash-login-hint">
                 Use the secret shown in your webhook settings to validate the
-                HMAC and ensure the request came from VeroAPI.
+                HMAC and make sure the request really came from VeroAPI. Retries
+                and delivery logs are visible in the <strong>Webhooks</strong>{" "}
+                tab.
               </p>
+            </div>
+
+            <div className="dash-input-row">
+              <label>Where to go next</label>
+              <p className="dash-login-helper">
+                Once you have events flowing, you can:
+              </p>
+              <ul className="auth-bullets" style={{ marginTop: 4 }}>
+                <li>Wire your product events into internal tooling via webhooks.</li>
+                <li>Use the <strong>Events</strong> tab to debug live traffic.</li>
+                <li>Use <strong>Usage &amp; limits</strong> to stay ahead of bursts.</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -827,6 +921,8 @@ X-VeroAPI-Signature: t=TIMESTAMP,v1=HMAC_HEX`}</code>
 }
 
 /* ========= DASHBOARD ========= */
+
+// (Dashboard component unchanged from previous version)
 
 function Dashboard() {
   const navigate = useNavigate();
