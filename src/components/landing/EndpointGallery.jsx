@@ -1,103 +1,117 @@
-import React from "react";
-import { Link } from "react-router-dom";
+// src/components/landing/EndpointGallery.jsx
+import React, { useState } from "react";
 
-function Hero() {
+const TABS = ["Text", "Bot helpers", "Fun"];
+
+const ENDPOINTS = {
+  Text: [
+    {
+      method: "POST",
+      path: "/v1/text/scramble",
+      desc: "Give us a word, get back multiple scrambled variations.",
+      badge: "JSON in • JSON out",
+    },
+    {
+      method: "POST",
+      path: "/v1/text/summarize",
+      desc: "Shorten long strings into concise summaries for UI.",
+      badge: "Great for bot replies",
+    },
+    {
+      method: "POST",
+      path: "/v1/text/slugify",
+      desc: "Turn arbitrary text into clean, URL-safe slugs.",
+      badge: "Perfect for IDs",
+    },
+  ],
+  "Bot helpers": [
+    {
+      method: "POST",
+      path: "/v1/discord/xp/next-level",
+      desc: "Calculate XP and levels so you don't hard-code curves.",
+      badge: "Discord bots",
+    },
+    {
+      method: "POST",
+      path: "/v1/discord/cooldown/check",
+      desc: "Single call to decide if a user is on cooldown.",
+      badge: "Global limits",
+    },
+    {
+      method: "POST",
+      path: "/v1/discord/rewards/roll",
+      desc: "Randomized reward helper for messages or commands.",
+      badge: "Economy systems",
+    },
+  ],
+  Fun: [
+    {
+      method: "GET",
+      path: "/v1/fun/prompt",
+      desc: "Random prompts for games, writing, or chat bots.",
+      badge: "Creativity",
+    },
+    {
+      method: "GET",
+      path: "/v1/fun/coin-flip",
+      desc: "Simple coin flips with metadata for stats tracking.",
+      badge: "Mini-games",
+    },
+    {
+      method: "GET",
+      path: "/v1/fun/word",
+      desc: "Random word generator tuned for games & quizzes.",
+      badge: "Word games",
+    },
+  ],
+};
+
+function EndpointGallery() {
+  const [activeTab, setActiveTab] = useState("Text");
+  const endpoints = ENDPOINTS[activeTab];
+
   return (
-    <section className="hero">
-      <div className="hero-left">
-        <p className="hero-pill">
-          <span className="pill-dot" />
-          New • API utilities for builders & bot devs
-        </p>
-        <h1>
-          One API key.
-          <br />
-          Dozens of endpoints.
-          <br />
-          Zero infrastructure.
-        </h1>
-        <p className="hero-sub">
-          VeroAPI gives you a single account-level key and a growing library of
-          “random” but ridiculously useful endpoints for apps and Discord bots.
-        </p>
+    <section className="endpoint-gallery">
+      <div className="endpoint-gallery-inner">
+        <div className="endpoint-gallery-copy">
+          <h2>Random endpoints that save you from glue code.</h2>
+          <p>
+            Use VeroAPI for the boring but critical pieces: string tools, bot helpers,
+            and fun utilities that fit perfectly into Discord bots, games, and small
+            SaaS projects.
+          </p>
 
-        <div className="hero-actions">
-          <Link to="/auth" className="btn primary hero-primary nav-btn-link">
-            Start free (1 key per account)
-          </Link>
-          <Link to="/docs" className="btn outline hero-secondary nav-btn-link">
-            Read the docs
-          </Link>
+          <div className="endpoint-gallery-tabs">
+            {TABS.map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                className={`endpoint-tab ${
+                  tab === activeTab ? "active" : ""
+                }`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
         </div>
-        <p className="hero-note">
-          No card • One key per user • Rate limits per account, not per project.
-        </p>
-      </div>
 
-      <div className="hero-right">
-        <DashboardPreview />
+        <div className="endpoint-gallery-list">
+          {endpoints.map((ep) => (
+            <div className="endpoint-card" key={ep.path}>
+              <div className="endpoint-card-head">
+                <span className="endpoint-method">{ep.method}</span>
+                <span className="endpoint-path">{ep.path}</span>
+              </div>
+              <div className="endpoint-desc">{ep.desc}</div>
+              {ep.badge && <div className="endpoint-badge">{ep.badge}</div>}
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
 }
 
-function DashboardPreview() {
-  return (
-    <div className="dash-preview">
-      <div className="dash-preview-header">
-        <div>
-          <div className="dash-preview-eyebrow">VeroAPI dashboard</div>
-          <div className="dash-preview-title">Primary API key</div>
-        </div>
-        <div className="dash-preview-plan">
-          <span className="dash-preview-plan-pill">Playground</span>
-        </div>
-      </div>
-
-      <div className="dash-preview-status-row">
-        <span className="status-dot status-dot-ok" />
-        <span className="dash-preview-status-text">
-          API online • per-account rate limiting
-        </span>
-      </div>
-
-      <div className="dash-preview-keycard">
-        <div className="dash-preview-key-top">
-          <span className="dash-preview-key-label">Account key</span>
-          <span className="dash-preview-key-pill">1 key per user</span>
-        </div>
-        <div className="dash-preview-key-value">
-          <span className="dash-preview-key-prefix">vero_live_</span>
-          <span className="dash-preview-key-blur">xxxxxxxxxxxx</span>
-        </div>
-        <div className="dash-preview-key-actions">
-          <span className="dash-preview-chip">Reveal</span>
-          <span className="dash-preview-chip">Copy</span>
-        </div>
-      </div>
-
-      <div className="dash-preview-metrics">
-        <div className="dash-preview-metric">
-          <div className="dash-preview-metric-value">3</div>
-          <div className="dash-preview-metric-label">Endpoints live</div>
-        </div>
-        <div className="dash-preview-metric">
-          <div className="dash-preview-metric-value">20+</div>
-          <div className="dash-preview-metric-label">Planned helpers</div>
-        </div>
-        <div className="dash-preview-metric">
-          <div className="dash-preview-metric-value">Per account</div>
-          <div className="dash-preview-metric-label">Rate limiting</div>
-        </div>
-      </div>
-
-      <div className="dash-preview-footer">
-        <span className="dash-preview-footer-pill">
-          JSON in • JSON out • No SDK required
-        </span>
-      </div>
-    </div>
-  );
-}
-
-export default Hero;
+export default EndpointGallery;
