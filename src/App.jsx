@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Routes, Route, Link } from "react-router-dom";
 import "./styles.css";
 
 function App() {
@@ -7,29 +8,29 @@ function App() {
       <div className="halo-bg" />
       <Navbar />
       <main>
-        <Hero />
-        <TrustStrip />
-        <FeatureGrid />
-        <ExperienceStrip />
-        <Pricing />
-        <FAQ />
+        <Routes>
+          <Route path="/" element={<LandingLayout />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Routes>
       </main>
       <Footer />
     </div>
   );
 }
 
-/* ===== LAYOUT COMPONENTS ===== */
+/* ===== NAVBAR ===== */
 
 function Navbar() {
   return (
     <header className="nav">
       <div className="nav-left">
-        <div className="nav-logo">
-          <span className="nav-logo-orbit" />
-          <span className="nav-logo-dot" />
-        </div>
-        <span className="nav-brand">VeroAPI</span>
+        <Link to="/" className="nav-brand-link">
+          <div className="nav-logo">
+            <span className="nav-logo-orbit" />
+            <span className="nav-logo-dot" />
+          </div>
+          <span className="nav-brand">VeroAPI</span>
+        </Link>
       </div>
 
       <nav className="nav-links">
@@ -40,10 +41,29 @@ function Navbar() {
       </nav>
 
       <div className="nav-actions">
-        <button className="btn ghost">Sign in</button>
-        <button className="btn primary">Get API key</button>
+        <Link to="/dashboard" className="btn ghost nav-btn-link">
+          Sign in
+        </Link>
+        <Link to="/dashboard" className="btn primary nav-btn-link">
+          Get API key
+        </Link>
       </div>
     </header>
+  );
+}
+
+/* ===== LANDING LAYOUT (HOME) ===== */
+
+function LandingLayout() {
+  return (
+    <>
+      <Hero />
+      <TrustStrip />
+      <FeatureGrid />
+      <ExperienceStrip />
+      <Pricing />
+      <FAQ />
+    </>
   );
 }
 
@@ -68,10 +88,12 @@ function Hero() {
         </p>
 
         <div className="hero-actions">
-          <button className="btn primary hero-primary">
+          <Link to="/dashboard" className="btn primary hero-primary nav-btn-link">
             Start free (100k req / mo)
-          </button>
-          <button className="btn outline hero-secondary">View live docs</button>
+          </Link>
+          <a href="#pricing" className="btn outline hero-secondary nav-btn-link">
+            View pricing
+          </a>
         </div>
         <p className="hero-note">
           No credit card • 3-click setup • Built for high-growth teams
@@ -202,7 +224,7 @@ function LatencyCard() {
   );
 }
 
-/* ===== TRUST / FEATURES ===== */
+/* ===== TRUST / FEATURES (LANDING) ===== */
 
 function TrustStrip() {
   const items = [
@@ -387,8 +409,8 @@ function Pricing() {
             For banks, unicorns, and serious infra folks.
           </p>
           <ul>
-            <li>Dedicated region & VPC peering</li>
-            <li>Custom SLAs & compliance</li>
+            <li>Dedicated region &amp; VPC peering</li>
+            <li>Custom SLAs &amp; compliance</li>
             <li>Solution architecture support</li>
           </ul>
           <button className="btn ghost block">Talk to sales</button>
@@ -455,6 +477,152 @@ function FaqItem({ item, open, onToggle }) {
     </div>
   );
 }
+
+/* ===== DASHBOARD PAGE ===== */
+
+function Dashboard() {
+  return (
+    <section className="dash">
+      <aside className="dash-sidebar">
+        <div className="dash-sidebar-header">
+          <span className="dash-pill">Workspace</span>
+          <div className="dash-workspace-name">
+            <span className="dot-online" />
+            veroapi-prod
+          </div>
+          <div className="dash-env-badge">Production</div>
+        </div>
+        <nav className="dash-nav">
+          <button className="dash-nav-item active">Overview</button>
+          <button className="dash-nav-item">API keys</button>
+          <button className="dash-nav-item">Usage &amp; limits</button>
+          <button className="dash-nav-item">Webhooks</button>
+          <button className="dash-nav-item">Audit log</button>
+        </nav>
+        <div className="dash-sidebar-foot">
+          <p>Next up: connect VeroAPI to your app in 3 steps.</p>
+          <ol>
+            <li>Create a key</li>
+            <li>Paste into your app</li>
+            <li>Send your first event</li>
+          </ol>
+        </div>
+      </aside>
+
+      <div className="dash-main">
+        <header className="dash-main-header">
+          <div>
+            <h1>Overview</h1>
+            <p>High-level view of your traffic, keys, and recent activity.</p>
+          </div>
+          <button className="btn primary">Create API key</button>
+        </header>
+
+        <div className="dash-grid">
+          <div className="dash-card">
+            <div className="dash-card-label">Requests (last 24 hours)</div>
+            <div className="dash-card-value">182,940</div>
+            <div className="dash-card-sub">+12.4% vs previous 24h</div>
+          </div>
+
+          <div className="dash-card">
+            <div className="dash-card-label">Error rate</div>
+            <div className="dash-card-value">0.21%</div>
+            <div className="dash-card-sub">2 incidents muted</div>
+          </div>
+
+          <div className="dash-card">
+            <div className="dash-card-label">Median latency</div>
+            <div className="dash-card-value">79 ms</div>
+            <div className="dash-card-sub">Globally, across all regions</div>
+          </div>
+        </div>
+
+        <div className="dash-columns">
+          <div className="dash-card wide">
+            <div className="dash-card-header">
+              <h2>API keys</h2>
+              <span className="dash-tag">Redacted for safety</span>
+            </div>
+            <div className="dash-table">
+              <div className="dash-table-row head">
+                <span>Label</span>
+                <span>Prefix</span>
+                <span>Scope</span>
+                <span>Last used</span>
+              </div>
+              <div className="dash-table-row">
+                <span>Backend server</span>
+                <span>vero_live_9f3…</span>
+                <span>Full workspace</span>
+                <span>3 minutes ago</span>
+              </div>
+              <div className="dash-table-row">
+                <span>Discord bot</span>
+                <span>vero_live_31b…</span>
+                <span>Events only</span>
+                <span>9 minutes ago</span>
+              </div>
+              <div className="dash-table-row">
+                <span>Staging</span>
+                <span>vero_test_7ad…</span>
+                <span>Test traffic</span>
+                <span>2 hours ago</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="dash-card">
+            <div className="dash-card-header">
+              <h2>Recent events</h2>
+              <span className="dash-tag soft">Sample data</span>
+            </div>
+            <ul className="dash-events">
+              <li>
+                <span className="dash-event-type">user.signup</span>
+                <span className="dash-event-meta">u_89af • 14 seconds ago</span>
+              </li>
+              <li>
+                <span className="dash-event-type">billing.invoice_paid</span>
+                <span className="dash-event-meta">acct_145 • 1 min ago</span>
+              </li>
+              <li>
+                <span className="dash-event-type">discord.command_run</span>
+                <span className="dash-event-meta">srv_928 • 3 min ago</span>
+              </li>
+              <li>
+                <span className="dash-event-type">webhook.delivered</span>
+                <span className="dash-event-meta">200 OK • 4 min ago</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="dash-card">
+          <div className="dash-card-header">
+            <h2>Quickstart</h2>
+          </div>
+          <ol className="dash-steps">
+            <li>
+              <strong>Grab your API key</strong>
+              <span> – keys are scoped by workspace and environment.</span>
+            </li>
+            <li>
+              <strong>Paste into your app</strong>
+              <span> – use the snippets from the homepage or docs.</span>
+            </li>
+            <li>
+              <strong>Send an event</strong>
+              <span> – for example, <code>user.signup</code> when a new user joins.</span>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ===== FOOTER ===== */
 
 function Footer() {
   return (
