@@ -87,13 +87,23 @@ main.page {
 /* ========= NAVBAR ========= */
 
 .nav {
-  margin: 0 auto;
-  padding: 18px var(--page-padding) 0;
+  margin: 16px auto 0;
   max-width: var(--page-max-width);
+  padding: 10px var(--page-padding);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 18px;
+
+  /* NEW: make header stand out */
+  background:
+    radial-gradient(circle at 0 0, rgba(56, 189, 248, 0.16), transparent 60%),
+    radial-gradient(circle at 100% 0, rgba(129, 140, 248, 0.18), transparent 60%),
+    rgba(3, 7, 18, 0.96);
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.9);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(18px);
 }
 
 .nav-left {
@@ -750,7 +760,7 @@ main.page {
 /* ========= DASHBOARD LAYOUT ========= */
 
 .dash {
-  padding: 32px 0 40px; /* no horizontal padding - use page container */
+  padding: 32px 0 40px; /* no horizontal padding - uses page container */
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
   gap: 24px;
@@ -1224,4 +1234,3 @@ main.page {
     align-items: flex-start;
   }
 }
-
