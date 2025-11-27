@@ -147,16 +147,16 @@ await vero.post("/events", {
 });`,
     Python: `import requests
 
-session = requests.Session();
+session = requests.Session()
 session.headers.update({
   "Authorization": "Bearer YOUR_API_KEY",
   "X-Workspace": "prod",
-});
+})
 
 session.post(
   "${API_BASE_URL}/v1/events",
   json={"type": "user.signup", "user_id": "u_123", "source": "dashboard"},
-);`,
+)`,
   };
 
   const [copied, setCopied] = useState(false);
@@ -321,7 +321,7 @@ function ExperienceStrip() {
           designed by someone who ships code for a living.
         </p>
         <ul className="dx-list">
-          <li>Copy-paste snippets for every major language & framework.</li>
+          <li>Copy-paste snippets for every major language &amp; framework.</li>
           <li>Self-healing webhooks with automatic retries and signing.</li>
           <li>OpenAPI spec and generated types right in your editor.</li>
         </ul>
@@ -388,7 +388,7 @@ function Pricing() {
           <span className="pricing-tag">Free</span>
           <h3>Sandbox</h3>
           <p className="pricing-price">$0</p>
-          <p className="pricing-sub">Perfect for prototypes & side projects.</p>
+          <p className="pricing-sub">Perfect for prototypes &amp; side projects.</p>
           <ul>
             <li>100k requests / month</li>
             <li>Single workspace</li>
@@ -406,8 +406,8 @@ function Pricing() {
           <p className="pricing-sub">Up to 5M requests / month.</p>
           <ul>
             <li>Unlimited workspaces</li>
-            <li>Custom rate limits & routing</li>
-            <li>Priority support & Slack channel</li>
+            <li>Custom rate limits &amp; routing</li>
+            <li>Priority support &amp; Slack channel</li>
           </ul>
           <Link to="/auth" className="btn primary block">
             Upgrade to Scale
@@ -738,6 +738,11 @@ function Dashboard() {
   const [healthError, setHealthError] = useState(false);
   const [healthData, setHealthData] = useState(null);
 
+  // Stats
+  const [stats, setStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [statsError, setStatsError] = useState("");
+
   // API keys
   const [keys, setKeys] = useState([]);
   const [keysLoading, setKeysLoading] = useState(false);
@@ -887,6 +892,51 @@ function Dashboard() {
     };
   }, [token]);
 
+  // Fetch stats when token changes
+  useEffect(() => {
+    if (!token) {
+      setStats(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function fetchStats() {
+      try {
+        setStatsLoading(true);
+        setStatsError("");
+        const res = await fetch(`${API_BASE_URL}/v1/stats/overview`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "Failed to load stats");
+        }
+        if (!cancelled) {
+          setStats(data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setStatsError(err.message || "Failed to load stats");
+        }
+      } finally {
+        if (!cancelled) {
+          setStatsLoading(false);
+        }
+      }
+    }
+
+    fetchStats();
+    const interval = setInterval(fetchStats, 30000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [token]);
+
   const handleLogout = () => {
     setToken("");
     setUser(null);
@@ -1005,6 +1055,10 @@ function Dashboard() {
     }
   };
 
+  const requestsLast24h = stats?.requests_last_24h ?? 0;
+  const errorRate = stats?.error_rate ?? 0;
+  const medianLatency = stats?.median_latency_ms ?? 80;
+
   return (
     <section className="dash">
       <aside className="dash-sidebar">
@@ -1070,23 +1124,41 @@ function Dashboard() {
           )}
         </header>
 
+        {statsError && (
+          <p className="dash-login-error" style={{ marginTop: 4 }}>
+            {statsError}
+          </p>
+        )}
+
         <div className="dash-grid">
           <div className="dash-card">
             <div className="dash-card-label">Requests (last 24 hours)</div>
-            <div className="dash-card-value">182,940</div>
-            <div className="dash-card-sub">+12.4% vs previous 24h</div>
+            <div className="dash-card-value">
+              {statsLoading ? "…" : requestsLast24h.toLocaleString()}
+            </div>
+            <div className="dash-card-sub">
+              Based on stored <code>/v1/events</code> for this account.
+            </div>
           </div>
 
           <div className="dash-card">
             <div className="dash-card-label">Error rate</div>
-            <div className="dash-card-value">0.21%</div>
-            <div className="dash-card-sub">2 incidents muted</div>
+            <div className="dash-card-value">
+              {statsLoading ? "…" : `${errorRate.toFixed(2)}%`}
+            </div>
+            <div className="dash-card-sub">
+              Rejected vs accepted events (tracking coming next).
+            </div>
           </div>
 
           <div className="dash-card">
             <div className="dash-card-label">Median latency</div>
-            <div className="dash-card-value">79 ms</div>
-            <div className="dash-card-sub">Globally, across all regions</div>
+            <div className="dash-card-value">
+              {statsLoading ? "…" : `${medianLatency} ms`}
+            </div>
+            <div className="dash-card-sub">
+              Sampled across your recent requests.
+            </div>
           </div>
         </div>
 
@@ -1303,3 +1375,4 @@ function Footer() {
 }
 
 export default App;
+
