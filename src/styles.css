@@ -60,7 +60,7 @@ button {
   min-height: 100vh;
   position: relative;
   color: var(--text-main);
-  background: radial-gradient(circle at top left, #1f2937 0, #020617 45%, #000);
+  background: radial-gradient(circle at top, #020617 0, #020617 40%, #000 100%);
   overflow-x: hidden;
 }
 
@@ -82,6 +82,20 @@ button {
   max-width: 1200px;
   margin: 0 auto;
   padding: 104px 24px 80px;
+}
+
+/* soft glow behind main content */
+.page::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 420px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 0, rgba(56, 189, 248, 0.16), transparent 60%),
+    radial-gradient(circle at 80% 0, rgba(79, 70, 229, 0.22), transparent 65%);
+  opacity: 0.9;
+  z-index: -1;
 }
 
 
@@ -161,14 +175,36 @@ button {
   color: rgba(156, 163, 175, 0.95);
 }
 
+/* underline animation for nav links */
 .nav-links a {
+  position: relative;
   padding: 6px 0;
-  border-bottom: 1px solid transparent;
+  border-bottom: none;
+}
+
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(to right, #6366f1, #22c1c3);
+  transform-origin: center;
+  transform: scaleX(0);
+  opacity: 0;
+  transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+.nav-links a:hover::after,
+.nav-links a[aria-current="page"]::after {
+  transform: scaleX(1);
+  opacity: 1;
 }
 
 .nav-links a:hover {
   color: #f9fafb;
-  border-color: rgba(148, 163, 184, 0.4);
 }
 
 .nav-actions {
@@ -237,11 +273,30 @@ button {
   width: 100%;
 }
 
+/* subtle glow for main CTAs (nav + hero) */
+@keyframes ctaGlow {
+  0% {
+    box-shadow: 0 14px 34px rgba(79, 70, 229, 0.55);
+  }
+  50% {
+    box-shadow: 0 18px 40px rgba(79, 70, 229, 0.75);
+  }
+  100% {
+    box-shadow: 0 14px 34px rgba(79, 70, 229, 0.55);
+  }
+}
+
+.nav-actions .btn.primary,
+.hero-actions .btn.primary {
+  animation: ctaGlow 3.5s ease-in-out infinite;
+}
+
 
 /* ========= HERO ========= */
 
 .hero {
   margin-top: 18px;
+  margin-bottom: 40px;
   min-height: 420px;
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
@@ -279,9 +334,9 @@ button {
 }
 
 .hero h1 {
-  font-size: clamp(2.4rem, 3.4vw, 3.2rem);
-  line-height: 1.1;
-  letter-spacing: -0.04em;
+  font-size: clamp(2.6rem, 3.7vw, 3.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.045em;
   margin: 0 0 16px;
 }
 
@@ -303,6 +358,7 @@ button {
   color: rgba(148, 163, 184, 0.9);
 }
 
+/* kept in case reused later, currently not used */
 .hero-status {
   margin-top: 8px;
   display: flex;
@@ -326,7 +382,6 @@ button {
   font-size: 11px;
   color: rgba(148, 163, 184, 0.95);
 }
-
 
 
 /* ========= HERO DASHBOARD PREVIEW ========= */
@@ -639,13 +694,14 @@ button {
 
 .section-heading {
   margin-top: 56px;
-  margin-bottom: 18px;
+  margin-bottom: 22px;
   max-width: 560px;
 }
 
 .section-heading h2 {
   margin: 0 0 6px;
   font-size: 22px;
+  letter-spacing: -0.02em;
 }
 
 .section-heading p {
@@ -655,7 +711,7 @@ button {
 }
 
 .features {
-  margin-top: 8px;
+  margin-top: 40px;
 }
 
 .features-grid {
@@ -672,9 +728,22 @@ button {
   padding: 14px 14px 16px;
 }
 
+/* upgraded feature icon style */
 .feature-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 18px;
-  margin-bottom: 6px;
+  background: radial-gradient(
+    circle at 30% 20%,
+    rgba(59, 130, 246, 0.3),
+    transparent 70%
+  );
+  border: 1px solid rgba(59, 130, 246, 0.6);
+  margin-bottom: 8px;
 }
 
 .feature-card h3 {
@@ -692,7 +761,7 @@ button {
 /* ========= DX STRIP ========= */
 
 .dx-strip {
-  margin-top: 52px;
+  margin-top: 40px;
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   gap: 28px;
@@ -710,11 +779,31 @@ button {
   color: rgba(148, 163, 184, 0.95);
 }
 
+/* branded bullets */
 .dx-list {
-  padding-left: 18px;
+  list-style: none;
+  padding-left: 0;
   margin: 8px 0 0;
   color: rgba(148, 163, 184, 0.95);
   font-size: 13px;
+}
+
+.dx-list li {
+  position: relative;
+  padding-left: 16px;
+  margin-bottom: 4px;
+}
+
+.dx-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(129, 140, 248, 0.9);
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 1);
 }
 
 .dx-right {
@@ -1435,7 +1524,19 @@ pre.code-body code {
   color: #e5e7eb;
 }
 
-/* ========= CARD HOVERS ========= */
+
+/* ========= CARD SYSTEM / HOVERS ========= */
+
+.dash-preview,
+.endpoint-card,
+.feature-card,
+.pricing-card,
+.logs-card,
+.dash-card,
+.docs-article,
+.auth-card {
+  border-radius: 18px;
+}
 
 .endpoint-card,
 .feature-card,
@@ -1454,6 +1555,41 @@ pre.code-body code {
 }
 
 
+/* ========= ANIMATIONS ========= */
+
+@keyframes fadeUpSoft {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes statusPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+  }
+}
+
+.dash-preview,
+.endpoint-gallery-inner,
+.logs-card {
+  animation: fadeUpSoft 0.5s ease-out;
+}
+
+.hero-pill .pill-dot {
+  animation: statusPulse 3s ease-out infinite;
+}
+
 
 /* ========= RESPONSIVE ========= */
 
@@ -1467,15 +1603,17 @@ pre.code-body code {
   }
 
   .page {
-    padding: 96px 18px 64px;
+    padding: 92px 16px 56px;
   }
 
   .hero {
     grid-template-columns: minmax(0, 1fr);
+    margin-bottom: 32px;
   }
 
   .hero-right {
-    justify-content: flex-start;
+    justify-content: center;
+    margin-top: 16px;
   }
 
   .dash-preview {
@@ -1523,6 +1661,11 @@ pre.code-body code {
 }
 
 @media (max-width: 720px) {
+  .hero-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .trust-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
