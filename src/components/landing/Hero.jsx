@@ -69,8 +69,7 @@ function Hero() {
         <p className="hero-pill" id="status">
           <span className="pill-dot" />
           <span>
-            New • API utilities for builders &amp; bot devs • All systems
-            operational • 30d uptime: 99.98%
+            All systems operational • Uptime: 99.98%
           </span>
         </p>
 
