@@ -720,7 +720,7 @@ function AuthPage() {
   );
 }
 
-/* ========= DOCS PAGE ========= */
+/* ========= DOCS PAGE – GITBOOK STYLE ========= */
 
 function DocsPage() {
   const baseUrl = `${API_BASE_URL}/v1`;
@@ -756,164 +756,323 @@ await vero.post("/events", {
   "error": "Rate limit exceeded for environment 'prod'"
 }`;
 
-  return (
-    <section className="auth-page">
-      <div className="auth-inner">
-        <div className="auth-copy">
-          <h1>VeroAPI Docs</h1>
-          <p>
-            Use VeroAPI as the event + webhook layer for your product. These
-            docs cover everything you need to send your first event in under 2
-            minutes.
+  const [activeId, setActiveId] = useState("getting-started");
+
+  const sections = {
+    "getting-started": {
+      title: "Getting started",
+      tagline: "Create a workspace, grab an API key, and send your first event.",
+      render: () => (
+        <>
+          <p className="docs-section-description">
+            VeroAPI gives you a single HTTPS endpoint for all of your product
+            events. You can plug it into your backend, frontend, Discord bot, or
+            any other service that speaks HTTP.
           </p>
-          <ul className="auth-bullets">
-            <li>Step 1 – Create an account &amp; workspace.</li>
-            <li>Step 2 – Create an API key from the dashboard.</li>
-            <li>Step 3 – Send events to <code>/v1/events</code>.</li>
+          <ol className="docs-list">
+            <li>
+              <strong>Create an account</strong> – click <em>Get API key</em>{" "}
+              on the homepage and sign up.
+            </li>
+            <li>
+              <strong>Name your workspace</strong> – this usually maps 1:1 to
+              your product or tenant.
+            </li>
+            <li>
+              <strong>Create an API key</strong> from the{" "}
+              <strong>Overview → API keys</strong> section of the dashboard.
+            </li>
+            <li>
+              <strong>Paste the key</strong> into your app as a secret
+              (environment variable).
+            </li>
+            <li>
+              <strong>Send an event</strong> to <code>POST /events</code>.
+            </li>
+          </ol>
+
+          <div className="docs-keyline">Base URL</div>
+          <pre className="code-body">
+            <code>{baseUrl}</code>
+          </pre>
+
+          <p className="docs-note">
+            All requests must use HTTPS. Your deployment will usually live on
+            your own Render or custom domain; update the base URL accordingly.
+          </p>
+        </>
+      ),
+    },
+    auth: {
+      title: "Authentication",
+      tagline: "Every request is authenticated with a Bearer API key.",
+      render: () => (
+        <>
+          <p className="docs-section-description">
+            VeroAPI uses simple Bearer tokens. Keys are created in the dashboard
+            and sent with each request using the{" "}
+            <code>Authorization</code> header.
+          </p>
+
+          <div className="docs-keyline">Authorization header</div>
+          <pre className="code-body">
+            <code>{`Authorization: Bearer vero_live_xxx`}</code>
+          </pre>
+
+          <ul className="docs-list">
+            <li>Keys are tied to your account and workspace.</li>
+            <li>
+              Prefixes (e.g. <code>vero_live</code>) help you quickly identify
+              keys without exposing the full secret.
+            </li>
+            <li>
+              You can revoke keys instantly from the dashboard if they leak.
+            </li>
           </ul>
-        </div>
 
-        <div className="auth-card dash-card">
-          <div className="dash-card-header">
-            <h2>1. Base URL & authentication</h2>
-            <span className="dash-tag soft">REST v1</span>
-          </div>
+          <p className="docs-note">
+            Never hardcode keys in your frontend. Store them in your backend or
+            secret manager and let your server talk to VeroAPI.
+          </p>
+        </>
+      ),
+    },
+    environments: {
+      title: "Environments & rate limits",
+      tagline: "Keep prod safe while you experiment in staging or dev.",
+      render: () => (
+        <>
+          <p className="docs-section-description">
+            Environments are lightweight tags you send in the{" "}
+            <code>X-Workspace</code> header. They let you isolate traffic and
+            quotas without managing separate projects.
+          </p>
 
-          <div className="dash-login-form">
-            <div className="dash-input-row">
-              <label>Base URL</label>
-              <p className="dash-login-helper">
-                All requests are made over HTTPS. For your deployment:
-              </p>
-              <pre className="code-body">
-                <code>{baseUrl}</code>
-              </pre>
-            </div>
-
-            <div className="dash-input-row">
-              <label>Authentication</label>
-              <p className="dash-login-helper">
-                Create an API key from the dashboard (
-                <strong>Overview → API keys</strong>), then send it in the{" "}
-                <code>Authorization</code> header:
-              </p>
-              <pre className="code-body">
-                <code>{`Authorization: Bearer vero_live_xxx`}</code>
-              </pre>
-              <p className="dash-login-hint">
-                Keys are scoped to your account and workspace. The secret value
-                is shown only once—store it in your secret manager.
-              </p>
-            </div>
-
-            <hr style={{ borderColor: "rgba(148,163,184,0.2)", margin: "16px 0" }} />
-
-            <div className="dash-input-row">
-              <label>Environments (workspaces)</label>
-              <p className="dash-login-helper">
-                Environments are lightweight tags attached via{" "}
-                <code>X-Workspace</code>. Common examples:
-              </p>
-              <pre className="code-body">
-                <code>{`X-Workspace: prod
+          <div className="docs-keyline">Environment header</div>
+          <pre className="code-body">
+            <code>{`X-Workspace: prod
 X-Workspace: staging
 X-Workspace: dev`}</code>
-              </pre>
-              <p className="dash-login-hint">
-                Rate limits are applied <strong>per environment</strong>, so you
-                can test in <code>staging</code> without burning through{" "}
-                <code>prod</code> quota.
-              </p>
-            </div>
+          </pre>
 
-            <hr style={{ borderColor: "rgba(148,163,184,0.2)", margin: "16px 0" }} />
+          <p className="docs-section-description">
+            On the free tier, each environment gets:
+          </p>
+          <ul className="docs-list">
+            <li>100 requests / minute</li>
+            <li>100,000 requests / day</li>
+          </ul>
 
-            <div className="dash-input-row">
-              <label>Send your first event</label>
-              <p className="dash-login-helper">
-                Fire a <code>user.signup</code> event and you’ll see it appear
-                in the <strong>Events</strong> tab of the dashboard:
-              </p>
-              <pre className="code-body">
-                <code>{curlExample}</code>
-              </pre>
-            </div>
+          <p className="docs-note">
+            Rate limits are evaluated <strong>per environment</strong>. If{" "}
+            <code>staging</code> hits its limit, <code>prod</code> is unaffected.
+          </p>
+        </>
+      ),
+    },
+    "events-api": {
+      title: "Events API",
+      tagline: "Send product events to a single endpoint: POST /events.",
+      render: () => (
+        <>
+          <p className="docs-section-description">
+            Use the Events API to record anything meaningful that happens in
+            your product: signups, logins, upgrades, cancellations, or custom
+            events.
+          </p>
 
-            <div className="dash-input-row">
-              <label>Node.js example</label>
-              <pre className="code-body">
-                <code>{nodeExample}</code>
-              </pre>
-            </div>
+          <div className="docs-keyline">Endpoint</div>
+          <pre className="code-body">
+            <code>{`POST ${baseUrl}/events`}</code>
+          </pre>
 
-            <hr style={{ borderColor: "rgba(148,163,184,0.2)", margin: "16px 0" }} />
+          <div className="docs-keyline">Request body</div>
+          <pre className="code-body">
+            <code>{`{
+  "type": "user.signup",
+  "user_id": "u_123",
+  "source": "web-app",
+  "environment": "prod",      // optional, falls back to X-Workspace header
+  "meta": {
+    "plan": "pro",
+    "referrer": "discord"
+  }
+}`}</code>
+          </pre>
 
-            <div className="dash-input-row">
-              <label>Rate limits</label>
-              <p className="dash-login-helper">
-                On the free tier, each environment gets a generous default:
-              </p>
-              <ul className="auth-bullets" style={{ marginTop: 4 }}>
-                <li>100 requests / minute</li>
-                <li>100,000 requests / day</li>
-              </ul>
-              <p className="dash-login-hint">
-                If you exceed these, you’ll receive <code>429</code> responses.
-                You can see usage per environment in{" "}
-                <strong>Usage &amp; limits</strong> in the dashboard.
-              </p>
-            </div>
+          <p className="docs-section-description">
+            At minimum, you should send <code>type</code> and either{" "}
+            <code>user_id</code> or <code>anonymous_id</code>. Everything else is
+            optional and can be used for segmentation later.
+          </p>
 
-            <hr style={{ borderColor: "rgba(148,163,184,0.2)", margin: "16px 0" }} />
+          <div className="docs-keyline">cURL example</div>
+          <pre className="code-body">
+            <code>{curlExample}</code>
+          </pre>
 
-            <div className="dash-input-row">
-              <label>Errors</label>
-              <p className="dash-login-helper">
-                Errors are simple and predictable. Every error has{" "}
-                <code>ok: false</code> and a human-readable message:
-              </p>
-              <pre className="code-body">
-                <code>{errorExample}</code>
-              </pre>
-              <p className="dash-login-hint">
-                You can safely bubble this up to logs or your own monitoring
-                system. For user-facing messages, map them to your own copy.
-              </p>
-            </div>
+          <div className="docs-keyline">Node.js example</div>
+          <pre className="code-body">
+            <code>{nodeExample}</code>
+          </pre>
+        </>
+      ),
+    },
+    webhooks: {
+      title: "Webhooks",
+      tagline: "Stream events from VeroAPI into your own services.",
+      render: () => (
+        <>
+          <p className="docs-section-description">
+            Webhooks let you react to events in real time—no polling required.
+            Configure endpoints in the dashboard, then VeroAPI will deliver
+            events whenever they occur.
+          </p>
 
-            <hr style={{ borderColor: "rgba(148,163,184,0.2)", margin: "16px 0" }} />
-
-            <div className="dash-input-row">
-              <label>Webhooks (high level)</label>
-              <p className="dash-login-helper">
-                When you enable webhooks in the dashboard, events are delivered
-                to your HTTPS endpoint with a signed payload:
-              </p>
-              <pre className="code-body">
-                <code>{`POST https://your-service.com/webhooks/vero
+          <div className="docs-keyline">Delivery format</div>
+          <pre className="code-body">
+            <code>{`POST https://your-service.com/webhooks/vero
 Content-Type: application/json
 X-VeroAPI-Signature: t=TIMESTAMP,v1=HMAC_HEX`}</code>
-              </pre>
-              <p className="dash-login-hint">
-                Use the secret shown in your webhook settings to validate the
-                HMAC and make sure the request really came from VeroAPI. Retries
-                and delivery logs are visible in the <strong>Webhooks</strong>{" "}
-                tab.
-              </p>
-            </div>
+          </pre>
 
-            <div className="dash-input-row">
-              <label>Where to go next</label>
-              <p className="dash-login-helper">
-                Once you have events flowing, you can:
-              </p>
-              <ul className="auth-bullets" style={{ marginTop: 4 }}>
-                <li>Wire your product events into internal tooling via webhooks.</li>
-                <li>Use the <strong>Events</strong> tab to debug live traffic.</li>
-                <li>Use <strong>Usage &amp; limits</strong> to stay ahead of bursts.</li>
+          <p className="docs-section-description">
+            The JSON payload contains the original event plus metadata VeroAPI
+            adds for you (ID, timestamps, environment, and retries).
+          </p>
+
+          <div className="docs-keyline">Verifying signatures</div>
+          <p className="docs-section-description">
+            Each webhook endpoint has a signing secret shown once in the
+            dashboard. Use it to compute an HMAC and compare it to the{" "}
+            <code>X-VeroAPI-Signature</code> header.
+          </p>
+
+          <p className="docs-note">
+            If your endpoint is down or slow, VeroAPI automatically retries
+            using an exponential backoff strategy. You can inspect delivery
+            attempts in the dashboard.
+          </p>
+        </>
+      ),
+    },
+    errors: {
+      title: "Errors",
+      tagline: "Consistent JSON errors you can rely on in logs and tooling.",
+      render: () => (
+        <>
+          <p className="docs-section-description">
+            All non-2xx responses from VeroAPI follow the same shape. This makes
+            them easy to log, alert on, and map to user-facing messages.
+          </p>
+
+          <div className="docs-keyline">Error format</div>
+          <pre className="code-body">
+            <code>{errorExample}</code>
+          </pre>
+
+          <p className="docs-section-description">Common error cases:</p>
+          <ul className="docs-list">
+            <li>
+              <code>401 Unauthorized</code> – missing or invalid API key.
+            </li>
+            <li>
+              <code>403 Forbidden</code> – key exists but cannot access this
+              workspace.
+            </li>
+            <li>
+              <code>422 Unprocessable Entity</code> – malformed event payload.
+            </li>
+            <li>
+              <code>429 Too Many Requests</code> – environment rate limit hit.
+            </li>
+          </ul>
+
+          <p className="docs-note">
+            For user-facing copy, you can map these to friendlier messages while
+            keeping the raw error for logs and observability.
+          </p>
+        </>
+      ),
+    },
+  };
+
+  const navGroups = [
+    {
+      heading: "Introduction",
+      items: [
+        { id: "getting-started", label: "Getting started" },
+      ],
+    },
+    {
+      heading: "Core concepts",
+      items: [
+        { id: "auth", label: "Authentication" },
+        { id: "environments", label: "Environments & limits" },
+      ],
+    },
+    {
+      heading: "API reference",
+      items: [
+        { id: "events-api", label: "Events API" },
+        { id: "webhooks", label: "Webhooks" },
+        { id: "errors", label: "Errors" },
+      ],
+    },
+  ];
+
+  const activeSection = sections[activeId];
+
+  return (
+    <section className="docs">
+      <div className="docs-shell">
+        <aside className="docs-sidebar">
+          <div className="docs-sidebar-title">VeroAPI docs</div>
+          {navGroups.map((group) => (
+            <div className="docs-sidebar-group" key={group.heading}>
+              <div className="docs-sidebar-heading">{group.heading}</div>
+              <ul className="docs-sidebar-list">
+                {group.items.map((item) => (
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      className={`docs-sidebar-link ${
+                        activeId === item.id ? "docs-sidebar-link-active" : ""
+                      }`}
+                      onClick={() => setActiveId(item.id)}
+                    >
+                      <span>{item.label}</span>
+                    </button>
+                  </li>
+                ))}
               </ul>
             </div>
+          ))}
+        </aside>
+
+        <div className="docs-main">
+          <div className="docs-main-header">
+            <div>
+              <div className="docs-main-eyebrow">Documentation</div>
+              <h1 className="docs-main-title">{activeSection.title}</h1>
+              <p className="docs-main-subtitle">{activeSection.tagline}</p>
+            </div>
+            <div className="docs-search">
+              <input
+                className="docs-search-input"
+                placeholder="Search (coming soon)…"
+                disabled
+              />
+            </div>
           </div>
+
+          <article className="docs-article">
+            <h2 className="docs-section-title">{activeSection.title}</h2>
+            <p className="docs-section-tagline">
+              {activeSection.tagline}
+            </p>
+            {activeSection.render()}
+          </article>
         </div>
       </div>
     </section>
@@ -921,8 +1080,6 @@ X-VeroAPI-Signature: t=TIMESTAMP,v1=HMAC_HEX`}</code>
 }
 
 /* ========= DASHBOARD ========= */
-
-// (Dashboard component unchanged from previous version)
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -1982,7 +2139,6 @@ function Dashboard() {
                 <span>User</span>
                 <span>Source</span>
                 <span>Environment</span>
-                <span>When</span>
               </div>
 
               {eventsLoading ? (
@@ -1991,12 +2147,10 @@ function Dashboard() {
                   <span>—</span>
                   <span>—</span>
                   <span>—</span>
-                  <span>—</span>
                 </div>
               ) : eventsList.length === 0 ? (
                 <div className="dash-table-row">
                   <span>No events yet</span>
-                  <span>—</span>
                   <span>—</span>
                   <span>—</span>
                   <span>—</span>
@@ -2008,7 +2162,6 @@ function Dashboard() {
                     <span>{ev.user_id || "—"}</span>
                     <span>{ev.source || "—"}</span>
                     <span>{ev.environment}</span>
-                    <span>{formatTime(ev.created_at)}</span>
                   </div>
                 ))
               )}
