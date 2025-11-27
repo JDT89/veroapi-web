@@ -76,9 +76,9 @@ function EndpointGallery() {
         <div className="endpoint-gallery-copy">
           <h2>Random endpoints that save you from glue code.</h2>
           <p>
-            Use VeroAPI for the boring but critical pieces: string tools, bot helpers,
-            and fun utilities that fit perfectly into Discord bots, games, and small
-            SaaS projects.
+            Use VeroAPI for the boring but critical pieces: string tools, bot
+            helpers, and fun utilities that fit perfectly into Discord bots,
+            games, and small SaaS projects.
           </p>
 
           <div className="endpoint-gallery-tabs">
@@ -115,3 +115,4 @@ function EndpointGallery() {
 }
 
 export default EndpointGallery;
+
