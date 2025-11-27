@@ -119,7 +119,8 @@ function CodePanel() {
   const tabs = ["cURL", "Node.js", "Python"];
   const [active, setActive] = useState("cURL");
 
-  const snippets: Record<string, string> = {
+  // plain JS object – no TypeScript types here
+  const snippets = {
     cURL: `curl ${API_BASE_URL}/v1/events \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "X-Workspace: prod" \\
