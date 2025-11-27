@@ -3,7 +3,6 @@ import { Routes, Route, Link } from "react-router-dom";
 import "./styles.css";
 
 // Set this to your real Render API URL or custom domain
-// e.g. "https://veroapi-api.onrender.com" or "https://api.veroapi.com"
 const API_BASE_URL = "https://veroapi-api.onrender.com";
 
 function App() {
@@ -11,7 +10,6 @@ function App() {
     <div className="app-root">
       <div className="halo-bg" />
       <Navbar />
-      {/* NOTE: page container class here */}
       <main className="page">
         <Routes>
           <Route path="/" element={<LandingLayout />} />
@@ -27,31 +25,33 @@ function App() {
 
 function Navbar() {
   return (
-    <header className="nav">
-      <div className="nav-left">
-        <Link to="/" className="nav-brand-link">
-          <div className="nav-logo">
-            <span className="nav-logo-orbit" />
-            <span className="nav-logo-dot" />
-          </div>
-          <span className="nav-brand">VeroAPI</span>
-        </Link>
-      </div>
+    <header className="nav-shell">
+      <div className="nav-inner">
+        <div className="nav-left">
+          <Link to="/" className="nav-brand-link">
+            <div className="nav-logo">
+              <span className="nav-logo-orbit" />
+              <span className="nav-logo-dot" />
+            </div>
+            <span className="nav-brand">VeroAPI</span>
+          </Link>
+        </div>
 
-      <nav className="nav-links">
-        <a href="#features">Features</a>
-        <a href="#dx">DX</a>
-        <a href="#pricing">Pricing</a>
-        <a href="#faq">FAQ</a>
-      </nav>
+        <nav className="nav-links">
+          <a href="#features">Features</a>
+          <a href="#dx">DX</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#faq">FAQ</a>
+        </nav>
 
-      <div className="nav-actions">
-        <Link to="/dashboard" className="btn ghost nav-btn-link">
-          Sign in
-        </Link>
-        <Link to="/dashboard" className="btn primary nav-btn-link">
-          Get API key
-        </Link>
+        <div className="nav-actions">
+          <Link to="/dashboard" className="btn ghost nav-btn-link">
+            Sign in
+          </Link>
+          <Link to="/dashboard" className="btn primary nav-btn-link">
+            Get API key
+          </Link>
+        </div>
       </div>
     </header>
   );
@@ -1019,3 +1019,4 @@ function Footer() {
 }
 
 export default App;
+
