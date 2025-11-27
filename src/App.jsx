@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, useNavigate } from "react-router-dom";
 import "./styles.css";
 
 // Set this to your real Render API URL or custom domain
-// e.g. "https://veroapi-api.onrender.com" or "https://api.veroapi.com"
 const API_BASE_URL = "https://veroapi-api.onrender.com";
 
 function App() {
@@ -14,6 +13,7 @@ function App() {
       <main className="page">
         <Routes>
           <Route path="/" element={<LandingLayout />} />
+          <Route path="/auth" element={<AuthPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </main>
@@ -46,10 +46,10 @@ function Navbar() {
         </nav>
 
         <div className="nav-actions">
-          <Link to="/dashboard" className="btn ghost nav-btn-link">
+          <Link to="/auth" className="btn ghost nav-btn-link">
             Sign in
           </Link>
-          <Link to="/dashboard" className="btn primary nav-btn-link">
+          <Link to="/auth" className="btn primary nav-btn-link">
             Get API key
           </Link>
         </div>
@@ -95,7 +95,7 @@ function Hero() {
 
         <div className="hero-actions">
           <Link
-            to="/dashboard"
+            to="/auth"
             className="btn primary hero-primary nav-btn-link"
           >
             Start free (100k req / mo)
@@ -395,7 +395,9 @@ function Pricing() {
             <li>Single workspace</li>
             <li>Basic email support</li>
           </ul>
-          <button className="btn outline block">Start in sandbox</button>
+          <Link to="/auth" className="btn outline block">
+            Start in sandbox
+          </Link>
         </div>
 
         <div className="pricing-card pricing-featured">
@@ -408,7 +410,9 @@ function Pricing() {
             <li>Custom rate limits & routing</li>
             <li>Priority support & Slack channel</li>
           </ul>
-          <button className="btn primary block">Upgrade to Scale</button>
+          <Link to="/auth" className="btn primary block">
+            Upgrade to Scale
+          </Link>
         </div>
 
         <div className="pricing-card">
@@ -488,37 +492,262 @@ function FaqItem({ item, open, onToggle }) {
   );
 }
 
-/* ========= DASHBOARD ========= */
+/* ========= AUTH PAGE ========= */
 
-function Dashboard() {
-  // API health
-  const [healthLoading, setHealthLoading] = useState(true);
-  const [healthError, setHealthError] = useState(false);
-  const [healthData, setHealthData] = useState(null);
+function AuthPage() {
+  const navigate = useNavigate();
+  const [authMode, setAuthMode] = useState("login");
 
-  // Auth state
-  const [token, setToken] = useState(
-    () => window.localStorage.getItem("veroapi_token") || ""
-  );
-  const [user, setUser] = useState(null);
-  const [authMode, setAuthMode] = useState("login"); // "login" | "signup"
-
-  // Login form
+  // login state
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
 
-  // Signup form
+  // signup state
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupConfirm, setSignupConfirm] = useState("");
   const [signupLoading, setSignupLoading] = useState(false);
   const [signupError, setSignupError] = useState("");
 
+  // If already have a token, go straight to dashboard
+  useEffect(() => {
+    const existing = window.localStorage.getItem("veroapi_token");
+    if (existing) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoginLoading(true);
+    setLoginError("");
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/v1/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: loginEmail,
+          password: loginPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Login failed");
+      }
+
+      window.localStorage.setItem("veroapi_token", data.token);
+      setLoginPassword("");
+      navigate("/dashboard");
+    } catch (err) {
+      setLoginError(err.message || "Login failed");
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setSignupLoading(true);
+    setSignupError("");
+
+    try {
+      if (signupPassword !== signupConfirm) {
+        throw new Error("Passwords do not match.");
+      }
+
+      const res = await fetch(`${API_BASE_URL}/v1/auth/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: signupEmail,
+          password: signupPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Signup failed");
+      }
+
+      window.localStorage.setItem("veroapi_token", data.token);
+      setSignupPassword("");
+      setSignupConfirm("");
+      navigate("/dashboard");
+    } catch (err) {
+      setSignupError(err.message || "Signup failed");
+    } finally {
+      setSignupLoading(false);
+    }
+  };
+
+  return (
+    <section className="auth-page">
+      <div className="auth-inner">
+        <div className="auth-copy">
+          <h1>Sign in to VeroAPI</h1>
+          <p>
+            Access your dashboard, API keys, and workspaces. Your account lives
+            in your VeroAPI Postgres database.
+          </p>
+          <ul className="auth-bullets">
+            <li>One account for all environments & workspaces.</li>
+            <li>Tokens stored locally in your browser, not on this UI.</li>
+            <li>Ready to wire into Stripe or your own billing later.</li>
+          </ul>
+        </div>
+
+        <div className="auth-card dash-card">
+          <div className="dash-card-header">
+            <h2>{authMode === "login" ? "Welcome back" : "Create an account"}</h2>
+            <span className="dash-tag soft">VeroAPI dashboard</span>
+          </div>
+
+          <div className="dash-auth-tabs">
+            <button
+              className={`dash-auth-tab ${
+                authMode === "login" ? "active" : ""
+              }`}
+              onClick={() => setAuthMode("login")}
+            >
+              Log in
+            </button>
+            <button
+              className={`dash-auth-tab ${
+                authMode === "signup" ? "active" : ""
+              }`}
+              onClick={() => setAuthMode("signup")}
+            >
+              Sign up
+            </button>
+          </div>
+
+          {authMode === "login" ? (
+            <form className="dash-login-form" onSubmit={handleLogin}>
+              <div className="dash-input-row">
+                <label>Email</label>
+                <input
+                  className="dash-input"
+                  type="email"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="dash-input-row">
+                <label>Password</label>
+                <input
+                  className="dash-input"
+                  type="password"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  required
+                />
+              </div>
+              {loginError && (
+                <p className="dash-login-error">{loginError}</p>
+              )}
+              <button
+                className="btn primary dash-login-btn"
+                type="submit"
+                disabled={loginLoading}
+              >
+                {loginLoading ? "Signing in…" : "Sign in"}
+              </button>
+              <p className="dash-login-hint">
+                Forgot your password? Swap to your own auth provider later—this
+                flow is fully yours.
+              </p>
+            </form>
+          ) : (
+            <form className="dash-login-form" onSubmit={handleSignup}>
+              <div className="dash-input-row">
+                <label>Email</label>
+                <input
+                  className="dash-input"
+                  type="email"
+                  value={signupEmail}
+                  onChange={(e) => setSignupEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="dash-input-row">
+                <label>Password</label>
+                <input
+                  className="dash-input"
+                  type="password"
+                  value={signupPassword}
+                  onChange={(e) => setSignupPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="dash-input-row">
+                <label>Confirm password</label>
+                <input
+                  className="dash-input"
+                  type="password"
+                  value={signupConfirm}
+                  onChange={(e) => setSignupConfirm(e.target.value)}
+                  required
+                />
+              </div>
+              {signupError && (
+                <p className="dash-login-error">{signupError}</p>
+              )}
+              <button
+                className="btn primary dash-login-btn"
+                type="submit"
+                disabled={signupLoading}
+              >
+                {signupLoading ? "Creating account…" : "Create account"}
+              </button>
+              <p className="dash-login-hint">
+                Accounts are stored securely in your VeroAPI Postgres database.
+                Later you can attach workspaces, API keys, and billing.
+              </p>
+            </form>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ========= DASHBOARD ========= */
+
+function Dashboard() {
+  const navigate = useNavigate();
+
+  // API health
+  const [healthLoading, setHealthLoading] = useState(true);
+  const [healthError, setHealthError] = useState(false);
+  const [healthData, setHealthData] = useState(null);
+
+  // Auth state (token + user loaded from API)
+  const [token, setToken] = useState(
+    () => window.localStorage.getItem("veroapi_token") || ""
+  );
+  const [user, setUser] = useState(null);
+
   // Test event
   const [sendingEvent, setSendingEvent] = useState(false);
   const [eventMessage, setEventMessage] = useState(null);
+
+  // Redirect to /auth if there is no token
+  useEffect(() => {
+    if (!token) {
+      navigate("/auth");
+    }
+  }, [token, navigate]);
 
   // Check API health
   useEffect(() => {
@@ -603,82 +832,11 @@ function Dashboard() {
     };
   }, [token]);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoginLoading(true);
-    setLoginError("");
-    try {
-      const res = await fetch(`${API_BASE_URL}/v1/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: loginEmail,
-          password: loginPassword,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Login failed");
-      }
-
-      setToken(data.token);
-      window.localStorage.setItem("veroapi_token", data.token);
-      setUser(data.user);
-      setLoginPassword("");
-    } catch (err) {
-      setLoginError(err.message || "Login failed");
-    } finally {
-      setLoginLoading(false);
-    }
-  };
-
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    setSignupLoading(true);
-    setSignupError("");
-    try {
-      if (signupPassword !== signupConfirm) {
-        throw new Error("Passwords do not match.");
-      }
-
-      const res = await fetch(`${API_BASE_URL}/v1/auth/signup`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: signupEmail,
-          password: signupPassword,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Signup failed");
-      }
-
-      setToken(data.token);
-      window.localStorage.setItem("veroapi_token", data.token);
-      setUser(data.user);
-      setSignupPassword("");
-      setSignupConfirm("");
-      setAuthMode("login");
-    } catch (err) {
-      setSignupError(err.message || "Signup failed");
-    } finally {
-      setSignupLoading(false);
-    }
-  };
-
   const handleLogout = () => {
     setToken("");
     setUser(null);
     window.localStorage.removeItem("veroapi_token");
+    navigate("/auth");
   };
 
   const handleSendTestEvent = async () => {
@@ -777,7 +935,9 @@ function Dashboard() {
               Sign out
             </button>
           ) : (
-            <button className="btn primary">Create API key</button>
+            <button className="btn primary" onClick={() => navigate("/auth")}>
+              Go to sign in
+            </button>
           )}
         </header>
 
@@ -837,7 +997,7 @@ function Dashboard() {
 
           <div className="dash-card">
             <div className="dash-card-header">
-              <h2>{user ? "Signed in" : "Sign in or create an account"}</h2>
+              <h2>Account</h2>
               {user && <span className="dash-tag soft">Demo workspace</span>}
             </div>
 
@@ -853,108 +1013,11 @@ function Dashboard() {
                 </p>
               </div>
             ) : (
-              <>
-                <div className="dash-auth-tabs">
-                  <button
-                    className={`dash-auth-tab ${
-                      authMode === "login" ? "active" : ""
-                    }`}
-                    onClick={() => setAuthMode("login")}
-                  >
-                    Log in
-                  </button>
-                  <button
-                    className={`dash-auth-tab ${
-                      authMode === "signup" ? "active" : ""
-                    }`}
-                    onClick={() => setAuthMode("signup")}
-                  >
-                    Sign up
-                  </button>
-                </div>
-
-                {authMode === "login" ? (
-                  <form className="dash-login-form" onSubmit={handleLogin}>
-                    <div className="dash-input-row">
-                      <label>Email</label>
-                      <input
-                        className="dash-input"
-                        type="email"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="dash-input-row">
-                      <label>Password</label>
-                      <input
-                        className="dash-input"
-                        type="password"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        required
-                      />
-                    </div>
-                    {loginError && (
-                      <p className="dash-login-error">{loginError}</p>
-                    )}
-                    <button
-                      className="btn primary dash-login-btn"
-                      type="submit"
-                      disabled={loginLoading}
-                    >
-                      {loginLoading ? "Signing in…" : "Sign in"}
-                    </button>
-                  </form>
-                ) : (
-                  <form className="dash-login-form" onSubmit={handleSignup}>
-                    <div className="dash-input-row">
-                      <label>Email</label>
-                      <input
-                        className="dash-input"
-                        type="email"
-                        value={signupEmail}
-                        onChange={(e) => setSignupEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="dash-input-row">
-                      <label>Password</label>
-                      <input
-                        className="dash-input"
-                        type="password"
-                        value={signupPassword}
-                        onChange={(e) => setSignupPassword(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="dash-input-row">
-                      <label>Confirm password</label>
-                      <input
-                        className="dash-input"
-                        type="password"
-                        value={signupConfirm}
-                        onChange={(e) => setSignupConfirm(e.target.value)}
-                        required
-                      />
-                    </div>
-                    {signupError && (
-                      <p className="dash-login-error">{signupError}</p>
-                    )}
-                    <button
-                      className="btn primary dash-login-btn"
-                      type="submit"
-                      disabled={signupLoading}
-                    >
-                      {signupLoading ? "Creating account…" : "Create account"}
-                    </button>
-                    <p className="dash-login-hint">
-                      Accounts are stored securely in your VeroAPI Postgres
-                      database.
-                    </p>
-                  </form>
-                )}
-              </>
+              <p className="dash-login-helper">
+                Loading your account… if this takes longer than a few seconds,
+                check that your VeroAPI backend is running and your token is
+                valid.
+              </p>
             )}
           </div>
         </div>
