@@ -1,124 +1,173 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 
 function Navbar() {
-  const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [hasToken, setHasToken] = useState(false);
 
-  const closeMenu = () => setOpen(false);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = window.localStorage.getItem("veroapi_token");
+      setHasToken(!!token);
+    }
+  }, []);
 
-  const handleBrandClick = () => {
-    navigate("/");
-    closeMenu();
-  };
+  const closeMobile = () => setMobileOpen(false);
 
-  const handleAuthClick = () => {
-    navigate("/auth");
-    closeMenu();
-  };
-
-  const handleDashboardClick = () => {
-    navigate("/dashboard");
-    closeMenu();
-  };
+  const linkClass = ({ isActive }) =>
+    isActive ? "nav-link-active" : undefined;
 
   return (
     <>
-      <header className="nav">
+      <nav className="nav">
         <div className="nav-inner">
           <div className="nav-left">
             <button
               className="nav-brand-link"
               type="button"
-              onClick={handleBrandClick}
+              onClick={() => {
+                closeMobile();
+                navigate("/");
+              }}
             >
               <span className="nav-logo">
                 <span className="nav-logo-orbit" />
                 <span className="nav-logo-dot" />
               </span>
-              <span className="nav-brand">VeroAPI</span>
+              <span className="nav-brand">VEROAPI</span>
             </button>
 
             {/* Desktop links */}
-            <nav className="nav-links">
-              <NavLink to="/" end>
+            <div className="nav-links">
+              <NavLink to="/" end className={linkClass}>
                 Overview
               </NavLink>
-              <NavLink to="/docs">Docs</NavLink>
-              <NavLink to="/endpoints">Endpoints</NavLink>
-              <NavLink to="/dashboard">Dashboard</NavLink>
-            </nav>
+              <NavLink to="/docs" className={linkClass}>
+                Docs
+              </NavLink>
+              <NavLink to="/endpoints" className={linkClass}>
+                Endpoints
+              </NavLink>
+              <NavLink to="/dashboard" className={linkClass}>
+                Dashboard
+              </NavLink>
+            </div>
           </div>
 
           {/* Desktop actions */}
           <div className="nav-actions nav-actions-desktop">
-            <button
-              className="btn ghost nav-btn-link"
-              type="button"
-              onClick={handleDashboardClick}
-            >
-              Dashboard
-            </button>
-            <button
-              className="btn primary nav-btn-link"
-              type="button"
-              onClick={handleAuthClick}
-            >
-              Sign in
-            </button>
+            {hasToken ? (
+              <NavLink to="/dashboard" className="nav-btn-link">
+                <button className="btn outline" type="button">
+                  Dashboard
+                </button>
+              </NavLink>
+            ) : (
+              <>
+                <NavLink to="/auth" className="nav-btn-link">
+                  <button className="btn ghost" type="button">
+                    Sign in
+                  </button>
+                </NavLink>
+                <NavLink to="/auth" className="nav-btn-link">
+                  <button className="btn primary" type="button">
+                    Get API key
+                  </button>
+                </NavLink>
+              </>
+            )}
           </div>
 
-          {/* Mobile hamburger */}
+          {/* Mobile toggle */}
           <button
-            className="nav-toggle"
             type="button"
-            aria-label="Toggle navigation"
-            aria-expanded={open ? "true" : "false"}
-            onClick={() => setOpen((prev) => !prev)}
+            className="nav-toggle"
+            aria-label="Toggle navigation menu"
+            aria-expanded={mobileOpen ? "true" : "false"}
+            onClick={() => setMobileOpen((open) => !open)}
           >
-            <span className="nav-toggle-bars">
+            <div className="nav-toggle-bars">
               <span />
               <span />
               <span />
-            </span>
+            </div>
           </button>
         </div>
-      </header>
+      </nav>
 
-      {/* Mobile menu panel */}
-      {open && (
+      {/* Mobile dropdown menu */}
+      {mobileOpen && (
         <div className="nav-mobile">
           <div className="nav-mobile-inner">
-            <nav className="nav-mobile-links">
-              <NavLink to="/" end onClick={closeMenu}>
+            <div className="nav-mobile-links">
+              <NavLink
+                to="/"
+                end
+                onClick={closeMobile}
+                className={linkClass}
+              >
                 Overview
               </NavLink>
-              <NavLink to="/docs" onClick={closeMenu}>
+              <NavLink
+                to="/docs"
+                onClick={closeMobile}
+                className={linkClass}
+              >
                 Docs
               </NavLink>
-              <NavLink to="/endpoints" onClick={closeMenu}>
+              <NavLink
+                to="/endpoints"
+                onClick={closeMobile}
+                className={linkClass}
+              >
                 Endpoints
               </NavLink>
-              <NavLink to="/dashboard" onClick={closeMenu}>
+              <NavLink
+                to="/dashboard"
+                onClick={closeMobile}
+                className={linkClass}
+              >
                 Dashboard
               </NavLink>
-            </nav>
+            </div>
 
             <div className="nav-mobile-actions">
-              <button
-                className="btn outline nav-btn-link"
-                type="button"
-                onClick={handleDashboardClick}
-              >
-                Dashboard
-              </button>
-              <button
-                className="btn primary nav-btn-link"
-                type="button"
-                onClick={handleAuthClick}
-              >
-                Sign in
-              </button>
+              {hasToken ? (
+                <button
+                  type="button"
+                  className="btn outline block"
+                  onClick={() => {
+                    closeMobile();
+                    navigate("/dashboard");
+                  }}
+                >
+                  Dashboard
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="btn outline block"
+                    onClick={() => {
+                      closeMobile();
+                      navigate("/auth");
+                    }}
+                  >
+                    Sign in
+                  </button>
+                  <button
+                    type="button"
+                    className="btn primary block"
+                    onClick={() => {
+                      closeMobile();
+                      navigate("/auth");
+                    }}
+                  >
+                    Get API key
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
