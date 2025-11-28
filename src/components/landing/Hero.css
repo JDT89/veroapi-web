@@ -1,0 +1,224 @@
+.hero-shell {
+  position: relative;
+  border-radius: 24px;
+  padding: 32px 20px 28px;
+  background: radial-gradient(circle at top left, #1e293b, #020617 55%);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.85);
+  color: #e5e7eb;
+  overflow: hidden;
+}
+
+.hero-shell::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.16), transparent 60%),
+    radial-gradient(circle at 100% 0%, rgba(129, 140, 248, 0.2), transparent 60%);
+  opacity: 0.9;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 32px;
+}
+
+/* LEFT */
+
+.hero-left {
+  max-width: 560px;
+}
+
+.hero-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 197, 94, 0.7);
+  background: rgba(22, 163, 74, 0.16);
+  color: #bbf7d0;
+  font-size: 11px;
+  margin-bottom: 14px;
+}
+
+.hero-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.3);
+}
+
+.hero-title {
+  margin: 0 0 14px;
+  font-size: clamp(2.4rem, 3.4vw, 3.1rem);
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  color: #f9fafb;
+}
+
+.hero-sub {
+  margin: 0 0 18px;
+  font-size: 15px;
+  color: rgba(156, 163, 175, 0.96);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.hero-btn-primary {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  border-color: rgba(129, 140, 248, 0.8);
+  color: #f9fafb;
+  padding-inline: 20px;
+  box-shadow: 0 14px 34px rgba(79, 70, 229, 0.6);
+}
+
+.hero-btn-primary:hover {
+  filter: brightness(1.05);
+}
+
+.hero-btn-outline {
+  border-color: rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.8);
+  color: #e5e7eb;
+}
+
+.hero-btn-outline:hover {
+  border-color: rgba(209, 213, 219, 0.9);
+}
+
+.hero-footnote {
+  margin: 4px 0 16px;
+  font-size: 12px;
+  color: rgba(148, 163, 184, 0.95);
+}
+
+/* metrics strip */
+
+.hero-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.hero-metric-card {
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(51, 65, 85, 0.9);
+}
+
+.hero-metric-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.hero-metric-label {
+  font-size: 11px;
+  color: rgba(148, 163, 184, 0.95);
+}
+
+/* RIGHT */
+
+.hero-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.hero-usecase-card {
+  border-radius: 18px;
+  padding: 16px 16px 14px;
+  background: radial-gradient(
+      circle at top left,
+      rgba(56, 189, 248, 0.18),
+      transparent 60%
+    ),
+    rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(51, 65, 85, 0.9);
+  max-width: 360px;
+  width: 100%;
+}
+
+.hero-usecase-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.hero-usecase-pill {
+  align-self: flex-start;
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(129, 140, 248, 0.8);
+  background: rgba(30, 64, 175, 0.35);
+  color: #c7d2fe;
+}
+
+.hero-usecase-eyebrow {
+  font-size: 12px;
+  color: rgba(156, 163, 175, 0.96);
+}
+
+.hero-usecase-list {
+  margin: 0 0 8px;
+  padding-left: 18px;
+  font-size: 13px;
+  color: rgba(209, 213, 219, 0.96);
+}
+
+.hero-usecase-list li + li {
+  margin-top: 4px;
+}
+
+.hero-usecase-footer {
+  margin: 0;
+  font-size: 12px;
+  color: rgba(148, 163, 184, 0.95);
+}
+
+/* MOBILE */
+
+@media (max-width: 960px) {
+  .hero-shell {
+    padding: 24px 18px 24px;
+    border-radius: 18px;
+  }
+
+  .hero-inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-metrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hero-right {
+    justify-content: stretch;
+  }
+
+  .hero-usecase-card {
+    max-width: 100%;
+  }
+}
