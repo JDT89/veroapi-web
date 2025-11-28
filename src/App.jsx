@@ -7,24 +7,25 @@ import Footer from "./components/Footer";
 
 import LandingPage from "./pages/Landing";
 import AuthPage from "./pages/AuthPage";
-import DashboardPage from "./pages/Dashboard";   // 🔹 use DashboardPage here
+import Dashboard from "./pages/Dashboard";
 import DocsPage from "./pages/DocsPage";
 import EndpointsPage from "./pages/Endpoints";
 
 function App() {
   return (
-    <div className="app-root">
-      <div className="halo-bg" />
+    <div className="saas-root">
       <Navbar />
-      <main className="page">
+
+      <main className="saas-page">
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/auth" element={<AuthPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/docs" element={<DocsPage />} />
           <Route path="/endpoints" element={<EndpointsPage />} />
         </Routes>
       </main>
+
       <Footer />
     </div>
   );
