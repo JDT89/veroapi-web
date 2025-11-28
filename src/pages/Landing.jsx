@@ -1,134 +1,97 @@
-// src/pages/Landing.jsx
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import "./Landing.css";
 
-function LandingPage() {
-  const navigate = useNavigate();
-
+function Landing() {
   return (
-    <div>
+    <div className="landing">
       {/* HERO */}
       <section className="hero">
         <div className="hero-left">
           <div className="hero-pill">
-            <span className="pill-dot" />
-            Production-ready APIs for your stack
+            <span className="hero-pill-dot" />
+            <span>New • Random-but-useful API utilities</span>
           </div>
 
-          <h1>APIs for Discord bots, games, and dashboards.</h1>
+          <h1>
+            The dark-mode API layer
+            <br />
+            for bots, games & dashboards.
+          </h1>
 
           <p className="hero-sub">
-            Access high-speed endpoints for Discord bots, games, dashboards, and
-            automation — all with one powerful key.
+            VeroAPI gives you one account-level key and a growing library of
+            “random” endpoints that save you from spinning up yet another
+            micro-service.
           </p>
 
           <div className="hero-actions">
-            <button
-              type="button"
-              className="btn primary"
-              onClick={() => navigate("/auth")}
-            >
-              Get Started
-            </button>
-            <button
-              type="button"
-              className="btn outline"
-              onClick={() => navigate("/docs")}
-            >
-              View Docs
-            </button>
+            <a href="/auth" className="hero-primary-link">
+              <button className="btn primary" type="button">
+                Get started free
+              </button>
+            </a>
+            <a href="/docs">
+              <button className="btn outline" type="button">
+                View docs
+              </button>
+            </a>
           </div>
 
-          <p className="hero-note">
-            1 API key, multiple endpoints — text utilities, XP helpers, rewards,
-            and more.
-          </p>
+          <div className="hero-metadata">
+            <span>100ms median latency</span>
+            <span>20+ endpoints planned</span>
+            <span>Per-account rate limiting</span>
+          </div>
         </div>
 
-        {/* Right-side preview card */}
         <div className="hero-right">
-          <div className="dash-preview">
-            <div className="dash-preview-header">
-              <div>
-                <div className="dash-preview-eyebrow">veroapi account</div>
-                <div className="dash-preview-title">Primary API key</div>
-              </div>
-              <span className="dash-preview-plan-pill">Free • 5,000 req/day</span>
-            </div>
-
-            <div className="dash-preview-status-row">
-              <span className="status-dot status-dot-ok" />
-              API Status: <strong>Online</strong> • 99.99% uptime
-            </div>
-
-            <div className="dash-preview-keycard">
-              <div className="dash-preview-key-top">
-                <span className="dash-preview-key-label">API key</span>
-                <span className="dash-preview-key-pill">Server-side only</span>
-              </div>
-              <div className="dash-preview-key-value">
-                <span className="dash-preview-key-prefix">vero_live_</span>
-                <span className="dash-preview-key-blur">sk_xxxxxxxxxxxxx</span>
-              </div>
-              <div className="dash-preview-key-actions">
-                <span className="dash-preview-chip">Reveal</span>
-                <span className="dash-preview-chip">Copy</span>
-              </div>
-            </div>
-
-            <div className="dash-preview-metrics">
-              <div className="dash-preview-metric">
-                <div className="dash-preview-metric-value">100ms</div>
-                <div className="dash-preview-metric-label">Avg latency</div>
-              </div>
-              <div className="dash-preview-metric">
-                <div className="dash-preview-metric-value">20+</div>
-                <div className="dash-preview-metric-label">Endpoints</div>
-              </div>
-              <div className="dash-preview-metric">
-                <div className="dash-preview-metric-value">99.99%</div>
-                <div className="dash-preview-metric-label">Uptime</div>
-              </div>
-            </div>
-
-            <div className="dash-preview-footer">
-              <span className="dash-preview-footer-pill">
-                POST /v1/text/scramble • POST /v1/xp/award • more coming soon
+          <div className="hero-card">
+            <div className="hero-card-header">
+              <span className="hero-card-pill">cURL example</span>
+              <span className="hero-card-status">
+                <span className="hero-card-dot" />
+                Live
               </span>
             </div>
+
+            <pre className="hero-code">
+{`curl https://api.veroapi.com/v1/text/scramble \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "text": "example",
+    "mode": "hard"
+  }'`}
+            </pre>
+
+            <div className="hero-code-meta">
+              <span>Single key for all endpoints</span>
+              <span>Timeouts & retries handled for you</span>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* STATS STRIP (this fixes the stacked 100ms / 20+ / 99.99% issue) */}
-      <section className="trust-strip">
-        <div className="trust-item">
-          <div className="trust-value">100ms</div>
-          <div className="trust-label">Avg response time</div>
+      {/* STAT STRIP */}
+      <section className="hero-stats">
+        <div className="hero-stat">
+          <div className="hero-stat-value">100ms</div>
+          <div className="hero-stat-label">Avg response time</div>
         </div>
-        <div className="trust-item">
-          <div className="trust-value">20+</div>
-          <div className="trust-label">Endpoints in one key</div>
+        <div className="hero-stat">
+          <div className="hero-stat-value">20+</div>
+          <div className="hero-stat-label">Planned endpoints</div>
         </div>
-        <div className="trust-item">
-          <div className="trust-value">99.99%</div>
-          <div className="trust-label">Measured uptime</div>
-        </div>
-        <div className="trust-item">
-          <div className="trust-value">Global</div>
-          <div className="trust-label">Any region, any stack</div>
+        <div className="hero-stat">
+          <div className="hero-stat-value">99.99%</div>
+          <div className="hero-stat-label">Targeted uptime</div>
         </div>
       </section>
 
-      {/* You can keep your existing sections here or adjust as you like.
-          Just make sure they use the same class names the CSS already styles:
-          - endpoint-gallery
-          - dx-strip
-          - pricing
-          - faq
-      */}
+      {/* You can keep your existing sections (endpoint gallery, features, etc.)
+          below here – we’ll restyle them in the next phase. */}
     </div>
   );
 }
 
-export default LandingPage;
+export default Landing;
