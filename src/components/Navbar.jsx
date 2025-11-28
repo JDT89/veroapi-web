@@ -1,80 +1,58 @@
 import React, { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import "../styles.css";
+import "./Navbar.css";
 
-export default function Navbar() {
+function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <>
-      <header className="saas-nav">
-        <div className="saas-nav-inner">
-          {/* Logo */}
-          <Link to="/" className="saas-brand">
-            <div className="saas-logo-orb">
-              <div className="saas-logo-dot" />
-            </div>
-            <span>VeroAPI</span>
-          </Link>
+    <header className="nav">
+      <div className="nav-inner">
 
-          {/* Desktop Links */}
-          <nav className="saas-links">
-            <NavLink to="/" end>
-              Home
-            </NavLink>
-            <NavLink to="/docs">Docs</NavLink>
-            <NavLink to="/endpoints">Endpoints</NavLink>
-            <NavLink to="/dashboard">Dashboard</NavLink>
-          </nav>
+        {/* BRAND */}
+        <Link to="/" className="nav-left">
+          <div className="nav-logo" />
+          <span className="nav-brand">VeroAPI</span>
+        </Link>
 
-          {/* Desktop Actions */}
-          <div className="saas-actions">
-            <Link to="/docs">
-              <button className="saas-btn ghost">Docs</button>
-            </Link>
-            <Link to="/auth">
-              <button className="saas-btn primary">Sign in</button>
-            </Link>
-          </div>
-
-          {/* Mobile Hamburger */}
-          <button
-            className={`saas-toggle ${open ? "open" : ""}`}
-            onClick={() => setOpen(!open)}
-          >
-            <span />
-            <span />
-            <span />
-          </button>
-        </div>
-      </header>
-
-      {/* Mobile Dropdown */}
-      <div className={`saas-mobile-menu ${open ? "open" : ""}`}>
-        <nav className="saas-mobile-links">
-          <NavLink to="/" onClick={() => setOpen(false)}>
-            Home
-          </NavLink>
-          <NavLink to="/docs" onClick={() => setOpen(false)}>
-            Docs
-          </NavLink>
-          <NavLink to="/endpoints" onClick={() => setOpen(false)}>
-            Endpoints
-          </NavLink>
-          <NavLink to="/dashboard" onClick={() => setOpen(false)}>
-            Dashboard
-          </NavLink>
+        {/* DESKTOP LINKS */}
+        <nav className="nav-links desktop-only">
+          <NavLink to="/" end>Home</NavLink>
+          <NavLink to="/docs">Docs</NavLink>
+          <NavLink to="/endpoints">Endpoints</NavLink>
+          <NavLink to="/dashboard">Dashboard</NavLink>
         </nav>
 
-        <div className="saas-mobile-actions">
-          <Link to="/docs" onClick={() => setOpen(false)}>
-            <button className="saas-btn outline block">Docs</button>
-          </Link>
-          <Link to="/auth" onClick={() => setOpen(false)}>
-            <button className="saas-btn primary block">Sign in</button>
+        {/* AUTH BUTTON */}
+        <div className="nav-actions desktop-only">
+          <Link to="/auth" className="btn primary">Sign In</Link>
+        </div>
+
+        {/* HAMBURGER BUTTON */}
+        <button
+          className={`hamburger ${open ? "open" : ""}`}
+          onClick={() => setOpen(!open)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+      </div>
+
+      {/* MOBILE MENU */}
+      {open && (
+        <div className="mobile-menu">
+          <NavLink onClick={() => setOpen(false)} to="/" end>Home</NavLink>
+          <NavLink onClick={() => setOpen(false)} to="/docs">Docs</NavLink>
+          <NavLink onClick={() => setOpen(false)} to="/endpoints">Endpoints</NavLink>
+          <NavLink onClick={() => setOpen(false)} to="/dashboard">Dashboard</NavLink>
+          <Link onClick={() => setOpen(false)} to="/auth" className="btn primary block">
+            Sign In
           </Link>
         </div>
-      </div>
-    </>
+      )}
+    </header>
   );
 }
+
+export default Navbar;
