@@ -1,112 +1,51 @@
 // src/components/landing/EndpointGallery.jsx
 import React, { useState } from "react";
-
-const TABS = ["Text", "Bot helpers", "Fun"];
-
-const ENDPOINTS = {
-  Text: [
-    {
-      method: "POST",
-      path: "/v1/text/scramble",
-      desc: "Give us a word, get back multiple scrambled variations.",
-      badge: "JSON in • JSON out",
-    },
-    {
-      method: "POST",
-      path: "/v1/text/summarize",
-      desc: "Shorten long strings into concise summaries for UI.",
-      badge: "Great for bot replies",
-    },
-    {
-      method: "POST",
-      path: "/v1/text/slugify",
-      desc: "Turn arbitrary text into clean, URL-safe slugs.",
-      badge: "Perfect for IDs",
-    },
-  ],
-  "Bot helpers": [
-    {
-      method: "POST",
-      path: "/v1/discord/xp/next-level",
-      desc: "Calculate XP and levels so you don't hard-code curves.",
-      badge: "Discord bots",
-    },
-    {
-      method: "POST",
-      path: "/v1/discord/cooldown/check",
-      desc: "Single call to decide if a user is on cooldown.",
-      badge: "Global limits",
-    },
-    {
-      method: "POST",
-      path: "/v1/discord/rewards/roll",
-      desc: "Randomized reward helper for messages or commands.",
-      badge: "Economy systems",
-    },
-  ],
-  Fun: [
-    {
-      method: "GET",
-      path: "/v1/fun/prompt",
-      desc: "Random prompts for games, writing, or chat bots.",
-      badge: "Creativity",
-    },
-    {
-      method: "GET",
-      path: "/v1/fun/coin-flip",
-      desc: "Simple coin flips with metadata for stats tracking.",
-      badge: "Mini-games",
-    },
-    {
-      method: "GET",
-      path: "/v1/fun/word",
-      desc: "Random word generator tuned for games & quizzes.",
-      badge: "Word games",
-    },
-  ],
-};
+import { ENDPOINT_GROUPS } from "../../data/endpoints";
 
 function EndpointGallery() {
-  const [activeTab, setActiveTab] = useState("Text");
-  const endpoints = ENDPOINTS[activeTab];
+  const [activeGroupId, setActiveGroupId] = useState(ENDPOINT_GROUPS[0].id);
+
+  const activeGroup =
+    ENDPOINT_GROUPS.find((group) => group.id === activeGroupId) ||
+    ENDPOINT_GROUPS[0];
 
   return (
-    <section className="endpoint-gallery">
+    <section className="endpoint-gallery" id="endpoints">
       <div className="endpoint-gallery-inner">
         <div className="endpoint-gallery-copy">
-          <h2>Random endpoints that save you from glue code.</h2>
+          <h2>Random endpoints that actually feel useful.</h2>
           <p>
-            Use VeroAPI for the boring but critical pieces: string tools, bot
-            helpers, and fun utilities that fit perfectly into Discord bots,
-            games, and small SaaS projects.
+            Start with text helpers, Discord utilities and fun/random building
+            blocks. Swap your one-off scripts for a real API layer.
           </p>
 
           <div className="endpoint-gallery-tabs">
-            {TABS.map((tab) => (
+            {ENDPOINT_GROUPS.map((group) => (
               <button
-                key={tab}
+                key={group.id}
                 type="button"
-                className={`endpoint-tab ${
-                  tab === activeTab ? "active" : ""
-                }`}
-                onClick={() => setActiveTab(tab)}
+                className={
+                  "endpoint-tab" +
+                  (group.id === activeGroupId ? " active" : "")
+                }
+                onClick={() => setActiveGroupId(group.id)}
               >
-                {tab}
+                {group.label}
               </button>
             ))}
           </div>
         </div>
 
         <div className="endpoint-gallery-list">
-          {endpoints.map((ep) => (
-            <div className="endpoint-card" key={ep.path}>
+          {activeGroup.endpoints.map((ep) => (
+            <article className="endpoint-card" key={ep.path}>
               <div className="endpoint-card-head">
                 <span className="endpoint-method">{ep.method}</span>
                 <span className="endpoint-path">{ep.path}</span>
               </div>
-              <div className="endpoint-desc">{ep.desc}</div>
-              {ep.badge && <div className="endpoint-badge">{ep.badge}</div>}
-            </div>
+              <div className="endpoint-desc">{ep.description}</div>
+              {ep.badge && <span className="endpoint-badge">{ep.badge}</span>}
+            </article>
           ))}
         </div>
       </div>
@@ -115,4 +54,3 @@ function EndpointGallery() {
 }
 
 export default EndpointGallery;
-
