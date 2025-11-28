@@ -8,7 +8,7 @@ import Footer from "./components/Footer";
 
 import LandingPage from "./pages/Landing";
 import DocsPage from "./pages/DocsPage";
-import EndpointsPage from "./pages/Endpoints";
+import EndpointsPage from "./pages/EndpointsPage";
 import Dashboard from "./pages/Dashboard";
 import AuthPage from "./pages/AuthPage";
 
