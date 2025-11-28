@@ -1,12 +1,21 @@
 .landing {
-  max-width: 1200px;
+  /* tighter max width so the hero doesn’t feel wall-to-wall */
+  max-width: 1160px;
   margin: 0 auto;
-  padding: 96px 16px 80px;
+
+  /* more top padding to clear the fixed navbar + add breathing room */
+  padding: 120px 24px 96px;
 }
 
-/* slightly more breathing room on larger screens */
-@media (min-width: 1024px) {
+/* slightly more air on very large screens */
+@media (min-width: 1280px) {
   .landing {
-    padding-top: 112px;
+    padding-top: 132px;
+  }
+}
+
+@media (max-width: 960px) {
+  .landing {
+    padding: 104px 16px 80px;
   }
 }
