@@ -1,8 +1,25 @@
 // src/pages/Endpoints.jsx
-import React from "react";
+import React, { useState } from "react";
 import { ENDPOINT_GROUPS } from "../data/endpoints";
 
 function EndpointsPage() {
+  const [activeTab, setActiveTab] = useState("all");
+
+  // Flatten endpoints and keep group info
+  const allEndpoints = ENDPOINT_GROUPS.reduce((acc, group) => {
+    const withGroup = group.endpoints.map((ep) => ({
+      ...ep,
+      groupId: group.id,
+      groupLabel: group.label,
+    }));
+    return acc.concat(withGroup);
+  }, []);
+
+  const visibleEndpoints =
+    activeTab === "all"
+      ? allEndpoints
+      : allEndpoints.filter((ep) => ep.groupId === activeTab);
+
   return (
     <div className="endpoints-page">
       <header className="section-heading">
@@ -13,16 +30,43 @@ function EndpointsPage() {
         </p>
       </header>
 
-      {ENDPOINT_GROUPS.map((group) => (
-        <section className="endpoints-section" key={group.id}>
-          <div className="endpoints-section-header">
-            <h3>{group.label}</h3>
-            {group.description && <p>{group.description}</p>}
-          </div>
+      {/* Tabs: All + categories */}
+      <div className="endpoint-gallery-tabs endpoints-tabs">
+        <button
+          type="button"
+          className={
+            "endpoint-tab" + (activeTab === "all" ? " active" : "")
+          }
+          onClick={() => setActiveTab("all")}
+        >
+          All
+        </button>
+        {ENDPOINT_GROUPS.map((group) => (
+          <button
+            key={group.id}
+            type="button"
+            className={
+              "endpoint-tab" + (activeTab === group.id ? " active" : "")
+            }
+            onClick={() => setActiveTab(group.id)}
+          >
+            {group.label}
+          </button>
+        ))}
+      </div>
 
-          <div className="endpoint-gallery-list">
-            {group.endpoints.map((ep) => (
-              <article className="endpoint-card" key={ep.path}>
+      <section className="endpoints-section endpoints-section-all">
+        <div className="endpoint-gallery-list">
+          {visibleEndpoints.map((ep) => {
+            const isPlanned = ep.status === "Planned";
+
+            return (
+              <article
+                className={
+                  "endpoint-card" + (isPlanned ? " endpoint-card-planned" : "")
+                }
+                key={ep.path + ep.method}
+              >
                 <div className="endpoint-card-head">
                   <span className="endpoint-method">{ep.method}</span>
                   <span className="endpoint-path">{ep.path}</span>
@@ -52,10 +96,10 @@ function EndpointsPage() {
                   )}
                 </div>
               </article>
-            ))}
-          </div>
-        </section>
-      ))}
+            );
+          })}
+        </div>
+      </section>
     </div>
   );
 }
