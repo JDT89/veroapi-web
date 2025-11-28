@@ -7,13 +7,15 @@ import HealthBox from "../components/HealthBox";
 import MetricsGrid from "../components/MetricsGrid";
 import APIKeyManager from "../components/APIKeyManager";
 import QuickstartCard from "../components/QuickstartCard";
+import UsageChart from "../components/UsageChart";
+import TimelineCard from "../components/TimelineCard";
 
 function Dashboard() {
   const navigate = useNavigate();
 
-  /* ==================================================
+  /* ================================
      AUTH TOKEN
-  ================================================== */
+  ================================= */
   const [token, setToken] = useState(() =>
     typeof window === "undefined"
       ? ""
@@ -24,9 +26,9 @@ function Dashboard() {
     if (!token) navigate("/auth");
   }, [token, navigate]);
 
-  /* ==================================================
+  /* ================================
      USER PROFILE
-  ================================================== */
+  ================================= */
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -47,19 +49,23 @@ function Dashboard() {
       } catch {
         if (!cancel) {
           setToken("");
-          window.localStorage.removeItem("veroapi_token");
+          if (typeof window !== "undefined") {
+            window.localStorage.removeItem("veroapi_token");
+          }
           navigate("/auth");
         }
       }
     }
 
     loadUser();
-    return () => (cancel = true);
+    return () => {
+      cancel = true;
+    };
   }, [token, navigate]);
 
-  /* ==================================================
+  /* ================================
      HEALTH CHECK
-  ================================================== */
+  ================================= */
   const [healthLoading, setHealthLoading] = useState(true);
   const [healthError, setHealthError] = useState(false);
   const [healthData, setHealthData] = useState(null);
@@ -79,23 +85,27 @@ function Dashboard() {
           setHealthData(data);
         }
       } catch {
-        if (!cancel) setHealthError(true);
+        if (!cancel) {
+          setHealthError(true);
+        }
       } finally {
-        if (!cancel) setHealthLoading(false);
+        if (!cancel) {
+          setHealthLoading(false);
+        }
       }
     }
 
     check();
-    const interval = setInterval(check, 30_000);
+    const interval = setInterval(check, 30000);
     return () => {
       clearInterval(interval);
       cancel = true;
     };
   }, []);
 
-  /* ==================================================
+  /* ================================
      STATS (Requests last 24h)
-  ================================================== */
+  ================================= */
   const [statsLoading, setStatsLoading] = useState(false);
   const [stats, setStats] = useState(null);
 
@@ -121,7 +131,7 @@ function Dashboard() {
     }
 
     loadStats();
-    const interval = setInterval(loadStats, 30_000);
+    const interval = setInterval(loadStats, 30000);
     return () => {
       clearInterval(interval);
       cancel = true;
@@ -130,9 +140,9 @@ function Dashboard() {
 
   const requestsLast24h = stats?.requests_last_24h ?? null;
 
-  /* ==================================================
+  /* ================================
      API KEY
-  ================================================== */
+  ================================= */
   const [apiKey, setApiKey] = useState(null);
   const [keysLoading, setKeysLoading] = useState(false);
   const [keysError, setKeysError] = useState("");
@@ -147,12 +157,16 @@ function Dashboard() {
     async function loadKey() {
       try {
         setKeysLoading(true);
+        setKeysError("");
         const res = await fetch(`${API_BASE_URL}/v1/api-keys`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
 
-        if (!res.ok || !data.ok) throw new Error(data.error);
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "Failed to load API key");
+        }
+
         const first = (data.keys || [])[0] || null;
 
         if (!cancel) {
@@ -160,28 +174,40 @@ function Dashboard() {
           setShowSecret(false);
         }
       } catch (err) {
-        if (!cancel) setKeysError(err.message || "Failed to load API key");
+        if (!cancel) {
+          setKeysError(err.message || "Failed to load API key");
+          setApiKey(null);
+        }
       } finally {
-        if (!cancel) setKeysLoading(false);
+        if (!cancel) {
+          setKeysLoading(false);
+        }
       }
     }
 
     loadKey();
-    return () => (cancel = true);
+    return () => {
+      cancel = true;
+    };
   }, [token]);
 
   const handleGenerateOrRegenerate = async () => {
     if (!token) return;
     setRegenLoading(true);
     setKeysError("");
+    setCopyMessage("");
 
     try {
       // delete existing key if present
       if (apiKey?.id) {
-        await fetch(`${API_BASE_URL}/v1/api-keys/${apiKey.id}`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        try {
+          await fetch(`${API_BASE_URL}/v1/api-keys/${apiKey.id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        } catch {
+          // ignore delete failure
+        }
       }
 
       // create new key
@@ -195,13 +221,14 @@ function Dashboard() {
       });
 
       const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.error);
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Failed to generate API key");
+      }
 
       setApiKey({
         ...(data.key || {}),
         secret: data.secret,
       });
-
       setShowSecret(true);
     } catch (err) {
       setKeysError(err.message || "Failed to generate API key");
@@ -212,39 +239,45 @@ function Dashboard() {
 
   const handleCopySecret = async () => {
     if (!apiKey?.secret) return;
+
     try {
       await navigator.clipboard.writeText(apiKey.secret);
       setCopyMessage("Copied!");
     } catch {
       setCopyMessage("Failed");
     }
+
     setTimeout(() => setCopyMessage(""), 1500);
   };
 
-  /* ==================================================
-     UTIL
-  ================================================== */
-  const formatTime = (t) => {
-    if (!t) return "—";
+  /* ================================
+     UTIL + USER MENU
+  ================================= */
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const formatTime = (value) => {
+    if (!value) return "—";
     try {
-      return new Date(t).toLocaleString();
+      return new Date(value).toLocaleString();
     } catch {
-      return t;
+      return value;
     }
   };
 
   const handleLogout = () => {
     setToken("");
-    window.localStorage.removeItem("veroapi_token");
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem("veroapi_token");
+    }
     navigate("/auth");
   };
 
-  /* ==================================================
+  /* ================================
      RENDER
-  ================================================== */
+  ================================= */
   return (
     <section className="dash">
-      {/* ------------------------ SIDEBAR ------------------------ */}
+      {/* ========== SIDEBAR ========== */}
       <aside className="dash-sidebar">
         <div className="dash-sidebar-header">
           <span className="dash-pill">Account</span>
@@ -264,45 +297,78 @@ function Dashboard() {
 
           <div className="dash-health">
             {healthLoading && "Checking API…"}
-            {!healthLoading && healthError && "API unreachable"}
+            {!healthLoading && healthError && "API unreachable from dashboard"}
             {!healthLoading && !healthError && "API online"}
           </div>
         </div>
 
         <nav className="dash-nav">
-          <button className="dash-nav-item active">Overview</button>
+          <button className="dash-nav-item active">📊 Overview</button>
         </nav>
 
         <div className="dash-sidebar-foot">
           <p>How to use VeroAPI:</p>
           <ol>
             <li>Generate your primary key</li>
-            <li>Paste into your bot/app</li>
-            <li>Call any endpoint</li>
+            <li>Store it securely (env var)</li>
+            <li>Call any supported endpoint</li>
           </ol>
         </div>
       </aside>
 
-      {/* ------------------------ MAIN AREA ------------------------ */}
+      {/* ========== MAIN AREA ========== */}
       <div className="dash-main">
+        {/* Header bar with user menu */}
         <header className="dash-main-header">
           <div>
             <h1>Overview</h1>
-            <p>Your API key, usage, status, and quickstart tools.</p>
+            <p>
+              Monitor status, manage your API key, and see how your usage is
+              trending.
+            </p>
           </div>
 
           {user ? (
-            <button className="btn ghost" onClick={handleLogout}>
-              Sign out
-            </button>
+            <div className="dash-user-menu">
+              <button
+                type="button"
+                className="dash-user-menu-btn"
+                onClick={() => setUserMenuOpen((open) => !open)}
+              >
+                <div className="dash-user-avatar">
+                  {user.email ? user.email.charAt(0).toUpperCase() : "U"}
+                </div>
+                <div className="dash-user-menu-text">
+                  <span className="dash-user-menu-name">{user.email}</span>
+                  <span className="dash-user-menu-plan">Playground plan</span>
+                </div>
+                <span className="dash-user-menu-caret">▾</span>
+              </button>
+
+              {userMenuOpen && (
+                <div className="dash-user-menu-panel">
+                  <button
+                    type="button"
+                    className="dash-user-menu-item"
+                    onClick={handleLogout}
+                  >
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
-            <button className="btn primary" onClick={() => navigate("/auth")}>
+            <button
+              className="btn primary"
+              type="button"
+              onClick={() => navigate("/auth")}
+            >
               Sign in
             </button>
           )}
         </header>
 
-        {/* TOP THREE CARDS */}
+        {/* Top row cards */}
         <div className="dash-grid">
           <HealthBox
             healthLoading={healthLoading}
@@ -319,12 +385,12 @@ function Dashboard() {
             <div className="dash-card-label">Plan</div>
             <div className="dash-card-value">Playground</div>
             <div className="dash-card-sub">
-              1 API key per account • Upgrade later
+              1 API key per account • Upgrade later for higher limits.
             </div>
           </div>
         </div>
 
-        {/* LOWER GRID: API KEY + QUICKSTART */}
+        {/* Lower area: API key + right stack */}
         <div className="dash-columns">
           <APIKeyManager
             apiKey={apiKey}
@@ -339,7 +405,11 @@ function Dashboard() {
             formatTime={formatTime}
           />
 
-          <QuickstartCard />
+          <div className="dash-right-stack">
+            <QuickstartCard />
+            <UsageChart requestsLast24h={requestsLast24h} />
+            <TimelineCard user={user} apiKey={apiKey} formatTime={formatTime} />
+          </div>
         </div>
       </div>
     </section>
