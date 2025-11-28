@@ -1,24 +1,22 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import "../styles.css";
 
-function Footer() {
+export default function Footer() {
   return (
-    <footer className="footer">
-      <div className="footer-left">
-        <span className="footer-brand">VeroAPI</span>
-        <span className="footer-dot">•</span>
-        <span className="footer-muted">
-          © {new Date().getFullYear()} All rights reserved.
-        </span>
-      </div>
-      <div className="footer-links">
-        <Link to="/docs">Docs</Link>
-        <a href="#status">Status</a>
-        <a href="#changelog">Changelog</a>
-        <a href="#legal">Privacy</a>
+    <footer className="saas-footer">
+      <div className="saas-footer-inner">
+        <div className="saas-footer-left">
+          © {new Date().getFullYear()} VeroAPI – All rights reserved.
+        </div>
+
+        <div className="saas-footer-links">
+          <Link to="/docs">Docs</Link>
+          <Link to="/endpoints">Endpoints</Link>
+          <Link to="/dashboard">Dashboard</Link>
+          <Link to="/auth">Sign in</Link>
+        </div>
       </div>
     </footer>
   );
 }
-
-export default Footer;
