@@ -1,206 +1,301 @@
 import React, { useMemo, useState } from "react";
+import { API_BASE_URL } from "../config";
 import "./DocsPage.css";
 
-const docsSections = [
+const DOC_SECTIONS = [
   {
-    id: "getting-started",
+    slug: "getting-started",
     group: "Getting started",
-    title: "Getting started",
-    tagline: "Spin up VeroAPI in minutes, not days.",
-    description:
-      "VeroAPI is a small, focused API service designed for bots, tools, and internal apps. You sign up, grab a single primary API key, and call random utility endpoints from any environment.",
+    title: "Getting started with VeroAPI",
+    tagline: "From zero to first request in a couple of minutes.",
+    summary:
+      "VeroAPI gives you a single API key that you can plug into small tools, Discord bots, cron jobs, or internal automations.",
     bullets: [
-      "Create an account and sign in to the dashboard.",
-      "Generate your primary API key (1 key per account).",
-      "Store the key as an environment variable in your app or bot.",
-      "Call any supported endpoint with a simple Authorization header.",
+      "Create an account and generate your primary API key in the dashboard.",
+      "Store the key as an environment variable, never hard-code it in your repo.",
+      "Call any supported random endpoint by sending your key in the Authorization header.",
     ],
-    codeTitle: "Basic request with curl",
-    code: `curl https://api.veroapi.com/v1/text/scramble \\
-  -H "Authorization: Bearer YOUR_VEROAPI_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{ "text": "VeroAPI" }'`,
-    note: "All endpoints share the same base URL and auth pattern. Swap only the path and body payload.",
-  },
-  {
-    id: "auth",
-    group: "Core concepts",
-    title: "Authentication",
-    tagline: "A single primary key per account.",
-    description:
-      "Authentication is intentionally simple: each VeroAPI account owns exactly one primary API key. That key is used for every request, regardless of which endpoint you call.",
-    bullets: [
-      "One key per account keeps management simple and rotation predictable.",
-      "You can regenerate your key at any time from the dashboard.",
-      "Regeneration immediately revokes the old key.",
-      "Use HTTPS everywhere and never expose the key in client-side code.",
-    ],
-    codeTitle: "Auth header example",
-    code: `POST /v1/text/scramble HTTP/1.1
-Host: api.veroapi.com
-Authorization: Bearer YOUR_VEROAPI_KEY
+    codeBlocks: [
+      {
+        label: "Base URL",
+        language: "text",
+        code: `${API_BASE_URL}`,
+      },
+      {
+        label: "Required headers",
+        language: "bash",
+        code: `Authorization: Bearer YOUR_VEROAPI_KEY
 Content-Type: application/json`,
-    note: "If a request is missing or using an invalid key, VeroAPI responds with HTTP 401 and a short JSON error body.",
+      },
+    ],
   },
   {
-    id: "random-text",
-    group: "Endpoints",
-    title: "Random text endpoints",
-    tagline: "Helpers for bots, games, and internal tools.",
-    description:
-      "VeroAPI ships with random and text-focused utilities that are easy to drop into your bot or app. These endpoints are stateless and tuned for low latency.",
+    slug: "authentication",
+    group: "Authentication",
+    title: "Authentication & API keys",
+    tagline: "One account, one key, clear rate limits.",
+    summary:
+      "Each VeroAPI account has a single primary API key. You can regenerate this key at any time — the old one stops working immediately.",
     bullets: [
-      "Scramble or transform user-provided text.",
-      "Generate small random values for quests, rewards, or cooldowns.",
-      "Use responses directly in Discord messages, dashboards, or logs.",
+      "Generate or regenerate your key from the dashboard Overview page.",
+      "The key must be sent as a Bearer token in the Authorization header.",
+      "Keys are tied to your account for rate limiting and abuse protection.",
     ],
-    codeTitle: "Example: scramble text",
-    code: `curl https://api.veroapi.com/v1/text/scramble \\
+    codeBlocks: [
+      {
+        label: "Example cURL request",
+        language: "bash",
+        code: `curl "${API_BASE_URL}/v1/text/scramble" \\
   -H "Authorization: Bearer YOUR_VEROAPI_KEY" \\
   -H "Content-Type: application/json" \\
-  -d '{ "text": "discord-bot" }'`,
-    note: "The exact payload and response format for each endpoint is documented on the Endpoints page.",
+  -d '{"text":"VeroAPI"}'`,
+      },
+      {
+        label: "Example fetch (Node/JS)",
+        language: "js",
+        code: `const res = await fetch("${API_BASE_URL}/v1/text/scramble", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer " + process.env.VEROAPI_KEY,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ text: "VeroAPI" }),
+});
+
+const json = await res.json();`,
+      },
+    ],
   },
   {
-    id: "rate-limits",
-    group: "Core concepts",
-    title: "Rate limiting",
-    tagline: "Per-account limits, simple and predictable.",
-    description:
-      "Rate limits are tied to your VeroAPI account, not to individual projects. This makes it easy to share one key across multiple small apps while keeping abuse under control.",
+    slug: "random-text",
+    group: "Random endpoints",
+    title: "Random text endpoints",
+    tagline: "Helpers for games, bots and micro-features.",
+    summary:
+      "Use text endpoints to power simple game mechanics, Discord mini-games, or internal utilities without standing up your own services.",
     bullets: [
-      "Every request counts toward your account’s rolling window.",
-      "Free plans are tuned for development and low-volume workloads.",
-      "If you routinely hit the limit, you can back off or upgrade when plans are available.",
+      "`POST /v1/text/scramble` — scramble a word or short phrase.",
+      "`POST /v1/text/slug` — convert text into a URL-friendly slug.",
+      "`POST /v1/text/pick` — pick a random item from a list.",
     ],
-    codeTitle: "Handling 429 responses",
-    code: `if (response.status === 429) {
-  // Back off before retrying
-  const retryAfter = response.headers.get("Retry-After");
-  // Respect retryAfter or add your own delay
+    codeBlocks: [
+      {
+        label: "Scramble example",
+        language: "bash",
+        code: `curl "${API_BASE_URL}/v1/text/scramble" \\
+  -H "Authorization: Bearer YOUR_VEROAPI_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"text":"discord"}'`,
+      },
+      {
+        label: "Slug example",
+        language: "bash",
+        code: `curl "${API_BASE_URL}/v1/text/slug" \\
+  -H "Authorization: Bearer YOUR_VEROAPI_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"text":"VeroAPI random tools"}'`,
+      },
+    ],
+  },
+  {
+    slug: "errors-limits",
+    group: "Errors & limits",
+    title: "Errors & rate limits",
+    tagline: "Understand how VeroAPI responds when something goes wrong.",
+    summary:
+      "All endpoints return JSON with a simple `{ ok, data, error }` shape and standard HTTP status codes.",
+    bullets: [
+      "4xx errors mean something is wrong with the request (auth, validation, etc.).",
+      "5xx errors mean something went wrong on VeroAPI's side.",
+      "Rate limits are applied per account based on your primary API key.",
+    ],
+    codeBlocks: [
+      {
+        label: "Example error response",
+        language: "json",
+        code: `{
+  "ok": false,
+  "error": "Missing or invalid API key"
 }`,
-    note: "Your dashboard will surface high-level request counts so you can see when you’re approaching limits.",
+      },
+      {
+        label: "Handling errors in JS",
+        language: "js",
+        code: `if (!res.ok) {
+  const body = await res.json().catch(() => null);
+  throw new Error(body?.error || "Unexpected error");
+}`,
+      },
+    ],
   },
 ];
 
+const groups = [
+  "Getting started",
+  "Authentication",
+  "Random endpoints",
+  "Errors & limits",
+];
+
 function DocsPage() {
-  const [activeId, setActiveId] = useState(docsSections[0].id);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [activeSlug, setActiveSlug] = useState("getting-started");
+  const [query, setQuery] = useState("");
 
   const filteredSections = useMemo(() => {
-    if (!searchTerm.trim()) return docsSections;
-    const q = searchTerm.toLowerCase();
-    return docsSections.filter(
-      (s) =>
-        s.title.toLowerCase().includes(q) ||
-        s.tagline.toLowerCase().includes(q) ||
-        s.group.toLowerCase().includes(q)
-    );
-  }, [searchTerm]);
+    const q = query.trim().toLowerCase();
+    if (!q) return DOC_SECTIONS;
+
+    return DOC_SECTIONS.filter((section) => {
+      const haystack = [
+        section.title,
+        section.tagline,
+        section.summary,
+        ...(section.bullets || []),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [query]);
 
   const activeSection =
-    filteredSections.find((s) => s.id === activeId) || filteredSections[0];
+    filteredSections.find((s) => s.slug === activeSlug) ||
+    filteredSections[0] ||
+    DOC_SECTIONS[0];
 
-  const groups = useMemo(() => {
-    const map = new Map();
-    filteredSections.forEach((s) => {
-      if (!map.has(s.group)) map.set(s.group, []);
-      map.get(s.group).push(s);
-    });
-    return Array.from(map.entries());
-  }, [filteredSections]);
+  const handleSelectSection = (slug) => {
+    setActiveSlug(slug);
+  };
 
   return (
     <section className="docs-page">
-      <div className="docs-shell">
+      <div className="docs-page-header">
+        <div>
+          <p className="docs-page-eyebrow">Documentation</p>
+          <h1 className="docs-page-title">VeroAPI developer docs</h1>
+          <p className="docs-page-subtitle">
+            Learn how to authenticate, call random endpoints, and handle errors
+            with a single account-level API key.
+          </p>
+        </div>
+        <div className="docs-meta-card">
+          <div className="docs-meta-row">
+            <span className="docs-meta-label">Base URL</span>
+            <code className="docs-meta-value">{API_BASE_URL}</code>
+          </div>
+          <div className="docs-meta-row">
+            <span className="docs-meta-label">Auth</span>
+            <code className="docs-meta-value">Bearer YOUR_VEROAPI_KEY</code>
+          </div>
+          <div className="docs-meta-row">
+            <span className="docs-meta-label">Status</span>
+            <span className="docs-status-pill">
+              <span className="docs-status-dot" />
+              API operational
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="docs-layout">
         {/* Sidebar */}
         <aside className="docs-sidebar">
-          <div className="docs-sidebar-title">Documentation</div>
+          <div className="docs-search">
+            <input
+              type="text"
+              className="docs-search-input"
+              placeholder="Search docs…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
 
-          {groups.map(([groupName, sections]) => (
-            <div className="docs-sidebar-group" key={groupName}>
-              <div className="docs-sidebar-heading">{groupName}</div>
-              <ul className="docs-sidebar-list">
-                {sections.map((section) => (
-                  <li key={section.id}>
-                    <button
-                      type="button"
-                      onClick={() => setActiveId(section.id)}
-                      className={
-                        section.id === activeId
-                          ? "docs-sidebar-link docs-sidebar-link-active"
-                          : "docs-sidebar-link"
-                      }
-                    >
-                      {section.title}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <div className="docs-groups">
+            {groups.map((group) => (
+              <div key={group} className="docs-group">
+                <p className="docs-group-heading">{group}</p>
+                <ul className="docs-link-list">
+                  {filteredSections
+                    .filter((s) => s.group === group)
+                    .map((section) => (
+                      <li key={section.slug}>
+                        <button
+                          type="button"
+                          className={
+                            section.slug === activeSection.slug
+                              ? "docs-link docs-link-active"
+                              : "docs-link"
+                          }
+                          onClick={() => handleSelectSection(section.slug)}
+                        >
+                          {section.title}
+                        </button>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </aside>
 
         {/* Main content */}
-        <div className="docs-main">
-          <header className="docs-main-header">
-            <div>
-              <div className="docs-main-eyebrow">VeroAPI docs</div>
-              <h1 className="docs-main-title">
-                {activeSection ? activeSection.title : "Docs"}
-              </h1>
-              <p className="docs-main-subtitle">
-                {activeSection
-                  ? activeSection.tagline
-                  : "Lightweight docs for building with VeroAPI."}
+        <main className="docs-main">
+          <article className="docs-article">
+            <header className="docs-article-header">
+              <div>
+                <p className="docs-article-eyebrow">
+                  {activeSection.group || "Section"}
+                </p>
+                <h2 className="docs-article-title">{activeSection.title}</h2>
+                <p className="docs-article-tagline">
+                  {activeSection.tagline}
+                </p>
+              </div>
+            </header>
+
+            <p className="docs-article-summary">{activeSection.summary}</p>
+
+            {activeSection.bullets && activeSection.bullets.length > 0 && (
+              <ul className="docs-article-list">
+                {activeSection.bullets.map((item, idx) => (
+                  <li key={idx}>{item}</li>
+                ))}
+              </ul>
+            )}
+
+            {activeSection.codeBlocks && activeSection.codeBlocks.length > 0 && (
+              <div className="docs-code-grid">
+                {activeSection.codeBlocks.map((block, idx) => (
+                  <section key={idx} className="docs-code-block">
+                    <div className="docs-code-block-header">
+                      <span className="docs-code-label">{block.label}</span>
+                      <span className="docs-code-language">
+                        {block.language}
+                      </span>
+                    </div>
+                    <pre className="docs-code-pre">
+                      <code>{block.code}</code>
+                    </pre>
+                  </section>
+                ))}
+              </div>
+            )}
+
+            <footer className="docs-article-footer">
+              <p className="docs-article-footnote">
+                Ready to try this for real? Generate your key in the{" "}
+                <button
+                  type="button"
+                  className="docs-inline-link"
+                  onClick={() => (window.location.href = "/dashboard")}
+                >
+                  dashboard
+                </button>{" "}
+                and start calling endpoints in under 2 minutes.
               </p>
-            </div>
-
-            <div className="docs-main-search">
-              <input
-                type="text"
-                className="docs-search-input"
-                placeholder="Search sections…"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </header>
-
-          {activeSection && (
-            <article className="docs-article">
-              <h2 className="docs-section-title">{activeSection.title}</h2>
-              <p className="docs-section-tagline">{activeSection.tagline}</p>
-
-              <p className="docs-section-description">
-                {activeSection.description}
-              </p>
-
-              {activeSection.bullets && (
-                <ul className="docs-list">
-                  {activeSection.bullets.map((item, idx) => (
-                    <li key={idx}>{item}</li>
-                  ))}
-                </ul>
-              )}
-
-              {activeSection.code && (
-                <>
-                  <div className="docs-code-heading">
-                    {activeSection.codeTitle || "Example request"}
-                  </div>
-                  <pre className="docs-code-block">
-                    <code>{activeSection.code}</code>
-                  </pre>
-                </>
-              )}
-
-              {activeSection.note && (
-                <p className="docs-note">{activeSection.note}</p>
-              )}
-            </article>
-          )}
-        </div>
+            </footer>
+          </article>
+        </main>
       </div>
     </section>
   );
