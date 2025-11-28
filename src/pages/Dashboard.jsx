@@ -27,7 +27,6 @@ function Dashboard() {
   const [copyMessage, setCopyMessage] = useState("");
   const [showSecret, setShowSecret] = useState(false);
 
-  // Redirect unauthenticated users
   useEffect(() => {
     if (!token) {
       navigate("/auth");
@@ -64,7 +63,7 @@ function Dashboard() {
   const apiOnline =
     !healthLoading && !healthError && healthData && healthData.ok;
 
-  // Load current user
+  // Load user
   useEffect(() => {
     if (!token) {
       setUser(null);
@@ -100,7 +99,7 @@ function Dashboard() {
     };
   }, [token, navigate]);
 
-  // Load API key (single key per account)
+  // Load API key (single primary key per account)
   useEffect(() => {
     if (!token) {
       setApiKey(null);
@@ -141,7 +140,7 @@ function Dashboard() {
     };
   }, [token]);
 
-  // Load stats
+  // Stats
   useEffect(() => {
     if (!token) {
       setStats(null);
@@ -174,6 +173,8 @@ function Dashboard() {
     };
   }, [token]);
 
+  const requestsLast24h = stats?.requests_last_24h ?? null;
+
   const formatTime = (value) => {
     if (!value) return "—";
     try {
@@ -196,7 +197,7 @@ function Dashboard() {
     if (!apiKey || !apiKey.secret) return;
     try {
       await navigator.clipboard.writeText(apiKey.secret);
-      setCopyMessage("Copied");
+      setCopyMessage("Copied!");
     } catch {
       setCopyMessage("Unable to copy");
     }
@@ -210,7 +211,7 @@ function Dashboard() {
     setCopyMessage("");
 
     try {
-      // If a key exists, revoke first
+      // delete existing key if present
       if (apiKey && apiKey.id) {
         try {
           await fetch(`${API_BASE_URL}/v1/api-keys/${apiKey.id}`, {
@@ -218,7 +219,7 @@ function Dashboard() {
             headers: { Authorization: `Bearer ${token}` },
           });
         } catch {
-          // ignore revoke errors
+          // ignore
         }
       }
 
@@ -249,271 +250,233 @@ function Dashboard() {
     }
   };
 
-  const requestsLast24h = stats?.requests_last_24h ?? null;
+  const firstLetter = user?.email ? user.email.charAt(0).toUpperCase() : "?";
 
   return (
-    <div className="dashboard-page">
-      {/* Header */}
-      <header className="dashboard-header">
-        <div className="dashboard-header-main">
-          <h1>Dashboard</h1>
-          <p>
-            Track API status, usage, and your primary key in one place. One key per
-            account, usable across all VeroAPI endpoints.
-          </p>
+    <section className="dash">
+      {/* Sidebar */}
+      <aside className="dash-sidebar">
+        <div className="dash-sidebar-top">
+          <span className="dash-sidebar-label">Account</span>
+
+          <div className="dash-user-chip">
+            <div className="dash-avatar">{firstLetter}</div>
+            <div className="dash-user-text">
+              <div className="dash-user-email">
+                {user ? user.email : "Loading…"}
+              </div>
+              <div className="dash-user-plan">Playground plan</div>
+            </div>
+          </div>
+
+          <div className="dash-side-status">
+            <span
+              className={`dash-status-dot ${
+                healthLoading ? "loading" : apiOnline ? "ok" : "error"
+              }`}
+            />
+            <span className="dash-status-text">
+              {healthLoading
+                ? "Checking API health…"
+                : apiOnline
+                ? "API online"
+                : "API unreachable"}
+            </span>
+          </div>
+
+          <div className="dash-side-meta">
+            1 primary API key • Rate-limited per account
+          </div>
         </div>
 
-        <div className="dashboard-header-right">
-          {user && (
-            <div className="dashboard-user-chip">
-              <div className="dashboard-user-avatar">
-                {user.email ? user.email.charAt(0).toUpperCase() : "U"}
-              </div>
-              <div className="dashboard-user-meta">
-                <span className="dashboard-user-email">
-                  {user.email || "Loading…"}
-                </span>
-                <span className="dashboard-user-plan">Free • 1 primary key</span>
-              </div>
-            </div>
-          )}
-          <button
-            type="button"
-            className="btn secondary dashboard-signout"
-            onClick={handleLogout}
-          >
-            Sign out
+        <nav className="dash-nav">
+          <button className="dash-nav-item dash-nav-item-active">
+            Overview
           </button>
+        </nav>
+
+        <div className="dash-sidebar-foot">
+          <p>Quick setup:</p>
+          <ol>
+            <li>Generate your primary key</li>
+            <li>Store it as an env var</li>
+            <li>Call a random endpoint</li>
+          </ol>
         </div>
-      </header>
+      </aside>
 
-      {/* Layout */}
-      <div className="dashboard-layout">
-        {/* LEFT COLUMN – account + navigation */}
-        <aside className="dashboard-sidebar">
-          <section className="dash-panel">
-            <div className="dash-panel-header">
-              <span className="dash-pill">Account</span>
-            </div>
-            <div className="dash-account-details">
-              <div className="dash-account-row">
-                <span className="dash-label">Email</span>
-                <span className="dash-value">
-                  {user ? user.email : "Loading…"}
-                </span>
-              </div>
-              <div className="dash-account-row">
-                <span className="dash-label">Plan</span>
-                <span className="dash-value">Free tier</span>
-              </div>
-              <div className="dash-account-row">
-                <span className="dash-label">Keys</span>
-                <span className="dash-value">1 primary key per account</span>
-              </div>
-            </div>
+      {/* Main content */}
+      <div className="dash-main">
+        <header className="dash-main-header">
+          <div>
+            <h1>Dashboard</h1>
+            <p>
+              Manage your API key and track a quick snapshot of VeroAPI usage.
+            </p>
+          </div>
+          {user ? (
+            <button className="btn ghost" type="button" onClick={handleLogout}>
+              Sign out
+            </button>
+          ) : (
+            <button
+              className="btn primary"
+              type="button"
+              onClick={() => navigate("/auth")}
+            >
+              Go to sign in
+            </button>
+          )}
+        </header>
 
-            <div className="dash-health-row">
-              <span className="dash-label">API status</span>
-              <div className="dash-health-indicator">
-                <span
-                  className={
-                    healthLoading
-                      ? "health-dot health-dot-loading"
-                      : apiOnline
-                      ? "health-dot health-dot-ok"
-                      : "health-dot health-dot-error"
-                  }
-                />
-                <span className="dash-health-text">
-                  {healthLoading
-                    ? "Checking…"
-                    : healthError
-                    ? "Unreachable from dashboard"
-                    : "Online"}
-                </span>
-              </div>
-              {!healthLoading && !healthError && (
-                <p className="dash-health-sub">
-                  Uptime {Math.round(healthData?.uptime || 0)}s • based on{" "}
-                  <code>/v1/health</code>
-                </p>
-              )}
+        {/* Metric cards */}
+        <div className="dash-metrics">
+          <div className="dash-card">
+            <div className="dash-card-label">API status</div>
+            <div className="dash-card-value">
+              {healthLoading
+                ? "Checking…"
+                : apiOnline
+                ? "Online"
+                : "Unavailable"}
             </div>
-
-            <div className="dash-sidebar-foot">
-              <p>Quick steps to go live:</p>
-              <ol>
-                <li>Generate your primary API key below</li>
-                <li>Store it as an env var in your app/bot</li>
-                <li>Call any endpoint from the Docs or Endpoints page</li>
-              </ol>
+            <div className="dash-card-sub">
+              Health is based on the <code>/v1/health</code> endpoint.
             </div>
-          </section>
-        </aside>
+          </div>
 
-        {/* RIGHT COLUMN – metrics + key + quickstart */}
-        <main className="dashboard-main">
-          {/* Top metrics row */}
-          <section className="dashboard-metrics">
-            <div className="metric-card">
-              <div className="metric-label">API status</div>
-              <div className="metric-value">
-                {healthLoading
-                  ? "Checking…"
-                  : apiOnline
-                  ? "Online"
-                  : "Unavailable"}
-              </div>
-              <p className="metric-sub">
-                Health is based on the <code>/v1/health</code> endpoint.
-              </p>
+          <div className="dash-card">
+            <div className="dash-card-label">Requests (last 24h)</div>
+            <div className="dash-card-value">
+              {statsLoading
+                ? "…"
+                : requestsLast24h === null
+                ? "—"
+                : requestsLast24h.toLocaleString()}
+            </div>
+            <div className="dash-card-sub">
+              Counts all successful and failed calls tied to your account.
+            </div>
+          </div>
+
+          <div className="dash-card">
+            <div className="dash-card-label">Plan</div>
+            <div className="dash-card-value">Playground</div>
+            <div className="dash-card-sub">
+              1 key • account-based rate limits • upgrade options coming soon.
+            </div>
+          </div>
+        </div>
+
+        {/* Lower layout: key manager + quickstart */}
+        <div className="dash-main-grid">
+          <section className="dash-card dash-card-primary">
+            <div className="dash-card-header">
+              <h2>Primary API key</h2>
+              <span className="dash-tag">
+                {keysLoading ? "Loading…" : apiKey ? "Active" : "Not created"}
+              </span>
             </div>
 
-            <div className="metric-card">
-              <div className="metric-label">Requests (last 24h)</div>
-              <div className="metric-value">
-                {statsLoading
-                  ? "…"
-                  : requestsLast24h === null
-                  ? "—"
-                  : requestsLast24h.toLocaleString()}
-              </div>
-              <p className="metric-sub">
-                Optional metric – depends on your backend stats implementation.
-              </p>
-            </div>
+            {keysError && (
+              <p className="dash-error-banner">{keysError}</p>
+            )}
 
-            <div className="metric-card">
-              <div className="metric-label">Plan</div>
-              <div className="metric-value">Free</div>
-              <p className="metric-sub">
-                1 key per account • soft rate limits suitable for dev and
-                low-volume bots.
-              </p>
-            </div>
-          </section>
+            <p className="dash-helper">
+              Each account can have exactly one API key at a time. Regenerating
+              immediately revokes the old key.
+            </p>
 
-          {/* Main content row */}
-          <section className="dashboard-bottom-row">
-            {/* API key manager */}
-            <section className="panel-card api-key-card">
-              <div className="panel-card-header">
-                <div>
-                  <h2>Primary API key</h2>
-                  <p className="panel-subtitle">
-                    Every request you make to VeroAPI uses this key in the{" "}
-                    <code>Authorization</code> header.
-                  </p>
-                </div>
-                <span className="badge">
-                  {keysLoading ? "Loading…" : apiKey ? "Active" : "Not created"}
-                </span>
-              </div>
+            <button
+              className="btn primary dash-login-btn"
+              type="button"
+              onClick={handleGenerateOrRegenerate}
+              disabled={regenLoading}
+            >
+              {regenLoading
+                ? "Working…"
+                : apiKey
+                ? "Regenerate API key"
+                : "Generate API key"}
+            </button>
 
-              {keysError && (
-                <p className="panel-error">{keysError}</p>
-              )}
-
-              <button
-                className="btn primary generate-btn"
-                type="button"
-                onClick={handleGenerateOrRegenerate}
-                disabled={regenLoading}
-              >
-                {regenLoading
-                  ? "Working…"
-                  : apiKey
-                  ? "Regenerate API key"
-                  : "Generate API key"}
-              </button>
-
-              {apiKey && apiKey.secret && (
-                <div className="api-key-secret-block">
-                  <label className="api-key-label">Your API key</label>
-                  <div className="api-key-input-row">
+            {apiKey && apiKey.secret && (
+              <div className="dash-key-panel">
+                <div className="dash-input-row">
+                  <label>Your API key</label>
+                  <div className="dash-key-row">
                     <input
-                      className="api-key-input"
+                      className="dash-input"
                       type={showSecret ? "text" : "password"}
                       readOnly
                       value={apiKey.secret}
                     />
                     <button
                       type="button"
-                      className="btn secondary"
+                      className="btn outline dash-key-btn"
                       onClick={() => setShowSecret((prev) => !prev)}
                     >
                       {showSecret ? "Hide" : "Reveal"}
                     </button>
                     <button
                       type="button"
-                      className="btn secondary"
+                      className="btn outline dash-key-btn"
                       onClick={handleCopySecret}
                     >
                       {copyMessage || "Copy"}
                     </button>
                   </div>
-                  <p className="api-key-hint">
-                    Keep this key secret. Store it in an environment variable or
-                    your secret manager and never commit it to Git.
+                  <p className="dash-login-hint">
+                    Keep this key secret. Store it as{" "}
+                    <code>VEROAPI_KEY</code> in your environment, never in
+                    client-side code.
                   </p>
                 </div>
-              )}
 
-              {apiKey && (
-                <div className="api-key-meta-table">
-                  <div className="api-key-meta-row api-key-meta-head">
+                <div className="dash-table">
+                  <div className="dash-table-row head">
                     <span>Label</span>
                     <span>Prefix</span>
                     <span>Created</span>
                     <span>Last used</span>
                   </div>
-                  <div className="api-key-meta-row">
+                  <div className="dash-table-row">
                     <span>{apiKey.label || "Primary key"}</span>
                     <span>{apiKey.prefix}</span>
                     <span>{formatTime(apiKey.created_at)}</span>
                     <span>{formatTime(apiKey.last_used_at)}</span>
                   </div>
                 </div>
-              )}
-            </section>
-
-            {/* Quickstart */}
-            <section className="panel-card quickstart-card">
-              <div className="panel-card-header">
-                <div>
-                  <h2>Quickstart</h2>
-                  <p className="panel-subtitle">
-                    Drop VeroAPI into your app in a few lines of code.
-                  </p>
-                </div>
-                <span className="badge badge-soft">Random endpoints</span>
               </div>
-
-              <ol className="quickstart-steps">
-                <li>
-                  <strong>Generate your key</strong> on this page and save it as{" "}
-                  <code>VEROAPI_KEY</code>.
-                </li>
-                <li>
-                  <strong>Call an endpoint</strong> like{" "}
-                  <code>POST /v1/text/scramble</code> with the key in the{" "}
-                  <code>Authorization: Bearer</code> header.
-                </li>
-                <li>
-                  <strong>Scale out</strong> by reusing the same key across bots,
-                  dashboards, and small internal tools.
-                </li>
-              </ol>
-
-              <p className="quickstart-footnote">
-                When you regenerate, the old key stops working immediately. Rotate
-                keys during a low-traffic window if you’re in production.
-              </p>
-            </section>
+            )}
           </section>
-        </main>
+
+          <section className="dash-card dash-card-secondary">
+            <div className="dash-card-header">
+              <h2>Quickstart</h2>
+              <span className="dash-tag dash-tag-soft">Random endpoints</span>
+            </div>
+            <ol className="dash-steps">
+              <li>
+                <strong>Generate your key</strong> on this page.
+              </li>
+              <li>
+                <strong>Set an env var</strong> like{" "}
+                <code>VEROAPI_KEY</code> in your bot or app.
+              </li>
+              <li>
+                <strong>Call an endpoint</strong> such as{" "}
+                <code>POST /v1/text/scramble</code>.
+              </li>
+            </ol>
+            <p className="dash-login-hint dash-quickstart-note">
+              As you add more random helpers (Discord XP utilities, rewards,
+              text tools), they all reuse this same key and auth header.
+            </p>
+          </section>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
 
