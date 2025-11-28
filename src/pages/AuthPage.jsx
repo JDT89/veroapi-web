@@ -1,225 +1,285 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config";
+import "./AuthPage.css";
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [authMode, setAuthMode] = useState("login");
 
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [loginLoading, setLoginLoading] = useState(false);
-  const [loginError, setLoginError] = useState("");
+  const [mode, setMode] = useState("login"); // "login" | "signup"
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  const [signupEmail, setSignupEmail] = useState("");
-  const [signupPassword, setSignupPassword] = useState("");
-  const [signupConfirm, setSignupConfirm] = useState("");
-  const [signupLoading, setSignupLoading] = useState(false);
-  const [signupError, setSignupError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
+  // If already logged in, go straight to dashboard
   useEffect(() => {
-    const existing = window.localStorage.getItem("veroapi_token");
-    if (existing) {
-      navigate("/dashboard");
+    if (typeof window !== "undefined") {
+      const token = window.localStorage.getItem("veroapi_token");
+      if (token) {
+        navigate("/dashboard");
+      }
     }
   }, [navigate]);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoginLoading(true);
-    setLoginError("");
+  const handleModeChange = (nextMode) => {
+    if (nextMode === mode) return;
+    setMode(nextMode);
+    setError("");
+    setSuccess("");
+  };
 
+  const validateForm = () => {
+    if (!email.trim() || !password.trim()) {
+      setError("Email and password are required.");
+      return false;
+    }
+
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
+      setError("Please enter a valid email address.");
+      return false;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long.");
+      return false;
+    }
+
+    if (mode === "signup" && password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (!validateForm()) return;
+
+    setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/v1/auth/login`, {
+      const path = mode === "login" ? "/v1/auth/login" : "/v1/auth/signup";
+      const res = await fetch(`${API_BASE_URL}${path}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: loginEmail,
-          password: loginPassword,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), password }),
       });
 
       const data = await res.json();
 
       if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Login failed");
+        throw new Error(data.error || "Authentication failed.");
       }
 
-      window.localStorage.setItem("veroapi_token", data.token);
-      setLoginPassword("");
-      navigate("/dashboard");
+      const token = data.token;
+      if (typeof window !== "undefined" && token) {
+        window.localStorage.setItem("veroapi_token", token);
+      }
+
+      setSuccess(
+        mode === "signup"
+          ? "Account created. Redirecting to your dashboard…"
+          : "Welcome back. Redirecting to your dashboard…"
+      );
+
+      // Small delay so user can see the message
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 700);
     } catch (err) {
-      setLoginError(err.message || "Login failed");
+      setError(err.message || "Something went wrong. Please try again.");
     } finally {
-      setLoginLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    setSignupLoading(true);
-    setSignupError("");
+  const passwordStrength = (() => {
+    if (!password) return "";
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
 
-    try {
-      if (signupPassword !== signupConfirm) {
-        throw new Error("Passwords do not match.");
-      }
-
-      const res = await fetch(`${API_BASE_URL}/v1/auth/signup`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: signupEmail,
-          password: signupPassword,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Signup failed");
-      }
-
-      window.localStorage.setItem("veroapi_token", data.token);
-      setSignupPassword("");
-      setSignupConfirm("");
-      navigate("/dashboard");
-    } catch (err) {
-      setSignupError(err.message || "Signup failed");
-    } finally {
-      setSignupLoading(false);
-    }
-  };
+    if (score <= 1) return "Weak";
+    if (score === 2) return "Okay";
+    if (score === 3) return "Strong";
+    return "Very strong";
+  })();
 
   return (
     <section className="auth-page">
-      <div className="auth-inner">
+      <div className="auth-shell">
+        {/* Left column – copy */}
         <div className="auth-copy">
-          <h1>Sign in to VeroAPI</h1>
+          <span className="auth-pill">
+            <span className="auth-pill-dot" />
+            VeroAPI Console
+          </span>
+          <h1>{mode === "login" ? "Welcome back" : "Create your account"}</h1>
           <p>
-            Access your account, manage your single API key, and see usage at a
-            glance. Rate limits are tied to your login, not to projects.
+            Sign in to manage your API key, explore random endpoints, and plug
+            VeroAPI straight into your apps, bots, and internal tools.
           </p>
-          <ul className="auth-bullets">
-            <li>One API key per account (easy to rotate).</li>
-            <li>Perfect for solo builders, bots, and side projects.</li>
-            <li>Ready to plug into usage-based billing later.</li>
+
+          <ul className="auth-points">
+            <li>One API key per account with simple rate limiting.</li>
+            <li>No dashboards to build — just plug into your existing stack.</li>
+            <li>Perfect for Discord bots, cron jobs, and small SaaS utilities.</li>
           </ul>
+
+          <div className="auth-footnote">
+            Need help?{" "}
+            <button
+              type="button"
+              className="auth-link-button"
+              onClick={() => navigate("/docs")}
+            >
+              Read the docs
+            </button>
+          </div>
         </div>
 
-        <div className="auth-card dash-card">
-          <div className="dash-card-header">
-            <h2>{authMode === "login" ? "Welcome back" : "Create an account"}</h2>
-            <span className="dash-tag soft">VeroAPI account</span>
-          </div>
-
-          <div className="dash-auth-tabs">
+        {/* Right column – card */}
+        <div className="auth-card">
+          {/* Tabs */}
+          <div className="auth-tabs">
             <button
-              className={`dash-auth-tab ${
-                authMode === "login" ? "active" : ""
-              }`}
-              onClick={() => setAuthMode("login")}
+              type="button"
+              className={`auth-tab ${mode === "login" ? "active" : ""}`}
+              onClick={() => handleModeChange("login")}
             >
-              Log in
+              Sign in
             </button>
             <button
-              className={`dash-auth-tab ${
-                authMode === "signup" ? "active" : ""
-              }`}
-              onClick={() => setAuthMode("signup")}
+              type="button"
+              className={`auth-tab ${mode === "signup" ? "active" : ""}`}
+              onClick={() => handleModeChange("signup")}
             >
-              Sign up
+              Create account
             </button>
           </div>
 
-          {authMode === "login" ? (
-            <form className="dash-login-form" onSubmit={handleLogin}>
-              <div className="dash-input-row">
-                <label>Email</label>
+          {/* Status badges */}
+          <div className="auth-badges">
+            <span className="auth-badge">
+              <span className="auth-badge-dot" />
+              Email + password only
+            </span>
+            <span className="auth-badge ghost">
+              No social login (yet)
+            </span>
+          </div>
+
+          {/* Messages */}
+          {error && <p className="auth-alert error">{error}</p>}
+          {success && <p className="auth-alert success">{success}</p>}
+
+          {/* Form */}
+          <form className="auth-form" onSubmit={handleSubmit}>
+            <div className="auth-field">
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                className="auth-input"
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+              />
+            </div>
+
+            <div className="auth-field">
+              <label htmlFor="password">Password</label>
+              <div className="auth-input-row">
                 <input
-                  className="dash-input"
-                  type="email"
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  required
+                  id="password"
+                  className="auth-input"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="At least 8 characters"
                 />
+                <button
+                  type="button"
+                  className="auth-toggle-visibility"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
               </div>
-              <div className="dash-input-row">
-                <label>Password</label>
-                <input
-                  className="dash-input"
-                  type="password"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  required
-                />
-              </div>
-              {loginError && (
-                <p className="dash-login-error">{loginError}</p>
+              {password && (
+                <div className="auth-password-strength">
+                  Password strength: <span>{passwordStrength}</span>
+                </div>
               )}
-              <button
-                className="btn primary dash-login-btn"
-                type="submit"
-                disabled={loginLoading}
-              >
-                {loginLoading ? "Signing in…" : "Sign in"}
-              </button>
-              <p className="dash-login-hint">
-                You can always regenerate your key later from the dashboard.
+            </div>
+
+            {mode === "signup" && (
+              <div className="auth-field">
+                <label htmlFor="confirm">Confirm password</label>
+                <input
+                  id="confirm"
+                  className="auth-input"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Repeat your password"
+                />
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="btn primary auth-submit"
+              disabled={loading}
+            >
+              {loading
+                ? mode === "login"
+                  ? "Signing in…"
+                  : "Creating account…"
+                : mode === "login"
+                ? "Sign in"
+                : "Create account"}
+            </button>
+
+            {mode === "login" && (
+              <p className="auth-secondary-text">
+                Don&apos;t have an account?{" "}
+                <button
+                  type="button"
+                  className="auth-link-button"
+                  onClick={() => handleModeChange("signup")}
+                >
+                  Create one
+                </button>
               </p>
-            </form>
-          ) : (
-            <form className="dash-login-form" onSubmit={handleSignup}>
-              <div className="dash-input-row">
-                <label>Email</label>
-                <input
-                  className="dash-input"
-                  type="email"
-                  value={signupEmail}
-                  onChange={(e) => setSignupEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="dash-input-row">
-                <label>Password</label>
-                <input
-                  className="dash-input"
-                  type="password"
-                  value={signupPassword}
-                  onChange={(e) => setSignupPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="dash-input-row">
-                <label>Confirm password</label>
-                <input
-                  className="dash-input"
-                  type="password"
-                  value={signupConfirm}
-                  onChange={(e) => setSignupConfirm(e.target.value)}
-                  required
-                />
-              </div>
-              {signupError && (
-                <p className="dash-login-error">{signupError}</p>
-              )}
-              <button
-                className="btn primary dash-login-btn"
-                type="submit"
-                disabled={signupLoading}
-              >
-                {signupLoading ? "Creating account…" : "Create account"}
-              </button>
-              <p className="dash-login-hint">
-                Each account automatically gets one primary API key once you
-                generate it from the dashboard.
+            )}
+
+            {mode === "signup" && (
+              <p className="auth-secondary-text">
+                Already have an account?{" "}
+                <button
+                  type="button"
+                  className="auth-link-button"
+                  onClick={() => handleModeChange("login")}
+                >
+                  Sign in
+                </button>
               </p>
-            </form>
-          )}
+            )}
+          </form>
         </div>
       </div>
     </section>
@@ -227,3 +287,4 @@ function AuthPage() {
 }
 
 export default AuthPage;
+
