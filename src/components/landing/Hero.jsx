@@ -1,107 +1,141 @@
-// src/components/landing/Hero.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
-function DashboardPreview() {
-  return (
-    <div className="dash-preview">
-      <div className="dash-preview-header">
-        <div>
-          <div className="dash-preview-eyebrow">VeroAPI dashboard</div>
-          <div className="dash-preview-title">Primary API key</div>
-        </div>
-        <div className="dash-preview-plan">
-          <span className="dash-preview-plan-pill">Playground</span>
-        </div>
-      </div>
-
-      <div className="dash-preview-status-row">
-        <span className="status-dot status-dot-ok" />
-        <span className="dash-preview-status-text">
-          API online • per-account rate limiting
-        </span>
-      </div>
-
-      <div className="dash-preview-keycard">
-        <div className="dash-preview-key-top">
-          <span className="dash-preview-key-label">Account key</span>
-          <span className="dash-preview-key-pill">1 key per user</span>
-        </div>
-        <div className="dash-preview-key-value">
-          <span className="dash-preview-key-prefix">vero_live_</span>
-          <span className="dash-preview-key-blur">xxxxxxxxxxxx</span>
-        </div>
-        <div className="dash-preview-key-actions">
-          <span className="dash-preview-chip">Reveal</span>
-          <span className="dash-preview-chip">Copy</span>
-        </div>
-      </div>
-
-      <div className="dash-preview-metrics">
-        <div className="dash-preview-metric">
-          <div className="dash-preview-metric-value">3</div>
-          <div className="dash-preview-metric-label">Endpoints live</div>
-        </div>
-        <div className="dash-preview-metric">
-          <div className="dash-preview-metric-value">20+</div>
-          <div className="dash-preview-metric-label">Planned helpers</div>
-        </div>
-        <div className="dash-preview-metric">
-          <div className="dash-preview-metric-value">Per account</div>
-          <div className="dash-preview-metric-label">Rate limiting</div>
-        </div>
-      </div>
-
-      <div className="dash-preview-footer">
-        <span className="dash-preview-footer-pill">
-          JSON in • JSON out • No SDK required
-        </span>
-      </div>
-    </div>
-  );
-}
+import { API_BASE_URL } from "../../config";
 
 function Hero() {
+  const [healthLoading, setHealthLoading] = useState(true);
+  const [healthError, setHealthError] = useState(false);
+  const [healthData, setHealthData] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function checkHealth() {
+      try {
+        setHealthLoading(true);
+        setHealthError(false);
+        const res = await fetch(`${API_BASE_URL}/v1/health`);
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+        const data = await res.json();
+        if (!cancelled) setHealthData(data);
+      } catch (err) {
+        if (!cancelled) setHealthError(true);
+      } finally {
+        if (!cancelled) setHealthLoading(false);
+      }
+    }
+
+    checkHealth();
+    const interval = setInterval(checkHealth, 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const uptimeHours =
+    typeof healthData?.uptime_seconds === "number"
+      ? Math.floor(healthData.uptime_seconds / 3600)
+      : null;
+
   return (
     <section className="hero">
+      {/* LEFT SIDE */}
       <div className="hero-left">
-        {/* Pill now includes uptime/status and is the #status anchor */}
-        <p className="hero-pill" id="status">
-          <span className="pill-dot" />
-          <span>
-            All systems operational
-          </span>
-        </p>
+        {/* Status pill instead of “NEW Random…” */}
+        <div className="hero-pill">
+          <span
+            className="pill-dot"
+            style={{
+              background: healthError
+                ? "#f97316"
+                : healthLoading
+                ? "#fde047"
+                : "#22c55e",
+              boxShadow: healthError
+                ? "0 0 0 5px rgba(248, 113, 113, 0.35)"
+                : "0 0 0 5px rgba(34, 197, 94, 0.25)",
+            }}
+          />
+          {healthLoading && <>Checking API status…</>}
+          {!healthLoading && healthError && <>API status: Unreachable</>}
+          {!healthLoading && !healthError && (
+            <>
+              API status: Online
+              {uptimeHours !== null && (
+                <>
+                  {" • "}
+                  <span style={{ opacity: 0.9 }}>{uptimeHours}h uptime</span>
+                </>
+              )}
+            </>
+          )}
+        </div>
 
         <h1>
-          One API key.
+          Random-but-useful APIs
           <br />
-          Dozens of endpoints.
-          <br />
-          Zero infrastructure.
+          for bots, tools & automations.
         </h1>
 
         <p className="hero-sub">
-          VeroAPI gives you a single account-level key and a growing library of
-          “random” but ridiculously useful endpoints for apps and Discord bots.
+          VeroAPI gives you a single key for a growing collection of ready-made
+          endpoints—from text utilities to game helpers—so you can ship
+          features, not glue code.
         </p>
 
         <div className="hero-actions">
-          <Link to="/auth" className="btn primary hero-primary nav-btn-link">
-            Start free (1 key per account)
+          <Link to="/auth">
+            <button className="btn primary" type="button">
+              Get your API key
+            </button>
           </Link>
-          <Link to="/docs" className="btn outline hero-secondary nav-btn-link">
-            Read the docs
+          <Link to="/docs">
+            <button className="btn outline" type="button">
+              View docs
+            </button>
           </Link>
         </div>
 
         <p className="hero-note">
-          No card • One key per user • Rate limits per account, not per project.
+          No credit card required. One API key per account • Rate limits per
+          user.
         </p>
       </div>
 
+      {/* RIGHT SIDE – Use-case tiles instead of cURL example */}
       <div className="hero-right">
-        <DashboardPreview />
+        <div className="dash-preview">
+          <div className="dash-preview-header">
+            <div>
+              <div className="dash-preview-eyebrow">Use cases</div>
+              <div className="dash-preview-title">
+                Drop-in APIs for your stack
+              </div>
+            </div>
+            <span className="dash-preview-plan-pill">Ready in minutes</span>
+          </div>
+
+          <ul className="dx-list" style={{ marginTop: 6 }}>
+            <li>
+              <strong>Discord bots</strong> — XP helpers, reward systems,
+              streaks, randomizers and more without writing custom endpoints.
+            </li>
+            <li>
+              <strong>Internal tools</strong> — back-office scripts, dashboards,
+              admin panels and CLIs that just call a simple HTTPS API.
+            </li>
+            <li>
+              <strong>Automation & cron</strong> — scheduled jobs, webhooks and
+              background workers powered by one reusable API key.
+            </li>
+          </ul>
+
+          <p className="hero-note" style={{ marginTop: 8 }}>
+            Start with one key, then plug VeroAPI into bots, dashboards or
+            automations as you grow.
+          </p>
+        </div>
       </div>
     </section>
   );
