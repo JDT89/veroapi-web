@@ -1926,3 +1926,19 @@ pre.code-body code {
     display: none;
   }
 }
+
+/* Extra spacing tweaks for small screens on landing */
+@media (max-width: 720px) {
+  .hero {
+    margin-top: 8px;
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+  }
+
+  .trust-strip {
+    margin-top: 24px;
+    gap: 10px;
+  }
+}
