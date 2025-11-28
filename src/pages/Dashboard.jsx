@@ -248,14 +248,14 @@ function Dashboard() {
     <section className="dash">
       <aside className="dash-sidebar">
         <div className="dash-sidebar-header">
-          <span className="dash-pill">Account</span>
+          <span className="dash-pill">VeroAPI account</span>
           <div className="dash-workspace-name">
             <span
               className={`dash-health-dot ${
                 healthLoading ? "loading" : apiOnline ? "ok" : "error"
               }`}
             />
-            {user ? user.email : "Loading…"}
+            {user && user.email ? user.email : "Your account"}
           </div>
           <div className="dash-env-badge">
             1 primary API key • Rate limit per account
@@ -263,7 +263,7 @@ function Dashboard() {
           <div className="dash-health">
             {healthLoading && <span>Checking API health…</span>}
             {!healthLoading && healthError && (
-              <span>API unreachable from dashboard.</span>
+              <span>API health check failed — we’ll keep retrying.</span>
             )}
             {!healthLoading && !healthError && (
               <span>
@@ -291,20 +291,37 @@ function Dashboard() {
         <header className="dash-main-header">
           <div>
             <h1>Overview</h1>
-            <p>
-              Manage your single API key and see a quick snapshot of account
-              usage.
-            </p>
+            <p>Track your API status, usage and limits in one place.</p>
           </div>
-          {user ? (
-            <button className="btn ghost" onClick={handleLogout}>
-              Sign out
-            </button>
-          ) : (
-            <button className="btn primary" onClick={() => navigate("/auth")}>
-              Go to sign in
-            </button>
-          )}
+
+          <div className="dash-user-area">
+            <div className="dash-user-chip">
+              <div className="dash-user-avatar">
+                {user && user.email
+                  ? user.email.charAt(0).toUpperCase()
+                  : "V"}
+              </div>
+              <div className="dash-user-meta">
+                <div className="dash-user-email">
+                  {user && user.email ? user.email : "Your account"}
+                </div>
+                <div className="dash-user-plan">Plan: Free</div>
+              </div>
+            </div>
+
+            {user ? (
+              <button className="btn ghost" onClick={handleLogout}>
+                Sign out
+              </button>
+            ) : (
+              <button
+                className="btn primary"
+                onClick={() => navigate("/auth")}
+              >
+                Go to sign in
+              </button>
+            )}
+          </div>
         </header>
 
         <div className="dash-grid">
@@ -332,16 +349,16 @@ function Dashboard() {
                 : requestsLast24h.toLocaleString()}
             </div>
             <div className="dash-card-sub">
-              This is optional and depends on how you implement stats on the
-              backend.
+              Rough count of your requests in the last 24h. Free tier includes
+              5,000/day.
             </div>
           </div>
 
           <div className="dash-card">
             <div className="dash-card-label">Plan</div>
-            <div className="dash-card-value">Playground</div>
+            <div className="dash-card-value">Free</div>
             <div className="dash-card-sub">
-              1 API key per account • Upgrade later for higher limits.
+              1 API key per account • 5,000 requests/day on Free.
             </div>
           </div>
         </div>
