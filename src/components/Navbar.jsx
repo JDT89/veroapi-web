@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import "./Navbar.css";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ function Navbar() {
   const closeMobile = () => setMobileOpen(false);
 
   const linkClass = ({ isActive }) =>
-    isActive ? "nav-link-active" : undefined;
+    isActive ? "nav-link nav-link-active" : "nav-link";
 
   return (
     <>
@@ -101,19 +102,10 @@ function Navbar() {
         <div className="nav-mobile">
           <div className="nav-mobile-inner">
             <div className="nav-mobile-links">
-              <NavLink
-                to="/"
-                end
-                onClick={closeMobile}
-                className={linkClass}
-              >
+              <NavLink to="/" end onClick={closeMobile} className={linkClass}>
                 Overview
               </NavLink>
-              <NavLink
-                to="/docs"
-                onClick={closeMobile}
-                className={linkClass}
-              >
+              <NavLink to="/docs" onClick={closeMobile} className={linkClass}>
                 Docs
               </NavLink>
               <NavLink
