@@ -12,6 +12,7 @@ export const ENDPOINT_GROUPS = [
         name: "Word scrambler",
         description: "Scramble a word with multiple randomized variations.",
         badge: "Games • Bots",
+        status: "Live",
       },
       {
         method: "POST",
@@ -19,6 +20,7 @@ export const ENDPOINT_GROUPS = [
         name: "Slugify",
         description: "Turn titles into URL-safe slugs with sane defaults.",
         badge: "Content",
+        status: "Planned",
       },
       {
         method: "POST",
@@ -26,6 +28,7 @@ export const ENDPOINT_GROUPS = [
         name: "Title case",
         description: "Normalize titles and headings for display.",
         badge: "Formatting",
+        status: "Planned",
       },
     ],
   },
@@ -40,6 +43,7 @@ export const ENDPOINT_GROUPS = [
         name: "XP calculator",
         description: "Turn activity into XP using a balanced curve.",
         badge: "XP",
+        status: "Planned",
       },
       {
         method: "POST",
@@ -47,6 +51,7 @@ export const ENDPOINT_GROUPS = [
         name: "Level range",
         description: "Figure out XP needed between levels.",
         badge: "XP",
+        status: "Planned",
       },
       {
         method: "POST",
@@ -54,6 +59,7 @@ export const ENDPOINT_GROUPS = [
         name: "Cooldown check",
         description: "Simple per-user cooldown logic for commands.",
         badge: "Cooldowns",
+        status: "Planned",
       },
     ],
   },
@@ -68,6 +74,7 @@ export const ENDPOINT_GROUPS = [
         name: "Coin flip",
         description: "Heads or tails with an optional bias.",
         badge: "Games",
+        status: "Live",
       },
       {
         method: "GET",
@@ -75,6 +82,7 @@ export const ENDPOINT_GROUPS = [
         name: "Random number",
         description: "Random integer between min/max with seed support.",
         badge: "Utility",
+        status: "Beta",
       },
       {
         method: "POST",
@@ -82,6 +90,7 @@ export const ENDPOINT_GROUPS = [
         name: "Pick one",
         description: "Choose a random option from a list for you.",
         badge: "Utility",
+        status: "Planned",
       },
     ],
   },
