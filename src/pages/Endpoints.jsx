@@ -27,12 +27,30 @@ function EndpointsPage() {
                   <span className="endpoint-method">{ep.method}</span>
                   <span className="endpoint-path">{ep.path}</span>
                 </div>
+
                 <div className="endpoint-desc">
                   <strong>{ep.name}</strong> — {ep.description}
                 </div>
-                {ep.badge && (
-                  <span className="endpoint-badge">{ep.badge}</span>
-                )}
+
+                <div className="endpoint-meta-row">
+                  {ep.badge && (
+                    <span className="endpoint-badge">{ep.badge}</span>
+                  )}
+                  {ep.status && (
+                    <span
+                      className={
+                        "endpoint-status " +
+                        (ep.status === "Live"
+                          ? "endpoint-status-live"
+                          : ep.status === "Beta"
+                          ? "endpoint-status-beta"
+                          : "endpoint-status-planned")
+                      }
+                    >
+                      {ep.status}
+                    </span>
+                  )}
+                </div>
               </article>
             ))}
           </div>
