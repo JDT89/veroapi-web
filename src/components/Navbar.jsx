@@ -21,6 +21,7 @@ function Navbar() {
           <a href="#pricing">Pricing</a>
           <a href="#faq">FAQ</a>
           <Link to="/docs">Docs</Link>
+          <Link to="/endpoints">Endpoints</Link>
         </nav>
 
         <div className="nav-actions">
