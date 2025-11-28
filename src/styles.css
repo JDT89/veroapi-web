@@ -1452,28 +1452,38 @@ pre.code-body code {
 
 /* ========= DASHBOARD ========= */
 
+/* ========= DASHBOARD ========= */
+
 .dash {
   min-height: calc(100vh - 64px);
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr);
   gap: 20px;
+  margin-top: 4px;
 }
 
 .dash-sidebar {
-  border-right: 1px solid rgba(30, 64, 175, 0.9);
   padding-right: 18px;
+  border-right: 1px solid rgba(31, 41, 55, 0.9);
 }
 
+/* subtle framed “chip” for the account header */
 .dash-sidebar-header {
   margin-bottom: 16px;
+  padding: 14px 14px 12px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(30, 64, 175, 0.9);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.7);
 }
 
 .dash-pill {
   font-size: 11px;
   padding: 2px 7px;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.5);
-  color: rgba(148, 163, 184, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  color: rgba(209, 213, 219, 0.95);
+  background: rgba(15, 23, 42, 0.96);
 }
 
 .dash-workspace-name {
@@ -1494,6 +1504,28 @@ pre.code-body code {
   margin-top: 6px;
   font-size: 11px;
   color: rgba(148, 163, 184, 0.95);
+}
+
+/* status dot for API health */
+.dash-health-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.7);
+}
+
+.dash-health-dot.ok {
+  background: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.22);
+}
+
+.dash-health-dot.error {
+  background: #f97316;
+  box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.22);
+}
+
+.dash-health-dot.loading {
+  background: rgba(148, 163, 184, 0.7);
 }
 
 .dash-nav {
@@ -1559,11 +1591,13 @@ pre.code-body code {
   margin-bottom: 16px;
 }
 
+/* cleaner, less-purple card look */
 .dash-card {
-  border-radius: 14px;
+  border-radius: 16px;
   border: 1px solid rgba(31, 41, 55, 0.95);
-  background: rgba(15, 23, 42, 0.97);
+  background: rgba(10, 16, 32, 0.97);
   padding: 12px 12px 14px;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.7);
 }
 
 .dash-card-label {
@@ -1600,7 +1634,7 @@ pre.code-body code {
   margin-top: 8px;
   border-radius: 10px;
   border: 1px solid rgba(31, 41, 55, 0.95);
-  background: rgba(15, 23, 42, 0.98);
+  background: rgba(6, 12, 24, 0.98);
 }
 
 .dash-table-row {
@@ -1627,6 +1661,7 @@ pre.code-body code {
   font-size: 12px;
   color: rgba(148, 163, 184, 0.95);
 }
+
 
 
 /* ========= FOOTER ========= */
