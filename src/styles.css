@@ -386,6 +386,67 @@ button {
 
 /* ========= HERO DASHBOARD PREVIEW ========= */
 
+/* Dashboard header user chip */
+
+.dash-user-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dash-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(31, 41, 55, 0.9);
+  background: rgba(15, 23, 42, 0.96);
+}
+
+.dash-user-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  background: radial-gradient(circle at 30% 20%, #38bdf8, #4f46e5);
+  color: #f9fafb;
+  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.6);
+}
+
+.dash-user-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dash-user-email {
+  font-size: 12px;
+  color: #e5e7eb;
+}
+
+.dash-user-plan {
+  font-size: 11px;
+  color: rgba(148, 163, 184, 0.95);
+}
+
+.dash {
+  min-height: calc(100vh - 64px);
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 20px;
+  /* add this background if it's not already there */
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.25), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.16), transparent 55%),
+    transparent;
+}
+
+
 .dash-preview {
   background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.35), transparent 55%),
     rgba(10, 16, 40, 0.96);
