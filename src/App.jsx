@@ -9,6 +9,8 @@ import LandingPage from "./pages/Landing";
 import AuthPage from "./pages/AuthPage";
 import Dashboard from "./pages/Dashboard";
 import DocsPage from "./pages/DocsPage";
+import EndpointsPage from "./pages/Endpoints";
+
 
 function App() {
   return (
@@ -16,11 +18,15 @@ function App() {
       <div className="halo-bg" />
       <Navbar />
       <main className="page">
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/docs" element={<DocsPage />} />
+  <Routes>
+  <Route path="/" element={<LandingPage />} />
+  <Route path="/auth" element={<AuthPage />} />
+  <Route path="/dashboard" element={<DashboardPage />} />
+  <Route path="/docs" element={<DocsPage />} />
+  <Route path="/endpoints" element={<EndpointsPage />} /> {/* NEW */}
+</Routes>
+
+
         </Routes>
       </main>
       <Footer />
