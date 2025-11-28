@@ -958,6 +958,27 @@ button {
     rgba(15, 23, 42, 1);
 }
 
+/* ========= ENDPOINTS PAGE ========= */
+
+.endpoints-page {
+  margin-top: 8px;
+}
+
+.endpoints-section {
+  margin-top: 26px;
+}
+
+.endpoints-section-header h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.endpoints-section-header p {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: rgba(148, 163, 184, 0.95);
+}
+
 
 /* ========= FAQ ========= */
 
