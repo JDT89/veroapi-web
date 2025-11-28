@@ -1,0 +1,243 @@
+/* ========= DESIGN TOKENS ========= */
+
+:root {
+  --bg: #020617;
+  --bg-elevated: #020617;
+  --bg-soft: #020617;
+
+  --card: #050816;
+  --card-soft: #0b1022;
+
+  --border-subtle: rgba(148, 163, 184, 0.22);
+  --border-strong: rgba(148, 163, 184, 0.5);
+
+  --text-main: #e5e7eb;
+  --text-soft: #9ca3af;
+  --text-softer: #6b7280;
+
+  --brand: #4f46e5;
+  --brand-soft: rgba(79, 70, 229, 0.25);
+  --accent: #22c1c3;
+  --accent-soft: rgba(34, 193, 195, 0.2);
+  --danger: #f97373;
+
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --radius-pill: 999px;
+
+  --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.95);
+}
+
+/* ========= RESET / BASE ========= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #020617 0, #000 65%);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* ========= APP SHELL ========= */
+
+.app-root {
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  color: var(--text-main);
+  background: radial-gradient(circle at top, #020617 0, #000 70%);
+}
+
+.app-bg-glow {
+  pointer-events: none;
+  position: fixed;
+  inset: -40%;
+  background:
+    radial-gradient(circle at 10% 0, rgba(59, 130, 246, 0.3), transparent 55%),
+    radial-gradient(circle at 90% 0, rgba(236, 72, 153, 0.16), transparent 60%),
+    radial-gradient(circle at 50% 100%, rgba(56, 189, 248, 0.14), transparent 60%);
+  mix-blend-mode: screen;
+  opacity: 0.9;
+  z-index: 0;
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 96px 20px 72px; /* top leaves room for navbar */
+}
+
+/* ========= BUTTONS ========= */
+
+.btn {
+  border-radius: var(--radius-pill);
+  padding: 0.6rem 1.2rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  transition:
+    background 0.14s ease,
+    color 0.14s ease,
+    border-color 0.14s ease,
+    box-shadow 0.14s ease,
+    transform 0.08s ease;
+  background: transparent;
+  color: var(--text-main);
+}
+
+.btn.primary {
+  background: radial-gradient(circle at 20% 0, #6366f1, #4f46e5);
+  border-color: rgba(129, 140, 248, 0.8);
+  color: #f9fafb;
+  box-shadow: 0 18px 40px rgba(79, 70, 229, 0.75);
+}
+
+.btn.primary:hover {
+  background: radial-gradient(circle at 20% 0, #818cf8, #4f46e5);
+  transform: translateY(-1px);
+}
+
+.btn.outline {
+  border-color: rgba(148, 163, 184, 0.5);
+  background: rgba(15, 23, 42, 0.8);
+  color: var(--text-main);
+}
+
+.btn.outline:hover {
+  border-color: rgba(209, 213, 219, 0.85);
+  background: rgba(15, 23, 42, 0.95);
+}
+
+.btn.ghost {
+  border-color: transparent;
+  background: transparent;
+  color: rgba(209, 213, 219, 0.9);
+}
+
+.btn.ghost:hover {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.btn.block {
+  width: 100%;
+}
+
+/* ========= GENERIC LAYOUT HELPERS ========= */
+
+.section-heading {
+  margin: 40px 0 16px;
+  max-width: 520px;
+}
+
+.section-heading h2 {
+  margin: 0 0 6px;
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
+}
+
+.section-heading p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-soft);
+}
+
+/* A simple content card, used by many pages */
+.card {
+  border-radius: var(--radius-lg);
+  background: radial-gradient(circle at top left, #111827, #020617 70%);
+  border: 1px solid rgba(31, 41, 55, 0.9);
+  box-shadow: var(--shadow-soft);
+  padding: 1rem 1.1rem;
+}
+
+/* ========= FOOTER ========= */
+
+.footer {
+  position: relative;
+  z-index: 1;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 1.5rem;
+  border-top: 1px solid rgba(31, 41, 55, 0.9);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--text-soft);
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.footer-brand {
+  font-weight: 600;
+}
+
+.footer-links {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.footer-links a:hover {
+  color: #e5e7eb;
+}
+
+/* ========= SIMPLE ANIMATIONS ========= */
+
+@keyframes fadeUpSoft {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========= RESPONSIVE (GLOBAL) ========= */
+
+@media (max-width: 960px) {
+  .page {
+    padding: 84px 16px 60px;
+  }
+
+  .footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+}
