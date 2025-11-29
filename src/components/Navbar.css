@@ -1,3 +1,5 @@
+/* ========= NAVBAR ========= */
+
 .nav {
   position: fixed;
   inset: 0 0 auto 0;
@@ -12,4 +14,59 @@
   backdrop-filter: blur(16px);
 }
 
-/* ... rest of nav CSS unchanged ... */
+.nav-inner {
+  width: 100%;
+  max-width: 1120px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Brand */
+
+.nav-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.nav-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: radial-gradient(circle at 30% 20%, #38bdf8, #4f46e5);
+  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.6), 0 10px 26px rgba(15, 23, 42, 0.9);
+}
+
+.nav-logo-orbit {
+  position: absolute;
+  inset: 4px;
+  border-radius: inherit;
+  border: 1px solid rgba(248, 250, 252, 0.3);
+}
+
+.nav-logo-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #f9fafb;
+}
+
+.nav-brand {
+  font-weight: 600;
+  letter-spac
