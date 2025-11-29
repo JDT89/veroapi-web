@@ -1,7 +1,7 @@
 /* HERO main container */
 .hero-shell {
   width: 100%;
-  margin: 0;               /* landing handles top spacing */
+  margin: 0;              
   padding: 28px 28px 28px;  
   position: relative;
   border-radius: 20px;
@@ -12,7 +12,7 @@
   overflow: hidden;
 }
 
-/* Hero inner: slight nudge for visual alignment under nav */
+/* Hero inner: safe nudge to keep content visible under fixed nav */
 .hero-inner {
   position: relative;
   z-index: 1;
@@ -20,12 +20,14 @@
   grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.85fr);
   gap: 28px;
   align-items: start;
-  margin-top: -4px; /* adjust for better visual fit */
+  padding-top: 4px; /* safe adjustment */
+  margin-top: 0;    /* ensure no negative margins */
 }
 
-/* ... rest of hero CSS remains unchanged ... */
+/* Rest of hero CSS remains unchanged */
+/* ... all your previous hero styles stay here ... */
 
-/* Mobile adjustments */
+/* MOBILE adjustments */
 @media (max-width: 960px) {
   .hero-shell {
     padding: 20px 14px 20px;
@@ -35,5 +37,6 @@
     grid-template-columns: minmax(0, 1fr);
     gap: 18px;
     align-items: flex-start;
+    padding-top: 4px; /* keep the safe nudge on mobile too */
   }
 }
