@@ -1,23 +1,23 @@
-/* Landing page container - controls top spacing and overall width */
+/* Landing page container - controls top spacing and overall width
+   Matches the navbar inner width so content aligns left->right */
 .landing {
-  /* match the navbar inner width so hero aligns visually */
-  max-width: 1200px;
+  max-width: 1200px;    /* same as nav-inner */
   margin: 0 auto;
 
-  /* smaller top padding so the hero hugs the navbar more closely */
-  padding: 84px 24px 80px;
+  /* small top padding so hero sits closer to navbar but not glued */
+  padding: 72px 24px 64px;
 }
 
-/* slightly more air on very large screens, but not too much */
+/* Slightly more on very large screens (but still close to nav) */
 @media (min-width: 1440px) {
   .landing {
-    padding-top: 92px;
+    padding-top: 78px;
   }
 }
 
-/* mobile adjustments */
+/* Mobile reductions */
 @media (max-width: 960px) {
   .landing {
-    padding: 80px 16px 72px;
+    padding: 64px 16px 56px;
   }
 }
