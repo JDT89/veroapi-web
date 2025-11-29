@@ -1,21 +1,23 @@
+/* Landing page container - controls top spacing and overall width */
 .landing {
-  /* tighter max width so the hero doesn’t feel wall-to-wall */
-  max-width: 1160px;
+  /* match the navbar inner width so hero aligns visually */
+  max-width: 1200px;
   margin: 0 auto;
 
-  /* more top padding to clear the fixed navbar + add breathing room */
-  padding: 120px 24px 96px;
+  /* smaller top padding so the hero hugs the navbar more closely */
+  padding: 84px 24px 80px;
 }
 
-/* slightly more air on very large screens */
-@media (min-width: 1280px) {
+/* slightly more air on very large screens, but not too much */
+@media (min-width: 1440px) {
   .landing {
-    padding-top: 132px;
+    padding-top: 92px;
   }
 }
 
+/* mobile adjustments */
 @media (max-width: 960px) {
   .landing {
-    padding: 104px 16px 80px;
+    padding: 80px 16px 72px;
   }
 }
