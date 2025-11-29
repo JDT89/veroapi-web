@@ -4,23 +4,20 @@
   max-width: 1200px;    /* same as nav-inner */
   margin: 0 auto;
 
-  /* top padding = nav height + small gap (nav is 64px) */
-  padding: 64px 24px 64px;
+  /* small top padding so hero sits closer to navbar but not glued */
+  padding: 72px 24px 64px;
 }
 
-/* Slightly more on very large screens */
+/* Slightly more on very large screens (but still close to nav) */
 @media (min-width: 1440px) {
   .landing {
-    padding-top: 70px;
+    padding-top: 78px;
   }
 }
 
 /* Mobile reductions */
 @media (max-width: 960px) {
   .landing {
-    padding-top: 64px;
-    padding-left: 16px;
-    padding-right: 16px;
-    padding-bottom: 56px;
+    padding: 64px 16px 56px;
   }
 }
