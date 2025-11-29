@@ -1,126 +1,123 @@
+/* HERO main container */
 .hero-shell {
   position: relative;
   border-radius: 28px;
-  padding: 40px 32px 36px;
+  padding: 36px 32px 34px;
   background: radial-gradient(circle at top left, #1e293b, #020617 55%);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.8);
   color: #e5e7eb;
   overflow: hidden;
 }
 
+/* soft decorative halos behind the hero */
 .hero-shell::before {
   content: "";
   position: absolute;
   inset: -40%;
   background:
-    radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.16), transparent 60%),
-    radial-gradient(circle at 100% 0%, rgba(129, 140, 248, 0.2), transparent 60%);
-  opacity: 0.9;
+    radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.14), transparent 60%),
+    radial-gradient(circle at 100% 0%, rgba(129, 140, 248, 0.18), transparent 60%);
+  opacity: 0.92;
   mix-blend-mode: screen;
   pointer-events: none;
   z-index: 0;
 }
 
+/* layout: slightly wider left column to align with navbar links */
 .hero-inner {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.9fr);
+  /* widen the left area so title lines up more with nav */
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
   gap: 40px;
   align-items: center;
 }
 
-/* LEFT */
-
+/* LEFT column */
 .hero-left {
-  max-width: 600px;
+  max-width: none; /* allow the left column to expand */
 }
 
 .hero-status-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 11px;
+  gap: 8px;
+  padding: 5px 12px;
   border-radius: 999px;
   border: 1px solid rgba(34, 197, 94, 0.7);
-  background: rgba(22, 163, 74, 0.16);
+  background: rgba(22, 163, 74, 0.14);
   color: #bbf7d0;
-  font-size: 11px;
-  margin-bottom: 16px;
+  font-size: 12px;
+  margin-bottom: 14px;
 }
 
 .hero-status-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 999px;
   background: #22c55e;
-  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.3);
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.26);
 }
 
 .hero-title {
   margin: 0 0 18px;
-  font-size: clamp(2.5rem, 3.5vw, 3.2rem);
-  line-height: 1.08;
-  letter-spacing: -0.045em;
+  font-size: clamp(2.5rem, 3.4vw, 3.2rem);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
   color: #f9fafb;
 }
 
 .hero-sub {
-  margin: 0 0 22px;
+  margin: 0 0 20px;
   font-size: 15px;
   line-height: 1.6;
-  color: rgba(156, 163, 175, 0.96);
+  color: rgba(156, 163, 175, 0.95);
 }
 
+/* action buttons */
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .hero-btn-primary {
   background: linear-gradient(135deg, #4f46e5, #6366f1);
-  border-color: rgba(129, 140, 248, 0.8);
+  border-color: rgba(129, 140, 248, 0.85);
   color: #f9fafb;
   padding-inline: 22px;
-  box-shadow: 0 16px 36px rgba(79, 70, 229, 0.65);
-}
-
-.hero-btn-primary:hover {
-  filter: brightness(1.05);
+  box-shadow: 0 12px 30px rgba(79, 70, 229, 0.55);
 }
 
 .hero-btn-outline {
   border-color: rgba(148, 163, 184, 0.6);
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(15, 23, 42, 0.82);
   color: #e5e7eb;
 }
 
-.hero-btn-outline:hover {
-  border-color: rgba(209, 213, 219, 0.9);
-}
-
+/* footnote under CTAs */
 .hero-footnote {
-  margin: 6px 0 22px;
+  margin: 6px 0 18px;
   font-size: 12px;
-  color: rgba(148, 163, 184, 0.95);
+  color: rgba(148, 163, 184, 0.94);
 }
 
-/* metrics strip */
-
+/* stats / metrics row (below the left content) */
 .hero-metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
+  margin-top: 6px;
 }
 
 .hero-metric-card {
   border-radius: 999px;
-  padding: 11px 16px;
-  background: rgba(15, 23, 42, 0.96);
-  border: 1px solid rgba(51, 65, 85, 0.9);
+  padding: 12px 16px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(51, 65, 85, 0.88);
 }
 
 .hero-metric-value {
@@ -134,8 +131,7 @@
   color: rgba(148, 163, 184, 0.95);
 }
 
-/* RIGHT */
-
+/* RIGHT column */
 .hero-right {
   display: flex;
   justify-content: flex-end;
@@ -144,14 +140,10 @@
 .hero-usecase-card {
   border-radius: 20px;
   padding: 18px 18px 16px;
-  background: radial-gradient(
-      circle at top left,
-      rgba(56, 189, 248, 0.18),
-      transparent 60%
-    ),
-    rgba(15, 23, 42, 0.98);
-  border: 1px solid rgba(51, 65, 85, 0.9);
-  max-width: 380px;
+  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 60%),
+              rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(51, 65, 85, 0.88);
+  max-width: 420px; /* slightly wider to balance the wider left column */
   width: 100%;
 }
 
@@ -165,16 +157,16 @@
 .hero-usecase-pill {
   align-self: flex-start;
   font-size: 11px;
-  padding: 3px 9px;
+  padding: 3px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(129, 140, 248, 0.8);
-  background: rgba(30, 64, 175, 0.35);
+  border: 1px solid rgba(129, 140, 248, 0.85);
+  background: rgba(30, 64, 175, 0.36);
   color: #c7d2fe;
 }
 
 .hero-usecase-eyebrow {
   font-size: 12px;
-  color: rgba(156, 163, 175, 0.96);
+  color: rgba(156, 163, 175, 0.95);
 }
 
 .hero-usecase-list {
@@ -186,7 +178,7 @@
 }
 
 .hero-usecase-list li + li {
-  margin-top: 5px;
+  margin-top: 6px;
 }
 
 .hero-usecase-footer {
@@ -195,17 +187,16 @@
   color: rgba(148, 163, 184, 0.95);
 }
 
-/* MOBILE */
-
+/* MOBILE: stack and make left column a little more compact */
 @media (max-width: 960px) {
   .hero-shell {
-    padding: 26px 18px 26px;
-    border-radius: 22px;
+    padding: 22px 16px 22px;
+    border-radius: 18px;
   }
 
   .hero-inner {
     grid-template-columns: minmax(0, 1fr);
-    gap: 24px;
+    gap: 22px;
     align-items: flex-start;
   }
 
@@ -216,10 +207,6 @@
 
   .hero-metrics {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .hero-right {
-    justify-content: stretch;
   }
 
   .hero-usecase-card {
