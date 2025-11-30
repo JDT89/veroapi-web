@@ -1,7 +1,7 @@
 .ep-page {
   min-height: calc(100vh - 64px);
-  padding: 96px 24px 64px;
-  max-width: 1200px;
+  padding: 0;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
@@ -20,19 +20,20 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: rgba(148, 163, 184, 0.9);
+  color: var(--accent);
 }
 
 .ep-title {
   margin: 0 0 6px;
   font-size: 26px;
   letter-spacing: -0.04em;
+  color: var(--text-main);
 }
 
 .ep-subtitle {
   margin: 0 0 10px;
   font-size: 14px;
-  color: rgba(148, 163, 184, 0.95);
+  color: var(--text-soft);
 }
 
 .ep-stats-row {
@@ -47,27 +48,27 @@
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(34, 197, 94, 0.7);
-  background: rgba(22, 163, 74, 0.18);
-  color: rgba(187, 247, 208, 0.96);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--success);
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--success);
   font-size: 11px;
 }
 
 .ep-pill-dot {
   width: 7px;
   height: 7px;
-  border-radius: 999px;
-  background: #22c55e;
-  box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.25);
+  border-radius: var(--radius-pill);
+  background: var(--success);
+  box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.2);
 }
 
 .ep-pill-soft {
   padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.7);
-  background: rgba(15, 23, 42, 0.95);
-  color: rgba(148, 163, 184, 0.96);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-strong);
+  background: var(--card);
+  color: var(--text-soft);
   font-size: 11px;
 }
 
@@ -75,10 +76,9 @@
 
 .ep-meta-card {
   min-width: 260px;
-  border-radius: 16px;
-  border: 1px solid rgba(31, 41, 55, 0.95);
-  background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.25), transparent 60%),
-    rgba(15, 23, 42, 0.98);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  background: var(--card);
   padding: 12px 14px;
   font-size: 12px;
 }
@@ -92,29 +92,32 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: rgba(148, 163, 184, 0.9);
+  color: var(--text-softer);
   margin-bottom: 3px;
 }
 
 .ep-meta-value {
   display: inline-block;
   padding: 3px 7px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.95);
-  border: 1px solid rgba(31, 41, 55, 0.95);
-  color: rgba(209, 213, 219, 0.98);
+  border-radius: var(--radius-pill);
+  background: var(--bg-darker);
+  border: 1px solid var(--border-subtle);
+  color: var(--accent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .ep-link {
   padding: 0;
   border: none;
   background: none;
-  color: #60a5fa;
+  color: var(--accent);
   cursor: pointer;
   font-size: 12px;
+  transition: color 0.15s ease;
 }
 
 .ep-link:hover {
+  color: var(--highlight);
   text-decoration: underline;
 }
 
@@ -127,29 +130,31 @@
   flex-wrap: wrap;
   gap: 8px;
   padding: 4px;
-  border-radius: 999px;
-  border: 1px solid rgba(31, 41, 55, 0.95);
-  background: rgba(15, 23, 42, 0.98);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-subtle);
+  background: var(--card);
 }
 
 .ep-tab {
   font-size: 12px;
   padding: 6px 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: none;
   background: transparent;
-  color: rgba(148, 163, 184, 0.95);
+  color: var(--text-soft);
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .ep-tab:hover {
-  background: rgba(15, 23, 42, 1);
-  color: #e5e7eb;
+  background: var(--bg-elevated);
+  color: var(--text-main);
 }
 
 .ep-tab-active {
-  background: rgba(37, 99, 235, 0.96);
-  color: #f9fafb;
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 500;
 }
 
 /* ===== GRID ===== */
@@ -164,18 +169,23 @@
 /* Endpoint card */
 
 .ep-card {
-  border-radius: 16px;
-  border: 1px solid rgba(31, 41, 55, 0.95);
-  background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 60%),
-    rgba(15, 23, 42, 0.98);
-  padding: 12px 13px 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  background: var(--card);
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.ep-card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-accent);
 }
 
 .ep-card-planned {
-  opacity: 0.8;
+  opacity: 0.7;
 }
 
 .ep-card-head {
@@ -183,7 +193,7 @@
   justify-content: space-between;
   gap: 10px;
   align-items: center;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .ep-method-pill {
@@ -193,25 +203,23 @@
 }
 
 .ep-method {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 11px;
   padding: 3px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(34, 197, 94, 0.7);
-  background: rgba(22, 163, 74, 0.15);
-  color: #bbf7d0;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--success);
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--success);
 }
 
 .ep-method-post {
-  /* you can add variants later if you add GET, PUT, etc. */
+  /* POST specific styling if needed */
 }
 
 .ep-path {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 11px;
-  color: #e5e7eb;
+  color: var(--accent);
 }
 
 /* Status pill */
@@ -221,49 +229,51 @@
   align-items: center;
   gap: 6px;
   padding: 3px 9px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-size: 11px;
-  border: 1px solid rgba(148, 163, 184, 0.8);
-  background: rgba(15, 23, 42, 0.98);
-  color: rgba(148, 163, 184, 0.96);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
+  color: var(--text-soft);
 }
 
 .ep-status-dot {
   width: 6px;
   height: 6px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .ep-status-dot-live {
-  background: #22c55e;
-  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
+  background: var(--success);
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
 }
 
 .ep-status-dot-beta {
-  background: #eab308;
-  box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.25);
+  background: var(--highlight);
+  box-shadow: 0 0 0 4px var(--highlight-soft);
 }
 
 .ep-status-dot-planned {
-  background: #6b7280;
-  box-shadow: 0 0 0 4px rgba(55, 65, 81, 0.3);
+  background: var(--text-softer);
+  box-shadow: 0 0 0 4px rgba(107, 114, 128, 0.2);
 }
 
 /* Content */
 
 .ep-name {
-  margin: 2px 0 2px;
-  font-size: 15px;
+  margin: 4px 0;
+  font-size: 16px;
+  color: var(--text-main);
 }
 
 .ep-desc {
   margin: 0;
   font-size: 13px;
-  color: rgba(148, 163, 184, 0.95);
+  color: var(--text-soft);
+  line-height: 1.5;
 }
 
 .ep-meta-line {
-  margin-top: 4px;
+  margin-top: 8px;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -272,71 +282,67 @@
 .ep-chip {
   font-size: 11px;
   padding: 3px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(59, 130, 246, 0.7);
-  background: rgba(37, 99, 235, 0.25);
-  color: #bfdbfe;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .ep-chip-soft {
   font-size: 11px;
   padding: 3px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.7);
-  background: rgba(15, 23, 42, 0.95);
-  color: rgba(148, 163, 184, 0.95);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
+  color: var(--text-soft);
 }
 
 /* Code hint line */
 
 .ep-code-hint {
-  margin-top: 8px;
-  padding-top: 6px;
-  border-top: 1px dashed rgba(31, 41, 55, 0.9);
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-subtle);
   font-size: 11px;
 }
 
 .ep-code-label {
   display: block;
-  margin-bottom: 3px;
-  color: rgba(148, 163, 184, 0.95);
+  margin-bottom: 4px;
+  color: var(--text-softer);
 }
 
 .ep-code-inline {
   display: inline-block;
-  padding: 4px 6px;
-  border-radius: 6px;
-  background: rgba(15, 23, 42, 0.98);
-  border: 1px solid rgba(31, 41, 55, 0.95);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
-  color: rgba(209, 213, 219, 0.98);
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-darker);
+  border: 1px solid var(--border-subtle);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--accent);
+  word-break: break-all;
 }
 
 /* Empty state */
 
 .ep-empty {
   grid-column: 1 / -1;
-  padding: 20px 16px;
-  border-radius: 16px;
-  border: 1px dashed rgba(55, 65, 81, 0.9);
-  background: rgba(15, 23, 42, 0.96);
+  padding: 24px 20px;
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--border-strong);
+  background: var(--card);
   text-align: center;
 }
 
 .ep-empty-sub {
-  margin: 4px 0 0;
+  margin: 6px 0 0;
   font-size: 13px;
-  color: rgba(148, 163, 184, 0.95);
+  color: var(--text-soft);
 }
 
 /* ===== RESPONSIVE ===== */
 
 @media (max-width: 960px) {
-  .ep-page {
-    padding: 92px 16px 52px;
-  }
-
   .ep-header {
     flex-direction: column;
   }

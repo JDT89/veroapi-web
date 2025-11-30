@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router-dom";
 
 import "./styles/global.css";
 
-import Navbar from "./components/Navbar";
+import Sidebar from "./components/Sidebar";
 import Footer from "./components/Footer";
 
 import LandingPage from "./pages/Landing";
@@ -15,8 +15,7 @@ import AuthPage from "./pages/AuthPage";
 function App() {
   return (
     <div className="app-root">
-      <div className="app-bg-glow" />
-      <Navbar />
+      <Sidebar />
 
       <main className="page">
         <Routes>
