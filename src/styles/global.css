@@ -88,7 +88,7 @@ button {
 
 .app-root {
   min-height: 100vh;
-  display: flex;
+
   position: relative;
   overflow-x: hidden;
   color: var(--text-main);
