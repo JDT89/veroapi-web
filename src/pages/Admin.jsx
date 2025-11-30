@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import {
   Users,
   Key,
@@ -8,22 +9,90 @@ import {
   Shield,
   Search,
   Calendar,
-  DollarSign,
   BarChart3,
   AlertCircle,
   Clock,
   ArrowUpRight,
-  ArrowDownRight
+  Settings,
+  Flag,
+  Heart,
+  Wrench,
+  Bell,
+  FileText,
+  MessageCircle,
+  Lock,
+  UserCog,
+  BookOpen,
+  Play,
+  ChevronRight,
+  X,
+  UserX,
+  UserCheck,
+  RefreshCw,
+  Trash2,
+  Plus,
+  Edit,
+  Eye,
+  Send,
+  Check,
+  XCircle,
+  AlertTriangle,
+  Server,
+  Database,
+  Zap,
+  Globe,
+  Mail,
+  Save,
+  Code,
+  Terminal,
+  Copy,
+  ExternalLink,
+  Filter
 } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import './Admin.css';
 
+// Import admin sub-components
+import UserManagement from './admin/UserManagement';
+import RateLimits from './admin/RateLimits';
+import FeatureFlags from './admin/FeatureFlags';
+import HealthDashboard from './admin/HealthDashboard';
+import MaintenanceMode from './admin/MaintenanceMode';
+import NotificationManager from './admin/NotificationManager';
+import ChangelogManager from './admin/ChangelogManager';
+import SupportTickets from './admin/SupportTickets';
+import RBACManager from './admin/RBACManager';
+import TeamManagement from './admin/TeamManagement';
+import DocsEditor from './admin/DocsEditor';
+import APIPlayground from './admin/APIPlayground';
+
+// Admin navigation tabs configuration
+const ADMIN_TABS = [
+  { id: 'overview', label: 'Overview', icon: BarChart3, description: 'Platform statistics and quick actions' },
+  { id: 'users', label: 'Users', icon: Users, description: 'User management and suspension controls' },
+  { id: 'rate-limits', label: 'Rate Limits', icon: Settings, description: 'Configure rate limiting' },
+  { id: 'feature-flags', label: 'Feature Flags', icon: Flag, description: 'Toggle features on/off' },
+  { id: 'health', label: 'System Health', icon: Heart, description: 'Monitor system status' },
+  { id: 'maintenance', label: 'Maintenance', icon: Wrench, description: 'Maintenance mode controls' },
+  { id: 'notifications', label: 'Notifications', icon: Bell, description: 'Broadcast messages' },
+  { id: 'changelog', label: 'Changelog', icon: FileText, description: 'Manage changelog entries' },
+  { id: 'tickets', label: 'Tickets', icon: MessageCircle, description: 'Support ticket system' },
+  { id: 'rbac', label: 'Access Control', icon: Lock, description: 'Roles and permissions' },
+  { id: 'teams', label: 'Teams', icon: UserCog, description: 'Admin team management' },
+  { id: 'docs', label: 'API Docs', icon: BookOpen, description: 'Edit documentation' },
+  { id: 'playground', label: 'Playground', icon: Play, description: 'Test API endpoints' }
+];
+
 function Admin() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
   const [stats, setStats] = useState(null);
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
+  // User search state (for overview)
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -34,6 +103,15 @@ function Admin() {
   useEffect(() => {
     checkAdminAccess();
   }, []);
+
+  // Sync URL params with active tab
+  useEffect(() => {
+    if (activeTab !== 'overview') {
+      setSearchParams({ tab: activeTab });
+    } else {
+      setSearchParams({});
+    }
+  }, [activeTab, setSearchParams]);
 
   const checkAdminAccess = async () => {
     const token = window.localStorage.getItem('veroapi_token');
@@ -83,6 +161,7 @@ function Admin() {
       setSearchResults(data.users || []);
     } catch (err) {
       console.error('Search failed:', err);
+      toast.error('Search failed');
     } finally {
       setSearching(false);
     }
@@ -102,6 +181,7 @@ function Admin() {
       setSelectedUser(userId);
     } catch (err) {
       console.error('Failed to load user details:', err);
+      toast.error('Failed to load user details');
     }
   };
 
@@ -124,14 +204,14 @@ function Admin() {
       const data = await res.json();
       
       if (data.ok) {
-        alert(`Successfully revoked ${data.revokedCount} key(s)`);
-        loadUserDetails(userId); // Refresh details
+        toast.success(`Successfully revoked ${data.revokedCount} key(s)`);
+        loadUserDetails(userId);
       } else {
-        alert(`Failed: ${data.error}`);
+        toast.error(`Failed: ${data.error}`);
       }
     } catch (err) {
       console.error('Failed to revoke keys:', err);
-      alert('Failed to revoke keys');
+      toast.error('Failed to revoke keys');
     }
   };
 
@@ -156,18 +236,21 @@ function Admin() {
       const data = await res.json();
       
       if (data.ok) {
-        alert(data.message);
+        toast.success(data.message);
         setSelectedUser(null);
         setUserDetails(null);
-        // Refresh stats
         checkAdminAccess();
       } else {
-        alert(`Failed: ${data.error}`);
+        toast.error(`Failed: ${data.error}`);
       }
     } catch (err) {
       console.error('Failed to delete user:', err);
-      alert('Failed to delete user');
+      toast.error('Failed to delete user');
     }
+  };
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
   };
 
   if (loading) {
@@ -192,33 +275,55 @@ function Admin() {
     );
   }
 
-  return (
-    <div className="admin-container">
-      {/* Header */}
-      <div className="admin-header">
-        <div>
-          <div className="admin-badge">
-            <Shield size={14} />
-            <span>Admin Panel</span>
-          </div>
-          <h1>Platform Administration</h1>
-          <p>Manage users, monitor activity, and view platform statistics</p>
-        </div>
-      </div>
+  // Render the active tab content
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'users':
+        return <UserManagement />;
+      case 'rate-limits':
+        return <RateLimits />;
+      case 'feature-flags':
+        return <FeatureFlags />;
+      case 'health':
+        return <HealthDashboard />;
+      case 'maintenance':
+        return <MaintenanceMode />;
+      case 'notifications':
+        return <NotificationManager />;
+      case 'changelog':
+        return <ChangelogManager />;
+      case 'tickets':
+        return <SupportTickets />;
+      case 'rbac':
+        return <RBACManager />;
+      case 'teams':
+        return <TeamManagement />;
+      case 'docs':
+        return <DocsEditor />;
+      case 'playground':
+        return <APIPlayground />;
+      case 'overview':
+      default:
+        return renderOverview();
+    }
+  };
 
+  // Overview content (original admin panel content)
+  const renderOverview = () => (
+    <>
       {/* Stats Grid */}
       {stats && (
         <div className="admin-stats-grid">
-          <div className="admin-stat-card">
+          <div className="admin-stat-card" onClick={() => setActiveTab('users')}>
             <div className="admin-stat-icon users">
               <Users size={24} />
             </div>
             <div className="admin-stat-content">
               <span className="admin-stat-label">Total Users</span>
-              <span className="admin-stat-value">{stats.users.total.toLocaleString()}</span>
+              <span className="admin-stat-value">{stats.users?.total?.toLocaleString() || 0}</span>
               <span className="admin-stat-change positive">
                 <ArrowUpRight size={14} />
-                {stats.users.last30Days} new in 30 days
+                {stats.users?.last30Days || 0} new in 30 days
               </span>
             </div>
           </div>
@@ -229,9 +334,9 @@ function Admin() {
             </div>
             <div className="admin-stat-content">
               <span className="admin-stat-label">API Keys</span>
-              <span className="admin-stat-value">{stats.apiKeys.total.toLocaleString()}</span>
+              <span className="admin-stat-value">{stats.apiKeys?.total?.toLocaleString() || 0}</span>
               <span className="admin-stat-meta">
-                {stats.apiKeys.activePercentage}% of users
+                {stats.apiKeys?.activePercentage || 0}% of users
               </span>
             </div>
           </div>
@@ -242,9 +347,9 @@ function Admin() {
             </div>
             <div className="admin-stat-content">
               <span className="admin-stat-label">Requests (24h)</span>
-              <span className="admin-stat-value">{stats.requests.last24h.toLocaleString()}</span>
+              <span className="admin-stat-value">{stats.requests?.last24h?.toLocaleString() || 0}</span>
               <span className="admin-stat-meta">
-                ~{stats.requests.avgPerDay.toLocaleString()}/day avg
+                ~{stats.requests?.avgPerDay?.toLocaleString() || 0}/day avg
               </span>
             </div>
           </div>
@@ -255,12 +360,38 @@ function Admin() {
             </div>
             <div className="admin-stat-content">
               <span className="admin-stat-label">Total Requests</span>
-              <span className="admin-stat-value">{stats.requests.total.toLocaleString()}</span>
+              <span className="admin-stat-value">{stats.requests?.total?.toLocaleString() || 0}</span>
               <span className="admin-stat-meta">All time</span>
             </div>
           </div>
         </div>
       )}
+
+      {/* Quick Actions Grid */}
+      <div className="admin-section">
+        <h2 className="admin-section-title">Quick Actions</h2>
+        <div className="admin-quick-actions">
+          {ADMIN_TABS.filter(tab => tab.id !== 'overview').map(tab => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                className="admin-quick-action"
+                onClick={() => setActiveTab(tab.id)}
+              >
+                <div className="admin-quick-action-icon">
+                  <Icon size={20} />
+                </div>
+                <div className="admin-quick-action-content">
+                  <span className="admin-quick-action-label">{tab.label}</span>
+                  <span className="admin-quick-action-desc">{tab.description}</span>
+                </div>
+                <ChevronRight size={16} />
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* User Search */}
       <div className="admin-section">
@@ -302,6 +433,9 @@ function Admin() {
                     {user.isSuperAdmin && (
                       <span className="admin-user-badge">Super Admin</span>
                     )}
+                    {user.isSuspended && (
+                      <span className="admin-user-badge suspended">Suspended</span>
+                    )}
                   </div>
                   <div className="admin-user-stats">
                     <div className="admin-user-stat">
@@ -310,7 +444,7 @@ function Admin() {
                     </div>
                     <div className="admin-user-stat">
                       <Activity size={14} />
-                      <span>{user.totalRequests.toLocaleString()} requests</span>
+                      <span>{user.totalRequests?.toLocaleString() || 0} requests</span>
                     </div>
                     <div className="admin-user-stat">
                       <Clock size={14} />
@@ -324,6 +458,28 @@ function Admin() {
         )}
       </div>
 
+      {/* Top Users */}
+      {stats && stats.topUsers && stats.topUsers.length > 0 && (
+        <div className="admin-section">
+          <h2 className="admin-section-title">Most Active Users (7 days)</h2>
+          <div className="admin-top-users">
+            {stats.topUsers.map((user, idx) => (
+              <div
+                key={user.id}
+                className="admin-top-user"
+                onClick={() => loadUserDetails(user.id)}
+              >
+                <span className="admin-top-user-rank">#{idx + 1}</span>
+                <span className="admin-top-user-email">{user.email}</span>
+                <span className="admin-top-user-count">
+                  {user.requestCount?.toLocaleString() || 0} requests
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* User Details Modal */}
       {selectedUser && userDetails && (
         <div className="admin-modal-overlay" onClick={() => setSelectedUser(null)}>
@@ -334,7 +490,7 @@ function Admin() {
                 className="admin-modal-close"
                 onClick={() => setSelectedUser(null)}
               >
-                ×
+                <X size={20} />
               </button>
             </div>
 
@@ -344,22 +500,28 @@ function Admin() {
                 <div className="admin-detail-grid">
                   <div className="admin-detail-item">
                     <span className="admin-detail-label">Email</span>
-                    <span className="admin-detail-value">{userDetails.user.email}</span>
+                    <span className="admin-detail-value">{userDetails.user?.email}</span>
                   </div>
                   <div className="admin-detail-item">
                     <span className="admin-detail-label">User ID</span>
-                    <span className="admin-detail-value">{userDetails.user.id}</span>
+                    <span className="admin-detail-value">{userDetails.user?.id}</span>
                   </div>
                   <div className="admin-detail-item">
                     <span className="admin-detail-label">Workspace</span>
                     <span className="admin-detail-value">
-                      {userDetails.user.workspaceName || 'Main workspace'}
+                      {userDetails.user?.workspaceName || 'Main workspace'}
                     </span>
                   </div>
                   <div className="admin-detail-item">
                     <span className="admin-detail-label">Created</span>
                     <span className="admin-detail-value">
-                      {new Date(userDetails.user.createdAt).toLocaleString()}
+                      {new Date(userDetails.user?.createdAt).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="admin-detail-item">
+                    <span className="admin-detail-label">Status</span>
+                    <span className={`admin-detail-value ${userDetails.user?.isSuspended ? 'suspended' : 'active'}`}>
+                      {userDetails.user?.isSuspended ? 'Suspended' : 'Active'}
                     </span>
                   </div>
                 </div>
@@ -370,19 +532,19 @@ function Admin() {
                 <div className="admin-stats-mini">
                   <div className="admin-stat-mini">
                     <span className="admin-stat-mini-value">
-                      {userDetails.stats.totalRequests.toLocaleString()}
+                      {userDetails.stats?.totalRequests?.toLocaleString() || 0}
                     </span>
                     <span className="admin-stat-mini-label">Total Requests</span>
                   </div>
                   <div className="admin-stat-mini">
                     <span className="admin-stat-mini-value">
-                      {userDetails.stats.requests24h.toLocaleString()}
+                      {userDetails.stats?.requests24h?.toLocaleString() || 0}
                     </span>
                     <span className="admin-stat-mini-label">Last 24h</span>
                   </div>
                   <div className="admin-stat-mini">
                     <span className="admin-stat-mini-value">
-                      {userDetails.stats.requests7d.toLocaleString()}
+                      {userDetails.stats?.requests7d?.toLocaleString() || 0}
                     </span>
                     <span className="admin-stat-mini-label">Last 7 days</span>
                   </div>
@@ -391,7 +553,7 @@ function Admin() {
 
               <div className="admin-detail-section">
                 <h3>API Keys</h3>
-                {userDetails.apiKeys.length > 0 ? (
+                {userDetails.apiKeys?.length > 0 ? (
                   <div className="admin-keys-list">
                     {userDetails.apiKeys.map((key) => (
                       <div key={key.id} className="admin-key-item">
@@ -414,7 +576,7 @@ function Admin() {
 
               <div className="admin-detail-section">
                 <h3>Recent Activity</h3>
-                {userDetails.recentRequests.length > 0 ? (
+                {userDetails.recentRequests?.length > 0 ? (
                   <div className="admin-activity-list">
                     {userDetails.recentRequests.slice(0, 10).map((req, idx) => (
                       <div key={idx} className="admin-activity-item">
@@ -433,25 +595,19 @@ function Admin() {
               {/* Admin Actions */}
               <div className="admin-detail-section">
                 <h3>Admin Actions</h3>
-                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                <div className="admin-actions-row">
                   <button
-                    className="btn outline"
+                    className="btn outline warning"
                     onClick={() => handleRevokeAllKeys(selectedUser)}
-                    style={{
-                      borderColor: '#FF9F1C',
-                      color: '#FF9F1C'
-                    }}
                   >
+                    <Key size={16} />
                     Revoke All API Keys
                   </button>
                   <button
-                    className="btn outline"
+                    className="btn outline danger"
                     onClick={() => handleDeleteUser(selectedUser)}
-                    style={{
-                      borderColor: '#f97373',
-                      color: '#f97373'
-                    }}
                   >
+                    <Trash2 size={16} />
                     Delete User
                   </button>
                 </div>
@@ -460,28 +616,82 @@ function Admin() {
           </div>
         </div>
       )}
+    </>
+  );
 
-      {/* Top Users */}
-      {stats && stats.topUsers && stats.topUsers.length > 0 && (
-        <div className="admin-section">
-          <h2 className="admin-section-title">Most Active Users (7 days)</h2>
-          <div className="admin-top-users">
-            {stats.topUsers.map((user, idx) => (
-              <div
-                key={user.id}
-                className="admin-top-user"
-                onClick={() => loadUserDetails(user.id)}
+  return (
+    <div className="admin-layout">
+      {/* Admin Sidebar Navigation */}
+      <aside className={`admin-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+        <div className="admin-sidebar-header">
+          <div className="admin-sidebar-brand">
+            <Shield size={24} />
+            {!sidebarCollapsed && <span>Admin Panel</span>}
+          </div>
+          <button 
+            className="admin-sidebar-toggle"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+        
+        <nav className="admin-sidebar-nav">
+          {ADMIN_TABS.map(tab => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                className={`admin-nav-item ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => handleTabChange(tab.id)}
+                title={sidebarCollapsed ? tab.label : undefined}
               >
-                <span className="admin-top-user-rank">#{idx + 1}</span>
-                <span className="admin-top-user-email">{user.email}</span>
-                <span className="admin-top-user-count">
-                  {user.requestCount.toLocaleString()} requests
-                </span>
-              </div>
-            ))}
+                <Icon size={18} />
+                {!sidebarCollapsed && <span>{tab.label}</span>}
+              </button>
+            );
+          })}
+        </nav>
+        
+        <div className="admin-sidebar-footer">
+          <button 
+            className="admin-nav-item"
+            onClick={() => navigate('/dashboard')}
+            title={sidebarCollapsed ? 'Back to Dashboard' : undefined}
+          >
+            <ArrowUpRight size={18} />
+            {!sidebarCollapsed && <span>Dashboard</span>}
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className={`admin-main ${sidebarCollapsed ? 'expanded' : ''}`}>
+        {/* Header */}
+        <div className="admin-header">
+          <div>
+            <div className="admin-breadcrumb">
+              <Shield size={14} />
+              <span>Admin</span>
+              <ChevronRight size={14} />
+              <span>{ADMIN_TABS.find(t => t.id === activeTab)?.label}</span>
+            </div>
+            <h1>{ADMIN_TABS.find(t => t.id === activeTab)?.label}</h1>
+            <p>{ADMIN_TABS.find(t => t.id === activeTab)?.description}</p>
+          </div>
+          <div className="admin-header-actions">
+            <button className="btn outline" onClick={checkAdminAccess}>
+              <RefreshCw size={16} />
+              Refresh
+            </button>
           </div>
         </div>
-      )}
+
+        {/* Tab Content */}
+        <div className="admin-content">
+          {renderTabContent()}
+        </div>
+      </main>
     </div>
   );
 }
