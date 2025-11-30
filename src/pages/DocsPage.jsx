@@ -9,7 +9,9 @@ import {
   AlertCircle,
   Code,
   Terminal,
-  Zap
+  Zap,
+  MessageCircle,
+  Sparkles
 } from "lucide-react";
 import { API_BASE_URL } from "../config";
 import "./DocsPage.css";
@@ -109,6 +111,106 @@ const json = await res.json();`,
   -H "Authorization: Bearer YOUR_VEROAPI_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"text":"VeroAPI random tools"}'`,
+      },
+    ],
+  },
+  {
+    slug: "unified-random-text",
+    group: "Random endpoints",
+    icon: Code,
+    title: "Unified Random Text",
+    tagline: "Get random text snippets via query parameters.",
+    summary:
+      "The `/random/text` endpoint provides various types of random text content through a simple query parameter interface. Perfect for bots, games, and content applications.",
+    bullets: [
+      "`GET /random/text?type=quote` — inspirational or famous quotes with author attribution.",
+      "`GET /random/text?type=joke` — random jokes for entertainment.",
+      "`GET /random/text?type=trivia` — interesting trivia facts.",
+      "`GET /random/text?type=fact` — random facts about various topics.",
+      "`GET /random/text?type=riddle` — brain teasers and riddles.",
+    ],
+    codeBlocks: [
+      {
+        label: "Quote example",
+        language: "bash",
+        code: `curl "${API_BASE_URL}/random/text?type=quote" \\
+  -H "Authorization: Bearer YOUR_VEROAPI_KEY"`,
+      },
+      {
+        label: "Sample response",
+        language: "json",
+        code: `{
+  "ok": true,
+  "type": "quote",
+  "text": "The only way to do great work is to love what you do.",
+  "author": "Steve Jobs"
+}`,
+      },
+    ],
+  },
+  {
+    slug: "unified-random-social",
+    group: "Random endpoints",
+    icon: MessageCircle,
+    title: "Unified Random Social",
+    tagline: "Generate social media content on demand.",
+    summary:
+      "The `/random/social` endpoint generates random social media content for various platforms and use cases. Great for content inspiration, mock data, or entertainment.",
+    bullets: [
+      "`GET /random/social?type=tweet` — random tweet-style content.",
+      "`GET /random/social?type=bio` — social media bio suggestions.",
+      "`GET /random/social?type=hashtag` — trending-style hashtags.",
+      "`GET /random/social?type=caption` — photo caption suggestions.",
+      "`GET /random/social?type=username` — creative username ideas.",
+    ],
+    codeBlocks: [
+      {
+        label: "Bio example",
+        language: "bash",
+        code: `curl "${API_BASE_URL}/random/social?type=bio" \\
+  -H "Authorization: Bearer YOUR_VEROAPI_KEY"`,
+      },
+      {
+        label: "Sample response",
+        language: "json",
+        code: `{
+  "ok": true,
+  "type": "bio",
+  "text": "Coffee enthusiast ☕ | Code by day, dream by night | Building the future one commit at a time"
+}`,
+      },
+    ],
+  },
+  {
+    slug: "unified-random-fortune",
+    group: "Random endpoints",
+    icon: Sparkles,
+    title: "Unified Random Fortune",
+    tagline: "Fortune-telling and wisdom content.",
+    summary:
+      "The `/random/fortune` endpoint delivers fortune-telling style content including wisdom, advice, and predictions. Perfect for daily apps, bots, or entertainment features.",
+    bullets: [
+      "`GET /random/fortune?type=fortune` — classic fortune cookie messages.",
+      "`GET /random/fortune?type=horoscope` — horoscope-style predictions.",
+      "`GET /random/fortune?type=prediction` — future predictions and forecasts.",
+      "`GET /random/fortune?type=wisdom` — timeless wisdom and proverbs.",
+      "`GET /random/fortune?type=advice` — helpful life advice.",
+    ],
+    codeBlocks: [
+      {
+        label: "Wisdom example",
+        language: "bash",
+        code: `curl "${API_BASE_URL}/random/fortune?type=wisdom" \\
+  -H "Authorization: Bearer YOUR_VEROAPI_KEY"`,
+      },
+      {
+        label: "Sample response",
+        language: "json",
+        code: `{
+  "ok": true,
+  "type": "wisdom",
+  "text": "A journey of a thousand miles begins with a single step."
+}`,
       },
     ],
   },

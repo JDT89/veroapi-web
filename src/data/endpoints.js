@@ -94,4 +94,35 @@ export const ENDPOINT_GROUPS = [
       },
     ],
   },
+  {
+    id: "random-unified",
+    label: "Unified random text",
+    description: "Random text endpoints with type-based query parameters.",
+    endpoints: [
+      {
+        method: "GET",
+        path: "/random/text",
+        name: "Random Text",
+        description: "Get random text snippets. Types: quote, joke, trivia, fact, riddle",
+        badge: "Content • Bots",
+        status: "Live",
+      },
+      {
+        method: "GET",
+        path: "/random/social",
+        name: "Random Social",
+        description: "Get social media content. Types: tweet, bio, hashtag, caption, username",
+        badge: "Social • Marketing",
+        status: "Live",
+      },
+      {
+        method: "GET",
+        path: "/random/fortune",
+        name: "Random Fortune",
+        description: "Get fortune content. Types: fortune, horoscope, prediction, wisdom, advice",
+        badge: "Entertainment",
+        status: "Live",
+      },
+    ],
+  },
 ];

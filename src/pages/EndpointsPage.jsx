@@ -8,10 +8,10 @@ const EndpointsPageRedesign = () => {
   const [expandedEndpoint, setExpandedEndpoint] = useState(null);
 
   const categories = [
-    { id: 'all', label: 'All Endpoints', count: 12 },
-    { id: 'text', label: 'Text Utils', count: 5, color: '#FF9F1C' },
-    { id: 'random', label: 'Randomness', count: 4, color: '#2EC4B6' },
-    { id: 'utility', label: 'Utilities', count: 3, color: '#a855f7' }
+    { id: 'all', label: 'All Endpoints', count: 11 },
+    { id: 'text', label: 'Text Utils', count: 3, color: '#FF9F1C' },
+    { id: 'random', label: 'Randomness', count: 6, color: '#2EC4B6' },
+    { id: 'utility', label: 'Utilities', count: 2, color: '#a855f7' }
   ];
 
   const endpoints = [
@@ -170,6 +170,67 @@ const EndpointsPageRedesign = () => {
 }`
       },
       tags: ['Games', 'Simple', 'Fast']
+    },
+    {
+      id: 'random-text',
+      name: 'Random Text',
+      category: 'random',
+      method: 'GET',
+      path: '/random/text',
+      description: 'Get random text snippets. Supports types: quote, joke, trivia, fact, riddle',
+      status: 'live',
+      responseTime: '35ms',
+      popularity: 90,
+      example: {
+        request: `GET /random/text?type=quote`,
+        response: `{
+  "ok": true,
+  "type": "quote",
+  "text": "The only way to do great work is to love what you do.",
+  "author": "Steve Jobs"
+}`
+      },
+      tags: ['Content', 'Bots', 'Fun']
+    },
+    {
+      id: 'random-social',
+      name: 'Random Social',
+      category: 'random',
+      method: 'GET',
+      path: '/random/social',
+      description: 'Get random social media content. Supports types: tweet, bio, hashtag, caption, username',
+      status: 'live',
+      responseTime: '38ms',
+      popularity: 88,
+      example: {
+        request: `GET /random/social?type=bio`,
+        response: `{
+  "ok": true,
+  "type": "bio",
+  "text": "Coffee enthusiast ☕ | Code by day, dream by night | Building the future one commit at a time"
+}`
+      },
+      tags: ['Social', 'Content', 'Marketing']
+    },
+    {
+      id: 'random-fortune',
+      name: 'Random Fortune',
+      category: 'random',
+      method: 'GET',
+      path: '/random/fortune',
+      description: 'Get random fortune-telling content. Supports types: fortune, horoscope, prediction, wisdom, advice',
+      status: 'live',
+      responseTime: '32ms',
+      popularity: 85,
+      example: {
+        request: `GET /random/fortune?type=wisdom`,
+        response: `{
+  "ok": true,
+  "type": "wisdom",
+  "text": "A journey of a thousand miles begins with a single step."
+}`
+      },
+      tags: ['Fun', 'Entertainment', 'Wisdom']
     },
     {
       id: 'hash-generate',
