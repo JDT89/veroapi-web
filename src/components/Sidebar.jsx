@@ -101,6 +101,14 @@ function Sidebar() {
               <span className="sidebar-link-icon">🔌</span>
               APIs
             </NavLink>
+            <NavLink 
+              to="/pricing" 
+              className={linkClass} 
+              onClick={closeMobile}
+            >
+              <span className="sidebar-link-icon">💳</span>
+              Pricing
+            </NavLink>
           </div>
 
           <div className="sidebar-section">
@@ -127,23 +135,21 @@ function Sidebar() {
 
           <div className="sidebar-section">
             <p className="sidebar-section-title">Resources</p>
-            <button 
-              type="button"
-              className="sidebar-link"
-              onClick={() => {
-                closeMobile();
-                navigate("/changelog");
-              }}
+            <NavLink 
+              to="/changelog" 
+              className={linkClass} 
+              onClick={closeMobile}
             >
               <span className="sidebar-link-icon">📝</span>
               Changelog
-            </button>
+            </NavLink>
             <button 
               type="button"
               className="sidebar-link"
               onClick={() => {
                 closeMobile();
-                navigate("/changelog");
+                // Add your support link/action here
+                window.open('mailto:support@veroapi.com', '_blank');
               }}
             >
               <span className="sidebar-link-icon">💬</span>
