@@ -471,27 +471,27 @@ function DocsPage() {
               </div>
             </footer>
           </article>
-
-          {/* Table of Contents - Desktop Only */}
-          <aside className="docs-toc">
-            <h4 className="docs-toc-title">On this page</h4>
-            <ul className="docs-toc-list">
-              <li>
-                <a href="#summary" className="docs-toc-link">Summary</a>
-              </li>
-              {activeSection.bullets && activeSection.bullets.length > 0 && (
-                <li>
-                  <a href="#key-points" className="docs-toc-link">Key Points</a>
-                </li>
-              )}
-              {activeSection.codeBlocks && activeSection.codeBlocks.length > 0 && (
-                <li>
-                  <a href="#code-examples" className="docs-toc-link">Code Examples</a>
-                </li>
-              )}
-            </ul>
-          </aside>
         </main>
+
+        {/* Table of Contents - Desktop Only */}
+        <aside className="docs-toc">
+          <h4 className="docs-toc-title">On this page</h4>
+          <ul className="docs-toc-list">
+            <li>
+              <a href="#summary" className="docs-toc-link">Summary</a>
+            </li>
+            {activeSection.bullets && activeSection.bullets.length > 0 && (
+              <li>
+                <a href="#key-points" className="docs-toc-link">Key Points</a>
+              </li>
+            )}
+            {activeSection.codeBlocks && activeSection.codeBlocks.length > 0 && (
+              <li>
+                <a href="#code-examples" className="docs-toc-link">Code Examples</a>
+              </li>
+            )}
+          </ul>
+        </aside>
       </div>
 
       {/* Mobile overlay */}
