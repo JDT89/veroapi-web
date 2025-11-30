@@ -19,4 +19,3 @@ export const API_BASE_URL = getApiBaseUrl();
 
 // Log it so we can debug
 console.log('[VeroAPI] Using API URL:', API_BASE_URL);
-console.log('[VeroAPI] Environment:', import.meta.env.DEV ? 'development' : 'production');
