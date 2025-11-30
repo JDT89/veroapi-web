@@ -595,4 +595,33 @@ const LandingPageRedesign = () => {
             transition: 'all 0.3s ease'
           }}
           onMouseEnter={(e) => {
-           
+            e.target.style.transform = 'scale(1.05)';
+            e.target.style.boxShadow = '0 12px 40px rgba(255, 159, 28, 0.5)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'scale(1)';
+            e.target.style.boxShadow = '0 8px 32px rgba(255, 159, 28, 0.4)';
+          }}>
+            Start Building Now
+            <ArrowRight size={24} />
+          </button>
+        </div>
+      </section>
+
+      <style>
+        {`
+          @keyframes pulse {
+            0%, 100% {
+              opacity: 0.5;
+            }
+            50% {
+              opacity: 1;
+            }
+          }
+        `}
+      </style>
+    </div>
+  );
+};
+
+export default LandingPageRedesign;
