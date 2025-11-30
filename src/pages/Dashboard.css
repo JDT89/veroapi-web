@@ -1,14 +1,16 @@
 .dash {
   min-height: calc(100vh - 64px);
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
+  grid-template-columns: 240px minmax(0, 1fr);
   gap: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 /* ===== SIDEBAR ===== */
 
 .dash-sidebar {
-  border-right: 1px solid rgba(30, 64, 175, 0.7);
+  border-right: 1px solid var(--border-subtle);
   padding-right: 1.25rem;
   padding-top: 0.25rem;
   display: flex;
@@ -26,7 +28,7 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  color: var(--text-soft);
+  color: var(--text-softer);
 }
 
 .dash-user-chip {
@@ -34,23 +36,23 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.45rem 0.7rem;
-  border-radius: 999px;
-  border: 1px solid rgba(31, 41, 55, 0.95);
-  background: rgba(15, 23, 42, 0.95);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-subtle);
+  background: var(--card);
 }
 
 .dash-avatar {
   width: 26px;
   height: 26px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.85rem;
   font-weight: 600;
-  background: radial-gradient(circle at 30% 20%, #38bdf8, #4f46e5);
-  color: #f9fafb;
-  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.7);
+  background: linear-gradient(135deg, var(--accent), #1a8c80);
+  color: var(--text-main);
+  box-shadow: 0 0 0 1px var(--accent-soft);
 }
 
 .dash-user-text {
@@ -61,6 +63,7 @@
 
 .dash-user-email {
   font-size: 0.85rem;
+  color: var(--text-main);
 }
 
 .dash-user-plan {
@@ -79,21 +82,21 @@
 .dash-status-dot {
   width: 8px;
   height: 8px;
-  border-radius: 999px;
-  background: rgba(148, 163, 184, 0.8);
+  border-radius: var(--radius-pill);
+  background: var(--text-softer);
 }
 
 .dash-status-dot.ok {
-  background: #22c55e;
-  box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.25);
+  background: var(--success);
+  box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.2);
 }
 
 .dash-status-dot.error {
-  background: #f97316;
+  background: var(--danger);
 }
 
 .dash-status-dot.loading {
-  background: #eab308;
+  background: var(--highlight);
 }
 
 .dash-status-text {
@@ -114,10 +117,10 @@
 }
 
 .dash-nav-item {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   border: none;
   background: transparent;
-  color: rgba(148, 163, 184, 0.95);
+  color: var(--text-soft);
   text-align: left;
   padding: 0.4rem 0.7rem;
   font-size: 0.86rem;
@@ -126,13 +129,13 @@
 }
 
 .dash-nav-item:hover {
-  background: rgba(15, 23, 42, 0.9);
-  color: #f9fafb;
+  background: var(--bg-elevated);
+  color: var(--text-main);
 }
 
 .dash-nav-item-active {
-  background: radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.85), transparent 70%);
-  color: #f9fafb;
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .dash-sidebar-foot {
@@ -165,6 +168,7 @@
   margin: 0 0 0.25rem;
   font-size: 1.3rem;
   letter-spacing: -0.03em;
+  color: var(--text-main);
 }
 
 .dash-main-header p {
@@ -183,24 +187,25 @@
 }
 
 .dash-card {
-  border-radius: 14px;
-  border: 1px solid rgba(31, 41, 55, 0.95);
-  background: rgba(15, 23, 42, 0.97);
-  padding: 0.8rem 0.9rem 0.85rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--card);
+  padding: 0.9rem 1rem;
 }
 
 .dash-card-label {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: var(--text-soft);
-  margin-bottom: 0.25rem;
+  color: var(--text-softer);
+  margin-bottom: 0.3rem;
 }
 
 .dash-card-value {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 600;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.3rem;
+  color: var(--text-main);
 }
 
 .dash-card-sub {
@@ -218,13 +223,12 @@
 }
 
 .dash-card-primary {
-  border-color: rgba(79, 70, 229, 0.9);
-  background: radial-gradient(circle at 0 0, rgba(79, 70, 229, 0.35), transparent 65%),
-    rgba(15, 23, 42, 1);
+  border-color: var(--accent);
+  background: linear-gradient(135deg, var(--card) 0%, var(--accent-soft) 100%);
 }
 
 .dash-card-secondary {
-  border-color: rgba(30, 64, 175, 0.9);
+  border-color: var(--border-strong);
 }
 
 .dash-card-header {
@@ -232,44 +236,47 @@
   justify-content: space-between;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
 }
 
 .dash-card-header h2 {
   margin: 0;
-  font-size: 0.98rem;
+  font-size: 1rem;
+  color: var(--text-main);
 }
 
 .dash-tag {
   font-size: 0.75rem;
-  padding: 0.18rem 0.55rem;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.6);
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-strong);
   color: var(--text-soft);
 }
 
 .dash-tag-soft {
-  border-color: rgba(59, 130, 246, 0.7);
-  color: #c4b5fd;
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .dash-helper {
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   color: var(--text-soft);
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.6rem;
+  line-height: 1.5;
 }
 
 .dash-error-banner {
   font-size: 0.8rem;
   color: #fecaca;
-  background: rgba(127, 29, 29, 0.7);
-  border-radius: 0.6rem;
-  padding: 0.4rem 0.6rem;
-  margin: 0 0 0.5rem;
+  background: rgba(127, 29, 29, 0.5);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  padding: 0.5rem 0.7rem;
+  margin: 0 0 0.6rem;
 }
 
 .dash-key-panel {
-  margin-top: 0.5rem;
+  margin-top: 0.6rem;
 }
 
 /* Key input row */
@@ -277,41 +284,42 @@
 .dash-input-row label {
   display: block;
   font-size: 0.78rem;
-  margin-bottom: 0.25rem;
-  color: var(--text-soft);
+  margin-bottom: 0.3rem;
+  color: var(--text-softer);
 }
 
 .dash-key-row {
   display: flex;
   gap: 0.4rem;
   align-items: center;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.4rem;
 }
 
 .dash-input {
   width: 100%;
-  border-radius: 0.55rem;
-  border: 1px solid rgba(31, 41, 55, 0.95);
-  padding: 0.45rem 0.65rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  padding: 0.5rem 0.7rem;
   font-size: 0.86rem;
-  background: rgba(15, 23, 42, 0.98);
+  background: var(--bg-darker);
   color: var(--text-main);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .dash-input:focus {
   outline: none;
-  border-color: rgba(59, 130, 246, 0.9);
-  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.7);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-soft);
 }
 
 .dash-key-btn {
-  padding-inline: 0.6rem;
+  padding-inline: 0.7rem;
   font-size: 0.78rem;
 }
 
 .dash-login-btn {
-  margin-top: 0.2rem;
-  margin-bottom: 0.2rem;
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
 }
 
 .dash-login-hint {
@@ -319,27 +327,36 @@
   color: var(--text-soft);
 }
 
+.dash-login-hint code {
+  background: var(--bg-darker);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--accent);
+}
+
 /* Table */
 
 .dash-table {
-  margin-top: 0.4rem;
-  border-radius: 0.6rem;
-  border: 1px solid rgba(31, 41, 55, 0.95);
-  background: rgba(15, 23, 42, 0.98);
+  margin-top: 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-darker);
+  overflow: hidden;
 }
 
 .dash-table-row {
   display: grid;
   grid-template-columns: 1.6fr 0.7fr 1.1fr 1.1fr;
-  gap: 0.45rem;
+  gap: 0.5rem;
   font-size: 0.78rem;
-  padding: 0.4rem 0.6rem;
-  border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+  padding: 0.45rem 0.7rem;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .dash-table-row.head {
-  background: rgba(15, 23, 42, 0.95);
+  background: var(--bg-elevated);
   font-weight: 500;
+  color: var(--text-softer);
 }
 
 .dash-table-row:last-child {
@@ -349,18 +366,25 @@
 /* Quickstart */
 
 .dash-steps {
-  margin: 0.35rem 0 0.35rem;
-  padding-left: 1.1rem;
-  font-size: 0.84rem;
+  margin: 0.4rem 0 0.4rem;
+  padding-left: 1.2rem;
+  font-size: 0.86rem;
   color: var(--text-main);
 }
 
 .dash-steps li + li {
-  margin-top: 0.2rem;
+  margin-top: 0.25rem;
+}
+
+.dash-steps code {
+  background: var(--bg-darker);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--accent);
 }
 
 .dash-quickstart-note {
-  margin-top: 0.4rem;
+  margin-top: 0.5rem;
 }
 
 /* ===== RESPONSIVE ===== */
@@ -372,7 +396,7 @@
 
   .dash-sidebar {
     border-right: none;
-    border-bottom: 1px solid rgba(30, 64, 175, 0.7);
+    border-bottom: 1px solid var(--border-subtle);
     padding-right: 0;
     padding-bottom: 0.9rem;
     margin-bottom: 0.9rem;
