@@ -23,10 +23,9 @@ function Sidebar() {
       {/* Mobile Header */}
       <header className="mobile-header">
         <button
-          className="sidebar-brand"
+          className="sidebar-brand btn-reset"
           type="button"
           onClick={() => navigate("/")}
-          style={{ border: "none", background: "transparent", cursor: "pointer" }}
         >
           <div className="sidebar-logo">
             <div className="sidebar-logo-inner" />
@@ -60,13 +59,12 @@ function Sidebar() {
       <aside className={`sidebar ${mobileOpen ? "open" : ""}`}>
         <div className="sidebar-header">
           <button
-            className="sidebar-brand"
+            className="sidebar-brand btn-reset"
             type="button"
             onClick={() => {
               closeMobile();
               navigate("/");
             }}
-            style={{ border: "none", background: "transparent", cursor: "pointer" }}
           >
             <div className="sidebar-logo">
               <div className="sidebar-logo-inner" />

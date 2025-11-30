@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import "./Landing.css";
 
 function Landing() {
@@ -82,17 +82,16 @@ function Landing() {
         <h2 className="section-title">Quick Links</h2>
         <div className="quick-links-grid">
           {quickLinks.map((link) => (
-            <button
+            <NavLink
               key={link.title}
-              type="button"
+              to={link.path}
               className={`quick-link-card ${link.accent ? "accent" : ""}`}
-              onClick={() => navigate(link.path)}
             >
               <span className="quick-link-icon">{link.icon}</span>
               <h3 className="quick-link-title">{link.title}</h3>
               <p className="quick-link-desc">{link.description}</p>
               <span className="quick-link-arrow">→</span>
-            </button>
+            </NavLink>
           ))}
         </div>
       </section>

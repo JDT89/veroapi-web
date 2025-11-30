@@ -76,6 +76,14 @@ button {
   font-family: inherit;
 }
 
+/* Button reset utility */
+.btn-reset {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
 /* ========= APP SHELL ========= */
 
 .app-root {
@@ -85,11 +93,6 @@ button {
   overflow-x: hidden;
   color: var(--text-main);
   background: var(--bg);
-}
-
-/* Remove old background glow */
-.app-bg-glow {
-  display: none;
 }
 
 /* Main content area */
