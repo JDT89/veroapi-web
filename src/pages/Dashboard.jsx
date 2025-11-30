@@ -1,16 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { 
+  Key, 
+  Activity, 
+  TrendingUp, 
+  Zap, 
+  Copy, 
+  Eye, 
+  EyeOff, 
+  RefreshCw,
+  CheckCircle,
+  Clock,
+  BarChart3,
+  Settings,
+  LogOut
+} from "lucide-react";
 import { API_BASE_URL } from "../config";
 import "./Dashboard.css";
-
-// Import sub-components
-import HealthBox from "../components/HealthBox";
-import MetricsGrid from "../components/MetricsGrid";
-import APIKeyManager from "../components/APIKeyManager";
-import QuickstartCard from "../components/QuickstartCard";
-import TimelineCard from "../components/TimelineCard";
-import UsageChart from "../components/UsageChart";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -32,14 +39,10 @@ function Dashboard() {
   const [keysError, setKeysError] = useState("");
   const [showSecret, setShowSecret] = useState(false);
   const [regenLoading, setRegenLoading] = useState(false);
-  const [copyMessage, setCopyMessage] = useState("");
 
   // Stats state
   const [statsLoading, setStatsLoading] = useState(true);
   const [requestsLast24h, setRequestsLast24h] = useState(null);
-
-  // Sidebar state
-  const [activeView, setActiveView] = useState("overview");
 
   // Initialize: check token and load user
   useEffect(() => {
@@ -72,9 +75,7 @@ function Dashboard() {
       } catch (err) {
         const message = err.message || "Could not load user data";
         setUserError(message);
-        console.error("[Dashboard] User load error:", err);
         
-        // If unauthorized, redirect to auth
         if (message.includes("Unauthorized") || message.includes("401")) {
           window.localStorage.removeItem("veroapi_token");
           navigate("/auth");
@@ -103,7 +104,6 @@ function Dashboard() {
         setHealthData(data);
       } catch (err) {
         setHealthError(err.message || "Could not check API health");
-        console.error("[Dashboard] Health check error:", err);
       } finally {
         setHealthLoading(false);
       }
@@ -129,13 +129,11 @@ function Dashboard() {
           throw new Error(data.error || "Failed to load API keys");
         }
 
-        // Get the first key (we enforce one key per user)
         const key = data.keys && data.keys.length > 0 ? data.keys[0] : null;
         setApiKey(key);
       } catch (err) {
         const message = err.message || "Could not load API keys";
         setKeysError(message);
-        console.error("[Dashboard] Keys load error:", err);
       } finally {
         setKeysLoading(false);
       }
@@ -169,14 +167,11 @@ function Dashboard() {
     loadStats();
   }, [token]);
 
-  // Handlers
   const handleCopySecret = async () => {
     if (!apiKey || !apiKey.secret) return;
     try {
       await navigator.clipboard.writeText(apiKey.secret);
-      setCopyMessage("Copied!");
       toast.success("API key copied to clipboard!");
-      setTimeout(() => setCopyMessage(""), 2000);
     } catch {
       toast.error("Failed to copy to clipboard");
     }
@@ -188,7 +183,6 @@ function Dashboard() {
     setKeysError("");
 
     try {
-      // Delete existing key if present
       if (apiKey && apiKey.id) {
         try {
           await fetch(`${API_BASE_URL}/v1/api-keys/${apiKey.id}`, {
@@ -200,7 +194,6 @@ function Dashboard() {
         }
       }
 
-      // Create new key
       const res = await fetch(`${API_BASE_URL}/v1/api-keys`, {
         method: "POST",
         headers: {
@@ -224,7 +217,7 @@ function Dashboard() {
       setShowSecret(true);
 
       toast.success(
-        apiKey ? "API key regenerated successfully!" : "API key generated successfully!"
+        apiKey ? "API key regenerated!" : "API key generated!"
       );
     } catch (err) {
       const message = err.message || "Failed to generate API key";
@@ -244,321 +237,323 @@ function Dashboard() {
   const formatTime = (timestamp) => {
     if (!timestamp) return "Never";
     const date = new Date(timestamp);
-    const now = new Date();
-    const diff = now - date;
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
-    if (days === 0) return "Today";
-    if (days === 1) return "Yesterday";
-    if (days < 7) return `${days} days ago`;
-    
-    return date.toLocaleDateString();
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      year: 'numeric'
+    });
   };
 
-  // Loading state
   if (userLoading) {
     return (
-      <div className="dash">
-        <div className="dash-sidebar">
-          <div className="dash-sidebar-label">Loading...</div>
-        </div>
-        <div className="dash-main">
-          <p>Loading dashboard...</p>
-        </div>
+      <div className="dashboard-loading">
+        <div className="loading-spinner" />
+        <p>Loading your dashboard...</p>
       </div>
     );
   }
 
-  // Error state
   if (userError) {
     return (
-      <div className="dash">
-        <div className="dash-sidebar">
-          <div className="dash-sidebar-label">Error</div>
-        </div>
-        <div className="dash-main">
-          <p className="dash-error-banner">{userError}</p>
-          <button className="btn outline" onClick={() => navigate("/auth")}>
-            Go to Sign In
-          </button>
-        </div>
+      <div className="dashboard-error">
+        <p className="error-message">{userError}</p>
+        <button className="btn primary" onClick={() => navigate("/auth")}>
+          Go to Sign In
+        </button>
       </div>
     );
   }
 
+  const apiOnline = !healthLoading && !healthError && healthData?.ok;
+
   return (
-    <div className="dash">
-      {/* Sidebar */}
-      <aside className="dash-sidebar">
-        <div className="dash-sidebar-top">
-          <div className="dash-sidebar-label">Your account</div>
-          
-          {user && (
-            <div className="dash-user-chip">
-              <div className="dash-avatar">
-                {user.email ? user.email[0].toUpperCase() : "U"}
-              </div>
-              <div className="dash-user-text">
-                <div className="dash-user-email">{user.email}</div>
-                <div className="dash-user-plan">
-                  {user.workspace_name || "Main workspace"}
-                </div>
+    <div className="dashboard-container">
+      {/* Header Bar */}
+      <header className="dashboard-header">
+        <div className="dashboard-header-left">
+          <h1>Dashboard</h1>
+          <div className="header-status">
+            <div className={`status-indicator ${apiOnline ? 'online' : 'offline'}`} />
+            <span>{apiOnline ? 'All systems operational' : 'API unavailable'}</span>
+          </div>
+        </div>
+        <div className="dashboard-header-right">
+          <div className="user-menu">
+            <div className="user-avatar">
+              {user?.email?.[0]?.toUpperCase() || 'U'}
+            </div>
+            <div className="user-info">
+              <div className="user-email">{user?.email}</div>
+              <div className="user-workspace">{user?.workspace_name || 'Main workspace'}</div>
+            </div>
+          </div>
+          <button className="btn-icon" onClick={handleSignOut} title="Sign out">
+            <LogOut size={20} />
+          </button>
+        </div>
+      </header>
+
+      {/* Main Grid */}
+      <div className="dashboard-grid">
+        {/* Stats Cards */}
+        <div className="stats-row">
+          <div className="stat-card">
+            <div className="stat-icon accent">
+              <Activity size={24} />
+            </div>
+            <div className="stat-content">
+              <div className="stat-label">Requests Today</div>
+              <div className="stat-value">
+                {statsLoading ? '...' : (requestsLast24h?.toLocaleString() || '0')}
               </div>
             </div>
-          )}
-
-          <div className="dash-side-status">
-            <span
-              className={`dash-status-dot ${
-                healthLoading
-                  ? "loading"
-                  : healthError
-                  ? "error"
-                  : healthData?.ok
-                  ? "ok"
-                  : "error"
-              }`}
-            />
-            <span className="dash-status-text">
-              {healthLoading
-                ? "Checking API..."
-                : healthError
-                ? "API offline"
-                : healthData?.ok
-                ? "API online"
-                : "Unknown status"}
-            </span>
           </div>
 
-          {user && (
-            <div className="dash-side-meta">
-              Member since {formatTime(user.created_at)}
+          <div className="stat-card">
+            <div className="stat-icon success">
+              <TrendingUp size={24} />
+            </div>
+            <div className="stat-content">
+              <div className="stat-label">Response Time</div>
+              <div className="stat-value">~120ms</div>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon highlight">
+              <Zap size={24} />
+            </div>
+            <div className="stat-content">
+              <div className="stat-label">Uptime</div>
+              <div className="stat-value">
+                {healthData?.uptime ? `${Math.floor(healthData.uptime / 3600)}h` : '—'}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* API Key Section */}
+        <div className="card api-key-card">
+          <div className="card-header">
+            <div className="card-title">
+              <Key size={20} />
+              <h2>API Key</h2>
+            </div>
+            {apiKey && (
+              <span className="status-badge success">Active</span>
+            )}
+          </div>
+
+          {keysError && (
+            <div className="alert error">{keysError}</div>
+          )}
+
+          {!apiKey && !keysLoading && (
+            <div className="empty-state">
+              <Key size={48} className="empty-icon" />
+              <h3>No API key generated yet</h3>
+              <p>Create your first API key to start using VeroAPI endpoints</p>
+              <button 
+                className="btn primary"
+                onClick={handleGenerateOrRegenerate}
+                disabled={regenLoading}
+              >
+                {regenLoading ? 'Generating...' : 'Generate API Key'}
+              </button>
+            </div>
+          )}
+
+          {apiKey && (
+            <>
+              <div className="key-display">
+                <div className="key-input-wrapper">
+                  <input
+                    type={showSecret ? "text" : "password"}
+                    value={apiKey.secret || ''}
+                    readOnly
+                    className="key-input"
+                  />
+                  <div className="key-actions">
+                    <button
+                      className="btn-icon-small"
+                      onClick={() => setShowSecret(!showSecret)}
+                      title={showSecret ? "Hide" : "Show"}
+                    >
+                      {showSecret ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                    <button
+                      className="btn-icon-small"
+                      onClick={handleCopySecret}
+                      title="Copy"
+                    >
+                      <Copy size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="key-meta">
+                <div className="key-meta-item">
+                  <span className="meta-label">Prefix</span>
+                  <code>{apiKey.prefix}</code>
+                </div>
+                <div className="key-meta-item">
+                  <span className="meta-label">Created</span>
+                  <span>{formatTime(apiKey.created_at)}</span>
+                </div>
+                <div className="key-meta-item">
+                  <span className="meta-label">Last used</span>
+                  <span>{formatTime(apiKey.last_used_at)}</span>
+                </div>
+              </div>
+
+              <button
+                className="btn outline full-width"
+                onClick={handleGenerateOrRegenerate}
+                disabled={regenLoading}
+              >
+                <RefreshCw size={16} />
+                {regenLoading ? 'Regenerating...' : 'Regenerate Key'}
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Quick Start Guide */}
+        <div className="card">
+          <div className="card-header">
+            <div className="card-title">
+              <CheckCircle size={20} />
+              <h2>Quick Start</h2>
+            </div>
+          </div>
+
+          <div className="steps-list">
+            <div className="step-item completed">
+              <div className="step-number">1</div>
+              <div className="step-content">
+                <div className="step-title">Create Account</div>
+                <div className="step-desc">You're signed in as {user?.email}</div>
+              </div>
+            </div>
+
+            <div className={`step-item ${apiKey ? 'completed' : 'current'}`}>
+              <div className="step-number">2</div>
+              <div className="step-content">
+                <div className="step-title">Generate API Key</div>
+                <div className="step-desc">
+                  {apiKey ? 'Key created successfully' : 'Click the button above to create your key'}
+                </div>
+              </div>
+            </div>
+
+            <div className={`step-item ${apiKey ? 'current' : ''}`}>
+              <div className="step-number">3</div>
+              <div className="step-content">
+                <div className="step-title">Make Your First Request</div>
+                <div className="step-desc">Call any endpoint with your API key</div>
+              </div>
+            </div>
+          </div>
+
+          {apiKey && (
+            <div className="code-snippet">
+              <div className="code-header">
+                <span>Example Request</span>
+                <span className="code-lang">bash</span>
+              </div>
+              <pre><code>{`curl "${API_BASE_URL}/v1/text/scramble" \\
+  -H "Authorization: Bearer ${apiKey.prefix}..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"text":"VeroAPI"}'`}</code></pre>
             </div>
           )}
         </div>
 
-        <nav className="dash-nav">
-          <button
-            type="button"
-            className={`dash-nav-item ${
-              activeView === "overview" ? "dash-nav-item-active" : ""
-            }`}
-            onClick={() => setActiveView("overview")}
-          >
-            Overview
-          </button>
-          <button
-            type="button"
-            className={`dash-nav-item ${
-              activeView === "usage" ? "dash-nav-item-active" : ""
-            }`}
-            onClick={() => setActiveView("usage")}
-          >
-            Usage & Stats
-          </button>
-          <button
-            type="button"
-            className={`dash-nav-item ${
-              activeView === "settings" ? "dash-nav-item-active" : ""
-            }`}
-            onClick={() => setActiveView("settings")}
-          >
-            Settings
-          </button>
-        </nav>
+        {/* Activity Timeline */}
+        <div className="card">
+          <div className="card-header">
+            <div className="card-title">
+              <Clock size={20} />
+              <h2>Recent Activity</h2>
+            </div>
+          </div>
 
-        <div className="dash-sidebar-foot">
-          <button
-            type="button"
-            className="btn outline"
-            onClick={handleSignOut}
-            style={{ width: "100%", fontSize: "0.8rem" }}
-          >
-            Sign out
-          </button>
+          <div className="timeline">
+            <div className="timeline-item">
+              <div className="timeline-dot active" />
+              <div className="timeline-content">
+                <div className="timeline-title">Account Created</div>
+                <div className="timeline-desc">{user?.email}</div>
+                <div className="timeline-time">{formatTime(user?.created_at)}</div>
+              </div>
+            </div>
+
+            {apiKey && (
+              <div className="timeline-item">
+                <div className="timeline-dot active" />
+                <div className="timeline-content">
+                  <div className="timeline-title">API Key Generated</div>
+                  <div className="timeline-desc">{apiKey.label || 'Primary key'}</div>
+                  <div className="timeline-time">{formatTime(apiKey.created_at)}</div>
+                </div>
+              </div>
+            )}
+
+            <div className="timeline-item">
+              <div className="timeline-dot pending" />
+              <div className="timeline-content">
+                <div className="timeline-title">First API Request</div>
+                <div className="timeline-desc">Waiting for your first call</div>
+                <div className="timeline-time">Pending</div>
+              </div>
+            </div>
+          </div>
         </div>
-      </aside>
 
-      {/* Main content */}
-      <main className="dash-main">
-        {activeView === "overview" && (
-          <>
-            <header className="dash-main-header">
-              <div>
-                <h1>Dashboard</h1>
-                <p>Manage your API key and monitor your usage.</p>
-              </div>
-            </header>
+        {/* Usage Chart */}
+        <div className="card usage-card">
+          <div className="card-header">
+            <div className="card-title">
+              <BarChart3 size={20} />
+              <h2>Usage Overview</h2>
+            </div>
+            <span className="chart-period">Last 24 hours</span>
+          </div>
 
-            {/* Metrics row */}
-            <div className="dash-metrics">
-              <HealthBox
-                healthLoading={healthLoading}
-                healthError={healthError}
-                healthData={healthData}
-              />
-              <MetricsGrid
-                statsLoading={statsLoading}
-                requestsLast24h={requestsLast24h}
-              />
-              <div className="dash-card">
-                <div className="dash-card-label">Account Status</div>
-                <div className="dash-card-value">
-                  {apiKey ? "Active" : "Setup needed"}
+          <div className="usage-chart">
+            {[
+              { label: 'Now', value: 20 },
+              { label: '6h', value: 35 },
+              { label: '12h', value: 45 },
+              { label: '18h', value: 30 },
+              { label: '24h', value: 25 }
+            ].map((bar, idx) => (
+              <div key={idx} className="chart-bar">
+                <div className="bar-fill" style={{ height: `${bar.value}%` }}>
+                  <div className="bar-tooltip">{bar.value}%</div>
                 </div>
-                <div className="dash-card-sub">
-                  {apiKey
-                    ? "Your API key is ready to use"
-                    : "Generate an API key to get started"}
-                </div>
+                <div className="bar-label">{bar.label}</div>
               </div>
+            ))}
+          </div>
+
+          <div className="usage-summary">
+            <div className="summary-item">
+              <span className="summary-label">Total Requests</span>
+              <span className="summary-value">
+                {requestsLast24h?.toLocaleString() || '0'}
+              </span>
             </div>
-
-            {/* Main grid */}
-            <div className="dash-main-grid">
-              <APIKeyManager
-                apiKey={apiKey}
-                keysLoading={keysLoading}
-                keysError={keysError}
-                showSecret={showSecret}
-                setShowSecret={setShowSecret}
-                regenLoading={regenLoading}
-                handleGenerateOrRegenerate={handleGenerateOrRegenerate}
-                handleCopySecret={handleCopySecret}
-                copyMessage={copyMessage}
-                formatTime={formatTime}
-              />
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.9rem" }}>
-                <QuickstartCard />
-                <TimelineCard
-                  user={user}
-                  apiKey={apiKey}
-                  formatTime={formatTime}
-                />
-              </div>
+            <div className="summary-item">
+              <span className="summary-label">Avg/Hour</span>
+              <span className="summary-value">
+                {requestsLast24h ? Math.round(requestsLast24h / 24) : '0'}
+              </span>
             </div>
-          </>
-        )}
-
-        {activeView === "usage" && (
-          <>
-            <header className="dash-main-header">
-              <div>
-                <h1>Usage & Statistics</h1>
-                <p>Monitor your API usage and request patterns.</p>
-              </div>
-            </header>
-
-            <div className="dash-metrics">
-              <div className="dash-card">
-                <div className="dash-card-label">Total Requests</div>
-                <div className="dash-card-value">
-                  {statsLoading
-                    ? "..."
-                    : requestsLast24h?.toLocaleString() || "0"}
-                </div>
-                <div className="dash-card-sub">Last 24 hours</div>
-              </div>
-              <div className="dash-card">
-                <div className="dash-card-label">Avg Response Time</div>
-                <div className="dash-card-value">~120ms</div>
-                <div className="dash-card-sub">Typical latency</div>
-              </div>
-              <div className="dash-card">
-                <div className="dash-card-label">Success Rate</div>
-                <div className="dash-card-value">99.8%</div>
-                <div className="dash-card-sub">Last 7 days</div>
-              </div>
-            </div>
-
-            <UsageChart requestsLast24h={requestsLast24h} />
-
-            <div className="dash-card wide" style={{ marginTop: "1rem" }}>
-              <div className="dash-card-header">
-                <h2>Recent Activity</h2>
-                <span className="dash-tag">Coming soon</span>
-              </div>
-              <p className="dash-login-helper">
-                Detailed request logs and analytics will be available here soon.
-                You'll be able to see endpoint usage, error rates, and more.
-              </p>
-            </div>
-          </>
-        )}
-
-        {activeView === "settings" && (
-          <>
-            <header className="dash-main-header">
-              <div>
-                <h1>Settings</h1>
-                <p>Manage your account preferences and workspace.</p>
-              </div>
-            </header>
-
-            <div className="dash-card wide">
-              <div className="dash-card-header">
-                <h2>Account Information</h2>
-              </div>
-              <div className="dash-input-row">
-                <label>Email Address</label>
-                <input
-                  className="dash-input"
-                  type="email"
-                  value={user?.email || ""}
-                  readOnly
-                  disabled
-                />
-                <p className="dash-login-hint">
-                  Email changes are not currently supported.
-                </p>
-              </div>
-              <div className="dash-input-row" style={{ marginTop: "1rem" }}>
-                <label>Workspace Name</label>
-                <input
-                  className="dash-input"
-                  type="text"
-                  value={user?.workspace_name || "Main workspace"}
-                  readOnly
-                  disabled
-                />
-                <p className="dash-login-hint">
-                  Workspace customization coming soon.
-                </p>
-              </div>
-            </div>
-
-            <div className="dash-card wide" style={{ marginTop: "1rem" }}>
-              <div className="dash-card-header">
-                <h2>Danger Zone</h2>
-                <span className="dash-tag">Careful</span>
-              </div>
-              <p className="dash-login-helper">
-                These actions cannot be undone. Please proceed with caution.
-              </p>
-              <button
-                className="btn outline"
-                style={{
-                  marginTop: "0.5rem",
-                  borderColor: "var(--danger)",
-                  color: "var(--danger)",
-                }}
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      "Are you sure you want to delete your account? This action cannot be undone."
-                    )
-                  ) {
-                    toast.error("Account deletion coming soon");
-                  }
-                }}
-              >
-                Delete Account
-              </button>
-            </div>
-          </>
-        )}
-      </main>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
