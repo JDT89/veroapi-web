@@ -1,19 +1,17 @@
 // Central place to configure the backend URL
-// In production on Render, use environment variable
-// In development, use localhost
 
 const getApiBaseUrl = () => {
-  // Check if we're in production and have an env var
+  // If there's an environment variable, use it
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
   
-  // Check if we're in development
-  if (import.meta.env.DEV) {
+  // Check if we're in development (localhost)
+  if (import.meta.env.DEV || window.location.hostname === 'localhost') {
     return "http://localhost:3000";
   }
   
-  // Default to your production API
+  // Production: Use your custom domain
   return "https://api.vero-api.com";
 };
 
@@ -21,3 +19,4 @@ export const API_BASE_URL = getApiBaseUrl();
 
 // Log it so we can debug
 console.log('[VeroAPI] Using API URL:', API_BASE_URL);
+console.log('[VeroAPI] Environment:', import.meta.env.DEV ? 'development' : 'production');
