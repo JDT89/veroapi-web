@@ -13,7 +13,6 @@ import {
   CheckCircle,
   Clock,
   BarChart3,
-  Settings,
   LogOut
 } from "lucide-react";
 import { API_BASE_URL } from "../config";
@@ -43,9 +42,6 @@ function Dashboard() {
   // Stats state
   const [statsLoading, setStatsLoading] = useState(true);
   const [requestsLast24h, setRequestsLast24h] = useState(null);
-
-  // Debug panel state
-  const [showDebug, setShowDebug] = useState(false);
 
   // Initialize: check token and load user
   useEffect(() => {
@@ -97,35 +93,18 @@ function Dashboard() {
       setHealthLoading(true);
       setHealthError("");
       try {
-        console.log('[Dashboard] Checking API health at:', `${API_BASE_URL}/v1/health`);
-        const res = await fetch(`${API_BASE_URL}/v1/health`, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
-          cache: 'no-cache'
-        });
-        console.log('[Dashboard] Health check response status:', res.status);
-        console.log('[Dashboard] Health check response headers:', Object.fromEntries(res.headers.entries()));
-        
+        const res = await fetch(`${API_BASE_URL}/v1/health`);
         const data = await res.json();
-        console.log('[Dashboard] Health check data:', data);
 
-        // The health endpoint returns { ok: true, service: "veroapi", uptime: number }
-        // So we check if the response is OK (200) AND data.ok is true
         if (res.ok && data.ok === true) {
           setHealthData(data);
           setHealthError("");
-          console.log('[Dashboard] ✅ API health loaded successfully:', data);
         } else {
-          throw new Error(`API health check failed: status=${res.status}, data.ok=${data.ok}`);
+          throw new Error("API health check failed");
         }
       } catch (err) {
-        console.error('[Dashboard] ❌ Health check error:', err);
         const message = err.message || "Could not check API health";
         setHealthError(message);
-        
-        // Set a fallback indicating the API is down
         setHealthData({ ok: false, service: 'veroapi', uptime: 0 });
       } finally {
         setHealthLoading(false);
@@ -176,26 +155,17 @@ function Dashboard() {
     const loadStats = async () => {
       setStatsLoading(true);
       try {
-        console.log('[Dashboard] Loading stats from:', `${API_BASE_URL}/v1/stats/overview`);
         const res = await fetch(`${API_BASE_URL}/v1/stats/overview`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log('[Dashboard] Stats response status:', res.status);
-        
         const data = await res.json();
-        console.log('[Dashboard] Stats data:', data);
 
         if (res.ok && data.ok) {
           setRequestsLast24h(data.requests_last_24h || 0);
-          console.log('[Dashboard] Stats loaded successfully');
         } else {
-          console.warn('[Dashboard] Stats response not OK:', data);
-          // Set default value instead of failing
           setRequestsLast24h(0);
         }
       } catch (err) {
-        console.error("[Dashboard] Stats load error:", err);
-        // Set default value on error
         setRequestsLast24h(0);
       } finally {
         setStatsLoading(false);
@@ -302,148 +272,10 @@ function Dashboard() {
     );
   }
 
-  const apiOnline = React.useMemo(() => {
-    const isOnline = !healthLoading && !healthError && healthData?.ok === true;
-    console.log('[Dashboard] API Status Check:', {
-      healthLoading,
-      healthError,
-      healthDataOk: healthData?.ok,
-      healthData,
-      calculatedOnline: isOnline
-    });
-    return isOnline;
-  }, [healthLoading, healthError, healthData]);
+  const apiOnline = !healthLoading && !healthError && healthData?.ok === true;
 
   return (
     <div className="dashboard-container">
-      {/* Debug Toggle Button */}
-      <button
-        onClick={() => setShowDebug(!showDebug)}
-        style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          width: '48px',
-          height: '48px',
-          borderRadius: '50%',
-          background: 'var(--accent)',
-          border: 'none',
-          color: 'var(--bg)',
-          fontSize: '20px',
-          cursor: 'pointer',
-          boxShadow: '0 4px 16px rgba(46, 196, 182, 0.4)',
-          zIndex: 10000,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontWeight: 'bold'
-        }}
-        title="Toggle Debug Info"
-      >
-        🐛
-      </button>
-
-      {/* Debug Panel */}
-      {showDebug && (
-        <div style={{
-          position: 'fixed',
-          bottom: '80px',
-          right: '20px',
-          background: 'var(--card)',
-          border: '2px solid var(--accent)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '16px',
-          fontSize: '12px',
-          fontFamily: 'monospace',
-          zIndex: 9999,
-          maxWidth: '320px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-          maxHeight: '400px',
-          overflowY: 'auto'
-        }}>
-          <div style={{ 
-            fontWeight: 'bold', 
-            marginBottom: '12px', 
-            color: 'var(--accent)',
-            fontSize: '14px',
-            borderBottom: '1px solid var(--border-subtle)',
-            paddingBottom: '8px'
-          }}>
-            🐛 Debug Info
-          </div>
-          <div style={{ color: 'var(--text-soft)', lineHeight: '1.8' }}>
-            <div style={{ marginBottom: '8px' }}>
-              <strong style={{ color: 'var(--text-main)' }}>API Health:</strong>
-            </div>
-            <div style={{ paddingLeft: '12px', marginBottom: '8px' }}>
-              <div>• Loading: <span style={{ color: healthLoading ? 'var(--highlight)' : 'var(--success)' }}>{String(healthLoading)}</span></div>
-              <div>• Error: <span style={{ color: healthError ? 'var(--danger)' : 'var(--success)' }}>{healthError || 'none'}</span></div>
-              <div>• Data exists: <span style={{ color: healthData ? 'var(--success)' : 'var(--danger)' }}>{String(!!healthData)}</span></div>
-              <div>• Data.ok: <span style={{ color: healthData?.ok ? 'var(--success)' : 'var(--danger)' }}>{String(healthData?.ok)}</span></div>
-              <div>• Uptime: {healthData?.uptime || 'N/A'}</div>
-            </div>
-            
-            <div style={{ marginBottom: '8px' }}>
-              <strong style={{ color: 'var(--text-main)' }}>Calculated Status:</strong>
-            </div>
-            <div style={{ 
-              paddingLeft: '12px', 
-              marginBottom: '8px',
-              padding: '8px',
-              background: apiOnline ? 'rgba(34, 197, 94, 0.15)' : 'rgba(249, 115, 115, 0.15)',
-              borderRadius: '4px',
-              border: `1px solid ${apiOnline ? 'var(--success)' : 'var(--danger)'}`
-            }}>
-              <div style={{ 
-                fontSize: '16px', 
-                fontWeight: 'bold',
-                color: apiOnline ? 'var(--success)' : 'var(--danger)'
-              }}>
-                {apiOnline ? '✅ ONLINE' : '❌ OFFLINE'}
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '8px' }}>
-              <strong style={{ color: 'var(--text-main)' }}>Connection:</strong>
-            </div>
-            <div style={{ paddingLeft: '12px', marginBottom: '8px' }}>
-              <div style={{ wordBreak: 'break-all' }}>
-                <strong>URL:</strong> {API_BASE_URL}
-              </div>
-              <div>
-                <strong>Type:</strong> {API_BASE_URL.includes('localhost') ? '🔧 Local Dev' : '🌐 Production'}
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '8px' }}>
-              <strong style={{ color: 'var(--text-main)' }}>User:</strong>
-            </div>
-            <div style={{ paddingLeft: '12px', marginBottom: '8px' }}>
-              <div>• Logged in: <span style={{ color: user ? 'var(--success)' : 'var(--danger)' }}>{String(!!user)}</span></div>
-              {user && <div style={{ wordBreak: 'break-all' }}>• Email: {user.email}</div>}
-            </div>
-
-            <div style={{ marginBottom: '8px' }}>
-              <strong style={{ color: 'var(--text-main)' }}>API Key:</strong>
-            </div>
-            <div style={{ paddingLeft: '12px' }}>
-              <div>• Exists: <span style={{ color: apiKey ? 'var(--success)' : 'var(--danger)' }}>{String(!!apiKey)}</span></div>
-              {apiKey && <div>• Prefix: {apiKey.prefix}</div>}
-            </div>
-
-            <div style={{ 
-              marginTop: '12px', 
-              paddingTop: '12px', 
-              borderTop: '1px solid var(--border-subtle)',
-              fontSize: '10px',
-              color: 'var(--text-softer)'
-            }}>
-              Last updated: {new Date().toLocaleTimeString()}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Header Bar */}
       <header className="dashboard-header">
         <div className="dashboard-header-left">
