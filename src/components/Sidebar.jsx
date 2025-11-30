@@ -91,7 +91,7 @@ function Sidebar() {
               onClick={closeMobile}
             >
               <span className="sidebar-link-icon">📖</span>
-              Guides
+              Documentation
             </NavLink>
             <NavLink 
               to="/endpoints" 
@@ -99,7 +99,7 @@ function Sidebar() {
               onClick={closeMobile}
             >
               <span className="sidebar-link-icon">🔌</span>
-              API Reference
+              APIs
             </NavLink>
           </div>
 
@@ -132,7 +132,7 @@ function Sidebar() {
               className="sidebar-link"
               onClick={() => {
                 closeMobile();
-                navigate("/docs");
+                navigate("/changelog");
               }}
             >
               <span className="sidebar-link-icon">📝</span>
