@@ -85,7 +85,7 @@ const LandingPageRedesign = () => {
       {/* Hero Section */}
       <section style={{
         position: 'relative',
-        padding: '120px 24px 80px',
+        padding: '80px 24px 60px',
         textAlign: 'center',
         overflow: 'hidden'
       }}>
@@ -127,7 +127,7 @@ const LandingPageRedesign = () => {
           </div>
 
           <h1 style={{
-            fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
+            fontSize: 'clamp(2rem, 6vw, 4.5rem)',
             fontWeight: '800',
             lineHeight: '1.1',
             marginBottom: '24px',
@@ -135,7 +135,8 @@ const LandingPageRedesign = () => {
             background: 'linear-gradient(135deg, #F6F7F8 0%, #2EC4B6 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
+            backgroundClip: 'text',
+            padding: '0 16px'
           }}>
             APIs that just work.<br />
             <span style={{
@@ -148,12 +149,13 @@ const LandingPageRedesign = () => {
           </h1>
 
           <p style={{
-            fontSize: '1.25rem',
+            fontSize: '1.1rem',
             color: 'rgba(246, 247, 248, 0.7)',
             marginBottom: '40px',
             lineHeight: '1.6',
             maxWidth: '700px',
-            margin: '0 auto 40px'
+            margin: '0 auto 40px',
+            padding: '0 16px'
           }}>
             One API key. Dozens of random-but-useful endpoints. Zero infrastructure headaches.
             Perfect for Discord bots, internal tools, and SaaS products.
@@ -164,7 +166,8 @@ const LandingPageRedesign = () => {
             gap: '16px',
             justifyContent: 'center',
             flexWrap: 'wrap',
-            marginBottom: '24px'
+            marginBottom: '24px',
+            padding: '0 16px'
           }}>
             <button style={{
               padding: '16px 32px',
@@ -248,7 +251,8 @@ const LandingPageRedesign = () => {
         <div style={{
           maxWidth: '800px',
           margin: '60px auto 0',
-          position: 'relative'
+          position: 'relative',
+          padding: '0 8px'
         }}>
           <div style={{
             background: 'rgba(30, 37, 44, 0.8)',
@@ -292,7 +296,7 @@ const LandingPageRedesign = () => {
             <pre style={{
               margin: 0,
               fontFamily: 'ui-monospace, monospace',
-              fontSize: '0.875rem',
+              fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
               lineHeight: '1.6',
               color: '#F6F7F8',
               overflowX: 'auto'
@@ -308,7 +312,7 @@ const LandingPageRedesign = () => {
 
       {/* Stats Section */}
       <section style={{
-        padding: '80px 24px',
+        padding: '60px 16px',
         borderTop: '1px solid rgba(46, 196, 182, 0.1)',
         borderBottom: '1px solid rgba(46, 196, 182, 0.1)'
       }}>
@@ -316,7 +320,7 @@ const LandingPageRedesign = () => {
           maxWidth: '1200px',
           margin: '0 auto',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))',
           gap: '40px',
           textAlign: 'center'
         }}>
@@ -371,7 +375,7 @@ const LandingPageRedesign = () => {
 
       {/* Use Cases Section */}
       <section style={{
-        padding: '100px 24px',
+        padding: '80px 16px',
         background: 'linear-gradient(180deg, #171D23 0%, rgba(30, 37, 44, 0.5) 100%)'
       }}>
         <div style={{
@@ -403,7 +407,7 @@ const LandingPageRedesign = () => {
 
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
             gap: '24px'
           }}>
             {useCases.map((useCase, idx) => (
@@ -481,7 +485,7 @@ const LandingPageRedesign = () => {
 
       {/* Testimonials */}
       <section style={{
-        padding: '100px 24px',
+        padding: '80px 16px',
         borderTop: '1px solid rgba(46, 196, 182, 0.1)'
       }}>
         <div style={{
@@ -504,7 +508,7 @@ const LandingPageRedesign = () => {
 
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
             gap: '24px'
           }}>
             {testimonials.map((testimonial, idx) => (
@@ -554,7 +558,7 @@ const LandingPageRedesign = () => {
 
       {/* CTA Section */}
       <section style={{
-        padding: '100px 24px',
+        padding: '80px 16px',
         background: 'linear-gradient(135deg, rgba(46, 196, 182, 0.1) 0%, rgba(255, 159, 28, 0.1) 100%)',
         borderTop: '1px solid rgba(46, 196, 182, 0.2)',
         textAlign: 'center'
@@ -564,7 +568,7 @@ const LandingPageRedesign = () => {
           margin: '0 auto'
         }}>
           <h2 style={{
-            fontSize: 'clamp(2rem, 4vw, 3rem)',
+            fontSize: 'clamp(1.75rem, 4vw, 3rem)',
             fontWeight: '800',
             marginBottom: '24px',
             letterSpacing: '-0.02em'
@@ -572,10 +576,11 @@ const LandingPageRedesign = () => {
             Ready to ship faster?
           </h2>
           <p style={{
-            fontSize: '1.25rem',
+            fontSize: 'clamp(1rem, 2.5vw, 1.25rem)',
             color: 'rgba(246, 247, 248, 0.7)',
             marginBottom: '40px',
-            lineHeight: '1.6'
+            lineHeight: '1.6',
+            padding: '0 16px'
           }}>
             Join thousands of developers who've already ditched custom API infrastructure
           </p>
@@ -616,6 +621,35 @@ const LandingPageRedesign = () => {
             }
             50% {
               opacity: 1;
+            }
+          }
+
+          @media (max-width: 768px) {
+            button {
+              width: 100% !important;
+              max-width: 400px;
+              padding: 14px 28px !important;
+              font-size: 0.95rem !important;
+            }
+            
+            h1 br {
+              display: none;
+            }
+            
+            section {
+              padding-left: 16px !important;
+              padding-right: 16px !important;
+            }
+          }
+
+          @media (max-width: 480px) {
+            button {
+              padding: 12px 24px !important;
+              font-size: 0.875rem !important;
+            }
+            
+            pre code {
+              font-size: 0.7rem !important;
             }
           }
         `}
