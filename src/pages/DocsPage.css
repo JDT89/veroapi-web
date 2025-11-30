@@ -10,11 +10,13 @@
 
 .docs-header-redesign {
   margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .docs-header-content {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 
 .docs-badge {
@@ -133,9 +135,10 @@
 
 .docs-layout-redesign {
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr) 220px;
-  gap: 2rem;
+  grid-template-columns: 280px minmax(0, 1fr) 240px;
+  gap: 2.5rem;
   align-items: flex-start;
+  margin-top: 2rem;
 }
 
 /* ===== NAVIGATION SIDEBAR ===== */
@@ -252,16 +255,16 @@
 
 .docs-content-redesign {
   min-width: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .docs-article-redesign {
   background: var(--card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: 2.5rem;
+  padding: 3rem;
   box-shadow: var(--shadow-soft);
 }
 
@@ -277,8 +280,8 @@
 }
 
 .docs-article-icon {
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -289,18 +292,23 @@
   flex-shrink: 0;
 }
 
+.docs-article-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
 .docs-article-category {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--accent);
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .docs-article-title-redesign {
-  margin: 0 0 0.5rem;
-  font-size: 2rem;
+  margin: 0 0 0.75rem;
+  font-size: 2.25rem;
   font-weight: 700;
   color: var(--text-main);
   letter-spacing: -0.02em;
@@ -309,7 +317,7 @@
 
 .docs-article-tagline-redesign {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: var(--text-soft);
   line-height: 1.5;
 }
@@ -321,13 +329,13 @@
   border: 1px solid var(--border-subtle);
   border-left: 4px solid var(--accent);
   border-radius: var(--radius-md);
-  padding: 1.5rem;
-  margin-bottom: 2rem;
+  padding: 1.75rem 2rem;
+  margin-bottom: 2.5rem;
 }
 
 .docs-summary-box p {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.05rem;
   color: var(--text-main);
   line-height: 1.7;
 }
@@ -335,12 +343,12 @@
 /* Key Points */
 
 .docs-key-points {
-  margin-bottom: 2.5rem;
+  margin-bottom: 3rem;
 }
 
 .docs-section-heading {
-  margin: 0 0 1.25rem;
-  font-size: 1.25rem;
+  margin: 0 0 1.5rem;
+  font-size: 1.375rem;
   font-weight: 600;
   color: var(--text-main);
   letter-spacing: -0.01em;
@@ -372,12 +380,12 @@
 /* Code Examples */
 
 .docs-code-section {
-  margin-bottom: 2.5rem;
+  margin-bottom: 3rem;
 }
 
 .docs-code-blocks-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 450px), 1fr));
   gap: 1.5rem;
 }
 
@@ -529,9 +537,10 @@
   padding: 1.5rem;
   background: var(--card);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   max-height: calc(100vh - 40px);
   overflow-y: auto;
+  align-self: flex-start;
 }
 
 .docs-toc-title {
