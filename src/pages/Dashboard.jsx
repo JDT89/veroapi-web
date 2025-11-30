@@ -64,6 +64,12 @@ function Dashboard() {
         const res = await fetch(`${API_BASE_URL}/v1/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        
+        // Handle rate limiting
+        if (res.status === 429) {
+          throw new Error("Rate limit exceeded. Please wait a moment and refresh.");
+        }
+        
         const data = await res.json();
 
         if (!res.ok || !data.ok) {
@@ -84,7 +90,9 @@ function Dashboard() {
       }
     };
 
-    loadUser();
+    // Add a small delay to avoid immediate rate limiting
+    const timer = setTimeout(loadUser, 100);
+    return () => clearTimeout(timer);
   }, [token, navigate]);
 
   // Load API health
@@ -94,6 +102,14 @@ function Dashboard() {
       setHealthError("");
       try {
         const res = await fetch(`${API_BASE_URL}/v1/health`);
+        
+        // Handle rate limiting
+        if (res.status === 429) {
+          setHealthError("Rate limited");
+          setHealthData({ ok: false, service: 'veroapi', uptime: 0 });
+          return;
+        }
+        
         const data = await res.json();
 
         if (res.ok && data.ok === true) {
@@ -111,11 +127,16 @@ function Dashboard() {
       }
     };
 
-    loadHealth();
+    // Add delay to avoid rate limiting
+    const timer = setTimeout(loadHealth, 200);
     
-    // Refresh health check every 30 seconds
-    const interval = setInterval(loadHealth, 30000);
-    return () => clearInterval(interval);
+    // Refresh health check every 60 seconds (reduced from 30)
+    const interval = setInterval(loadHealth, 60000);
+    
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, []);
 
   // Load API keys
@@ -129,6 +150,12 @@ function Dashboard() {
         const res = await fetch(`${API_BASE_URL}/v1/api-keys`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        
+        // Handle rate limiting
+        if (res.status === 429) {
+          throw new Error("Rate limit exceeded. Please wait a moment and try again.");
+        }
+        
         const data = await res.json();
 
         if (!res.ok || !data.ok) {
@@ -145,7 +172,9 @@ function Dashboard() {
       }
     };
 
-    loadKeys();
+    // Add delay to stagger requests and avoid rate limiting
+    const timer = setTimeout(loadKeys, 300);
+    return () => clearTimeout(timer);
   }, [token]);
 
   // Load stats
@@ -158,6 +187,13 @@ function Dashboard() {
         const res = await fetch(`${API_BASE_URL}/v1/stats/overview`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        
+        // Handle rate limiting gracefully
+        if (res.status === 429) {
+          setRequestsLast24h(0);
+          return;
+        }
+        
         const data = await res.json();
 
         if (res.ok && data.ok) {
@@ -172,7 +208,9 @@ function Dashboard() {
       }
     };
 
-    loadStats();
+    // Add delay to stagger requests and avoid rate limiting
+    const timer = setTimeout(loadStats, 400);
+    return () => clearTimeout(timer);
   }, [token]);
 
   const handleCopySecret = async () => {
