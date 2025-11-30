@@ -234,7 +234,7 @@ const EndpointsPageRedesign = () => {
       background: '#171D23',
       color: '#F6F7F8',
       fontFamily: 'system-ui, -apple-system, sans-serif',
-      padding: '40px 24px'
+      padding: '40px 16px'
     }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
         {/* Header */}
@@ -417,7 +417,7 @@ const EndpointsPageRedesign = () => {
         {/* Endpoints Grid */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 380px), 1fr))',
           gap: '20px'
         }}>
           {filteredEndpoints.map(endpoint => (
@@ -468,7 +468,8 @@ const EndpointsPageRedesign = () => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
-                    marginBottom: '8px'
+                    marginBottom: '8px',
+                    flexWrap: 'wrap'
                   }}>
                     <span style={{
                       padding: '4px 10px',
@@ -582,7 +583,7 @@ const EndpointsPageRedesign = () => {
                 }}>
                   <div style={{
                     display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
+                    gridTemplateColumns: window.innerWidth > 768 ? '1fr 1fr' : '1fr',
                     gap: '12px',
                     marginBottom: '12px'
                   }}>
