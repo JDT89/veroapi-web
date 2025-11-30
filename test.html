@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VeroAPI Connection Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #171D23;
+            color: #F6F7F8;
+        }
+        h1 {
+            color: #2EC4B6;
+        }
+        button {
+            background: #2EC4B6;
+            color: #171D23;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+        }
+        button:hover {
+            background: #3dd9c9;
+        }
+        #results {
+            background: #1e252c;
+            border: 1px solid rgba(46, 196, 182, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .success {
+            color: #22c55e;
+        }
+        .error {
+            color: #f97373;
+        }
+        .info {
+            color: #FF9F1C;
+        }
+    </style>
+</head>
+<body>
+    <h1>VeroAPI Connection Test</h1>
+    <p>Use these buttons to test your API connection:</p>
+    
+    <button onclick="testHealth()">1. Test Health Endpoint</button>
+    <button onclick="testSignup()">2. Test Signup</button>
+    <button onclick="testLogin()">3. Test Login</button>
+    <button onclick="showDebugInfo()">4. Show Debug Info</button>
+    <button onclick="clearResults()">Clear Results</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_URL = 'https://api.vero-api.com';
+        const resultsDiv = document.getElementById('results');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            resultsDiv.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function clearResults() {
+            resultsDiv.innerHTML = '';
+        }
+
+        async function showDebugInfo() {
+            log('=== DEBUG INFORMATION ===', 'info');
+            log(`API URL: ${API_URL}`, 'info');
+            log(`Current page: ${window.location.href}`, 'info');
+            log(`Origin: ${window.location.origin}`, 'info');
+            log(`Protocol: ${window.location.protocol}`, 'info');
+            log(`User Agent: ${navigator.userAgent}`, 'info');
+            log('========================\n', 'info');
+        }
+
+        async function testHealth() {
+            log('Testing health endpoint...', 'info');
+            try {
+                const response = await fetch(`${API_URL}/v1/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`✅ SUCCESS: Health check passed`, 'success');
+                    log(`Status: ${response.status}`, 'success');
+                    log(`Response: ${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    log(`❌ FAILED: Status ${response.status}`, 'error');
+                    log(`Response: ${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (err) {
+                log(`❌ ERROR: ${err.message}`, 'error');
+                log(`This usually means:`, 'error');
+                log(`- CORS is blocking the request`, 'error');
+                log(`- The API server is not accessible`, 'error');
+                log(`- Network/DNS issue`, 'error');
+            }
+            log('---\n', 'info');
+        }
+
+        async function testSignup() {
+            log('Testing signup endpoint...', 'info');
+            const testEmail = `test${Date.now()}@example.com`;
+            const testPassword = 'TestPassword123!';
+            
+            log(`Email: ${testEmail}`, 'info');
+            log(`Password: ${testPassword}`, 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/v1/auth/signup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: testEmail,
+                        password: testPassword
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.ok) {
+                    log(`✅ SUCCESS: Account created`, 'success');
+                    log(`Status: ${response.status}`, 'success');
+                    log(`Token received: ${data.token ? 'Yes' : 'No'}`, 'success');
+                    log(`User: ${JSON.stringify(data.user, null, 2)}`, 'success');
+                } else {
+                    log(`❌ FAILED: ${data.error || 'Unknown error'}`, 'error');
+                    log(`Status: ${response.status}`, 'error');
+                    log(`Response: ${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (err) {
+                log(`❌ ERROR: ${err.message}`, 'error');
+                log(`Full error: ${err.toString()}`, 'error');
+            }
+            log('---\n', 'info');
+        }
+
+        async function testLogin() {
+            log('Testing login endpoint...', 'info');
+            const testEmail = 'test@example.com';
+            const testPassword = 'password123';
+            
+            log(`Attempting login with:`, 'info');
+            log(`Email: ${testEmail}`, 'info');
+            log(`Password: ${testPassword}`, 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/v1/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: testEmail,
+                        password: testPassword
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.ok) {
+                    log(`✅ SUCCESS: Login successful`, 'success');
+                    log(`Status: ${response.status}`, 'success');
+                    log(`Token received: ${data.token ? 'Yes' : 'No'}`, 'success');
+                } else {
+                    log(`❌ FAILED: ${data.error || 'Unknown error'}`, 'error');
+                    log(`Status: ${response.status}`, 'error');
+                    log(`(This is expected if you haven't created this account)`, 'info');
+                }
+            } catch (err) {
+                log(`❌ ERROR: ${err.message}`, 'error');
+            }
+            log('---\n', 'info');
+        }
+
+        // Auto-run debug info on load
+        window.onload = () => {
+            showDebugInfo();
+            log('Ready! Click the buttons above to test your API.\n', 'info');
+        };
+    </script>
+</body>
+</html>
