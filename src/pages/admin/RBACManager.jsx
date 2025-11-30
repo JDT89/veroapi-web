@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import {
   Lock,
@@ -24,9 +24,11 @@ function RBACManager() {
   const [roles, setRoles] = useState([]);
   const [permissions, setPermissions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingRole, setEditingRole] = useState(null);
   const [expandedRole, setExpandedRole] = useState(null);
+  const [actionLoading, setActionLoading] = useState({});
 
   const [formData, setFormData] = useState({
     name: '',
@@ -34,13 +36,9 @@ function RBACManager() {
     permissions: []
   });
 
-  useEffect(() => {
-    loadRoles();
-    loadPermissions();
-  }, []);
-
-  const loadRoles = async () => {
+  const loadRoles = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -49,20 +47,21 @@ function RBACManager() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         setRoles(data.roles || []);
       } else {
-        setRoles(getMockRoles());
+        throw new Error(data.error || 'Failed to load roles');
       }
     } catch (err) {
       console.error('Failed to load roles:', err);
-      setRoles(getMockRoles());
+      setError('Failed to load roles. Please try again.');
+      toast.error('Failed to load roles');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const loadPermissions = async () => {
+  const loadPermissions = useCallback(async () => {
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -71,57 +70,24 @@ function RBACManager() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         setPermissions(data.permissions || []);
       } else {
-        setPermissions(getMockPermissions());
+        // Permissions list can use defaults if API doesn't provide
+        setPermissions(getDefaultPermissions());
       }
     } catch (err) {
       console.error('Failed to load permissions:', err);
-      setPermissions(getMockPermissions());
+      setPermissions(getDefaultPermissions());
     }
-  };
+  }, []);
 
-  const getMockRoles = () => [
-    {
-      id: 'role_super_admin',
-      name: 'Super Admin',
-      description: 'Full access to all features and settings',
-      isSystem: true,
-      userCount: 2,
-      permissions: ['*'],
-      createdAt: '2024-01-01'
-    },
-    {
-      id: 'role_admin',
-      name: 'Admin',
-      description: 'Access to most admin features except system settings',
-      isSystem: true,
-      userCount: 5,
-      permissions: ['users.read', 'users.write', 'tickets.read', 'tickets.write', 'analytics.read'],
-      createdAt: '2024-01-01'
-    },
-    {
-      id: 'role_support',
-      name: 'Support Agent',
-      description: 'Handle support tickets and view user information',
-      isSystem: false,
-      userCount: 8,
-      permissions: ['users.read', 'tickets.read', 'tickets.write'],
-      createdAt: '2024-02-15'
-    },
-    {
-      id: 'role_analyst',
-      name: 'Analyst',
-      description: 'View analytics and reports',
-      isSystem: false,
-      userCount: 3,
-      permissions: ['analytics.read', 'reports.read'],
-      createdAt: '2024-03-01'
-    }
-  ];
+  useEffect(() => {
+    loadRoles();
+    loadPermissions();
+  }, [loadRoles, loadPermissions]);
 
-  const getMockPermissions = () => [
+  const getDefaultPermissions = () => [
     { category: 'Users', permissions: [
       { id: 'users.read', name: 'View Users', description: 'View user list and details' },
       { id: 'users.write', name: 'Manage Users', description: 'Create, edit, suspend users' },
@@ -168,27 +134,17 @@ function RBACManager() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Role created successfully');
         setShowCreateModal(false);
         resetForm();
         loadRoles();
       } else {
-        toast.error(data.error || 'Failed to create role');
+        throw new Error(data.error || 'Failed to create role');
       }
     } catch (err) {
       console.error('Create failed:', err);
-      toast.success('Role created successfully');
-      const newRole = {
-        id: `role_${Date.now()}`,
-        ...formData,
-        isSystem: false,
-        userCount: 0,
-        createdAt: new Date().toISOString()
-      };
-      setRoles([...roles, newRole]);
-      setShowCreateModal(false);
-      resetForm();
+      toast.error(err.message || 'Failed to create role');
     }
   };
 
@@ -206,20 +162,17 @@ function RBACManager() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Role updated successfully');
         setEditingRole(null);
         resetForm();
         loadRoles();
       } else {
-        toast.error(data.error || 'Failed to update role');
+        throw new Error(data.error || 'Failed to update role');
       }
     } catch (err) {
       console.error('Update failed:', err);
-      toast.success('Role updated successfully');
-      setRoles(roles.map(r => r.id === editingRole.id ? { ...r, ...formData } : r));
-      setEditingRole(null);
-      resetForm();
+      toast.error(err.message || 'Failed to update role');
     }
   };
 
@@ -235,6 +188,7 @@ function RBACManager() {
     }
     if (!window.confirm('Are you sure you want to delete this role?')) return;
 
+    setActionLoading(prev => ({ ...prev, [roleId]: 'delete' }));
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -244,16 +198,17 @@ function RBACManager() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Role deleted');
         loadRoles();
       } else {
-        toast.error(data.error || 'Failed to delete role');
+        throw new Error(data.error || 'Failed to delete role');
       }
     } catch (err) {
       console.error('Delete failed:', err);
-      toast.success('Role deleted');
-      setRoles(roles.filter(r => r.id !== roleId));
+      toast.error(err.message || 'Failed to delete role');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [roleId]: null }));
     }
   };
 

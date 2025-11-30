@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import {
   MessageCircle,
@@ -22,19 +22,18 @@ import { API_BASE_URL } from '../../config';
 function SupportTickets() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [ticketDetails, setTicketDetails] = useState(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
   const [filter, setFilter] = useState('open');
   const [searchQuery, setSearchQuery] = useState('');
   const [replyMessage, setReplyMessage] = useState('');
   const [sending, setSending] = useState(false);
 
-  useEffect(() => {
-    loadTickets();
-  }, [filter]);
-
-  const loadTickets = async () => {
+  const loadTickets = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -43,67 +42,26 @@ function SupportTickets() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         setTickets(data.tickets || []);
       } else {
-        setTickets(getMockTickets());
+        throw new Error(data.error || 'Failed to load tickets');
       }
     } catch (err) {
       console.error('Failed to load tickets:', err);
-      setTickets(getMockTickets());
+      setError('Failed to load tickets. Please try again.');
+      toast.error('Failed to load tickets');
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
 
-  const getMockTickets = () => [
-    {
-      id: 'tkt_1',
-      subject: 'API Key not working after regeneration',
-      status: 'open',
-      priority: 'high',
-      user: { id: 'usr_1', email: 'alice@example.com' },
-      assignedTo: null,
-      createdAt: '2024-04-10T10:30:00Z',
-      updatedAt: '2024-04-10T10:30:00Z',
-      lastMessage: 'I regenerated my API key but the new one returns a 401 error...'
-    },
-    {
-      id: 'tkt_2',
-      subject: 'Rate limit increase request',
-      status: 'open',
-      priority: 'medium',
-      user: { id: 'usr_2', email: 'bob@company.io' },
-      assignedTo: { id: 'admin_1', email: 'support@veroapi.com' },
-      createdAt: '2024-04-09T14:20:00Z',
-      updatedAt: '2024-04-09T16:45:00Z',
-      lastMessage: 'We need a higher rate limit for our production environment...'
-    },
-    {
-      id: 'tkt_3',
-      subject: 'Billing inquiry - Invoice mismatch',
-      status: 'pending',
-      priority: 'low',
-      user: { id: 'usr_3', email: 'finance@startup.co' },
-      assignedTo: { id: 'admin_2', email: 'billing@veroapi.com' },
-      createdAt: '2024-04-08T09:00:00Z',
-      updatedAt: '2024-04-09T11:30:00Z',
-      lastMessage: 'The invoice total does not match our calculations...'
-    },
-    {
-      id: 'tkt_4',
-      subject: 'Feature request - Webhook retries',
-      status: 'closed',
-      priority: 'low',
-      user: { id: 'usr_4', email: 'dev@agency.com' },
-      assignedTo: { id: 'admin_1', email: 'support@veroapi.com' },
-      createdAt: '2024-04-01T08:15:00Z',
-      updatedAt: '2024-04-05T14:00:00Z',
-      lastMessage: 'Thank you for implementing webhook retries!'
-    }
-  ];
+  useEffect(() => {
+    loadTickets();
+  }, [loadTickets]);
 
   const loadTicketDetails = async (ticketId) => {
+    setDetailsLoading(true);
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -112,40 +70,33 @@ function SupportTickets() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         setTicketDetails(data.ticket);
       } else {
-        setTicketDetails(getMockTicketDetails(ticketId));
+        throw new Error(data.error || 'Failed to load ticket details');
       }
     } catch (err) {
       console.error('Failed to load ticket details:', err);
-      setTicketDetails(getMockTicketDetails(ticketId));
+      toast.error('Failed to load ticket details');
+      // Fall back to basic ticket info from list
+      const ticket = tickets.find(t => t.id === ticketId);
+      if (ticket) {
+        setTicketDetails({
+          ...ticket,
+          messages: [{
+            id: 'msg_1',
+            sender: ticket.user,
+            isAdmin: false,
+            content: ticket.lastMessage,
+            createdAt: ticket.createdAt
+          }]
+        });
+      }
+    } finally {
+      setDetailsLoading(false);
     }
     
     setSelectedTicket(ticketId);
-  };
-
-  const getMockTicketDetails = (ticketId) => {
-    const ticket = tickets.find(t => t.id === ticketId);
-    return {
-      ...ticket,
-      messages: [
-        {
-          id: 'msg_1',
-          sender: ticket.user,
-          isAdmin: false,
-          content: ticket.lastMessage,
-          createdAt: ticket.createdAt
-        },
-        ...(ticketId === 'tkt_2' ? [{
-          id: 'msg_2',
-          sender: { id: 'admin_1', email: 'support@veroapi.com' },
-          isAdmin: true,
-          content: 'Hi Bob, I\'ve reviewed your request. Could you provide more details about your expected usage patterns?',
-          createdAt: '2024-04-09T16:45:00Z'
-        }] : [])
-      ]
-    };
   };
 
   const handleReply = async () => {
@@ -168,30 +119,16 @@ function SupportTickets() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Reply sent successfully');
         setReplyMessage('');
         loadTicketDetails(selectedTicket);
       } else {
-        toast.error(data.error || 'Failed to send reply');
+        throw new Error(data.error || 'Failed to send reply');
       }
     } catch (err) {
       console.error('Reply failed:', err);
-      toast.success('Reply sent successfully');
-      setTicketDetails({
-        ...ticketDetails,
-        messages: [
-          ...ticketDetails.messages,
-          {
-            id: `msg_${Date.now()}`,
-            sender: { id: 'admin', email: 'you@veroapi.com' },
-            isAdmin: true,
-            content: replyMessage,
-            createdAt: new Date().toISOString()
-          }
-        ]
-      });
-      setReplyMessage('');
+      toast.error(err.message || 'Failed to send reply');
     } finally {
       setSending(false);
     }
@@ -211,19 +148,18 @@ function SupportTickets() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success(`Ticket ${newStatus}`);
         loadTickets();
         if (ticketDetails) {
           setTicketDetails({ ...ticketDetails, status: newStatus });
         }
       } else {
-        toast.error(data.error || 'Failed to update status');
+        throw new Error(data.error || 'Failed to update status');
       }
     } catch (err) {
       console.error('Status update failed:', err);
-      toast.success(`Ticket ${newStatus}`);
-      setTickets(tickets.map(t => t.id === ticketId ? { ...t, status: newStatus } : t));
+      toast.error(err.message || 'Failed to update status');
     }
   };
 
@@ -339,7 +275,7 @@ function SupportTickets() {
             <h4>Select a Ticket</h4>
             <p>Choose a ticket from the list to view details</p>
           </div>
-        ) : !ticketDetails ? (
+        ) : detailsLoading || !ticketDetails ? (
           <div className="admin-loading-inline">
             <RefreshCw size={24} className="spin" />
             <span>Loading ticket...</span>

@@ -12,23 +12,54 @@ const getAuthHeaders = () => {
   };
 };
 
-// Helper for API calls
+// Helper for API calls with improved error handling
 const apiCall = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
   const headers = getAuthHeaders();
   
-  const response = await fetch(url, {
-    ...options,
-    headers: { ...headers, ...options.headers }
-  });
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
 
-  const data = await response.json();
-  
-  if (!response.ok) {
-    throw new Error(data.error || `API Error: ${response.status}`);
+    // Handle non-JSON responses
+    const contentType = response.headers.get('content-type');
+    let data;
+    
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      data = { ok: response.ok, message: text };
+    }
+    
+    if (!response.ok) {
+      // Normalize error response
+      const errorMessage = data.error || data.message || `API Error: ${response.status}`;
+      const error = new Error(errorMessage);
+      error.status = response.status;
+      error.data = data;
+      throw error;
+    }
+    
+    // Normalize success response - ensure 'ok' property exists
+    if (typeof data.ok === 'undefined') {
+      data.ok = true;
+    }
+    
+    return data;
+  } catch (err) {
+    // Re-throw if it's already our formatted error
+    if (err.status) {
+      throw err;
+    }
+    // Handle network errors
+    const error = new Error(err.message || 'Network error occurred');
+    error.status = 0;
+    error.isNetworkError = true;
+    throw error;
   }
-  
-  return data;
 };
 
 // ============ User Management ============

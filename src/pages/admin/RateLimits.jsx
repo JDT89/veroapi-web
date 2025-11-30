@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import {
   Settings,
@@ -28,6 +28,7 @@ function RateLimits() {
   });
   const [userOverrides, setUserOverrides] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingUser, setEditingUser] = useState(null);
@@ -37,8 +38,9 @@ function RateLimits() {
     loadRateLimits();
   }, []);
 
-  const loadRateLimits = async () => {
+  const loadRateLimits = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -47,37 +49,22 @@ function RateLimits() {
       });
       const data = await res.json();
       
-      if (data.ok) {
-        setGlobalLimits(data.globalLimits || globalLimits);
+      if (res.ok && data.ok !== false) {
+        if (data.globalLimits) {
+          setGlobalLimits(data.globalLimits);
+        }
         setUserOverrides(data.userOverrides || []);
       } else {
-        // Use mock data
-        setUserOverrides(getMockOverrides());
+        throw new Error(data.error || 'Failed to load rate limits');
       }
     } catch (err) {
       console.error('Failed to load rate limits:', err);
-      setUserOverrides(getMockOverrides());
+      setError('Failed to load rate limits. Please try again.');
+      toast.error('Failed to load rate limits');
     } finally {
       setLoading(false);
     }
-  };
-
-  const getMockOverrides = () => [
-    { 
-      userId: 'usr_1', 
-      email: 'enterprise@bigcorp.com', 
-      limits: { requestsPerMinute: 500, requestsPerHour: 10000, requestsPerDay: 100000, burstLimit: 1000 },
-      reason: 'Enterprise plan',
-      setAt: '2024-01-15'
-    },
-    { 
-      userId: 'usr_2', 
-      email: 'partner@startup.io', 
-      limits: { requestsPerMinute: 200, requestsPerHour: 5000, requestsPerDay: 50000, burstLimit: 400 },
-      reason: 'Partner program',
-      setAt: '2024-02-20'
-    }
-  ];
+  }, []);
 
   const handleSaveGlobalLimits = async () => {
     setSaving(true);
@@ -94,14 +81,14 @@ function RateLimits() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Global rate limits updated');
       } else {
-        toast.error(data.error || 'Failed to update limits');
+        throw new Error(data.error || 'Failed to update limits');
       }
     } catch (err) {
       console.error('Save failed:', err);
-      toast.success('Global rate limits updated');
+      toast.error(err.message || 'Failed to update global limits');
     } finally {
       setSaving(false);
     }
@@ -121,20 +108,16 @@ function RateLimits() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('User rate limits updated');
         setEditingUser(null);
         loadRateLimits();
       } else {
-        toast.error(data.error || 'Failed to update limits');
+        throw new Error(data.error || 'Failed to update limits');
       }
     } catch (err) {
       console.error('Save failed:', err);
-      toast.success('User rate limits updated');
-      setUserOverrides(userOverrides.map(u => 
-        u.userId === userId ? { ...u, limits: editLimits } : u
-      ));
-      setEditingUser(null);
+      toast.error(err.message || 'Failed to update user limits');
     }
   };
 
@@ -150,16 +133,15 @@ function RateLimits() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('User rate limits reset to default');
         loadRateLimits();
       } else {
-        toast.error(data.error || 'Failed to reset limits');
+        throw new Error(data.error || 'Failed to reset limits');
       }
     } catch (err) {
       console.error('Reset failed:', err);
-      toast.success('User rate limits reset to default');
-      setUserOverrides(userOverrides.filter(u => u.userId !== userId));
+      toast.error(err.message || 'Failed to reset user limits');
     }
   };
 

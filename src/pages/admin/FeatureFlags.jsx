@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import {
   Flag,
@@ -24,10 +24,12 @@ import { API_BASE_URL } from '../../config';
 function FeatureFlags() {
   const [flags, setFlags] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingFlag, setEditingFlag] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [actionLoading, setActionLoading] = useState({});
   
   const [formData, setFormData] = useState({
     key: '',
@@ -44,8 +46,9 @@ function FeatureFlags() {
     loadFlags();
   }, []);
 
-  const loadFlags = async () => {
+  const loadFlags = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -54,78 +57,22 @@ function FeatureFlags() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         setFlags(data.flags || []);
       } else {
-        setFlags(getMockFlags());
+        throw new Error(data.error || 'Failed to load feature flags');
       }
     } catch (err) {
       console.error('Failed to load flags:', err);
-      setFlags(getMockFlags());
+      setError('Failed to load feature flags. Please try again.');
+      toast.error('Failed to load feature flags');
     } finally {
       setLoading(false);
     }
-  };
-
-  const getMockFlags = () => [
-    { 
-      id: 'ff_1', 
-      key: 'new_dashboard', 
-      name: 'New Dashboard UI', 
-      description: 'Enables the redesigned dashboard with improved metrics visualization',
-      enabled: true,
-      rolloutPercentage: 100,
-      environment: 'all',
-      createdAt: '2024-01-15',
-      updatedAt: '2024-02-01'
-    },
-    { 
-      id: 'ff_2', 
-      key: 'beta_endpoints', 
-      name: 'Beta API Endpoints', 
-      description: 'Access to experimental API endpoints in development',
-      enabled: true,
-      rolloutPercentage: 25,
-      environment: 'development',
-      createdAt: '2024-02-20',
-      updatedAt: '2024-02-20'
-    },
-    { 
-      id: 'ff_3', 
-      key: 'advanced_analytics', 
-      name: 'Advanced Analytics', 
-      description: 'Enable detailed analytics and insights for power users',
-      enabled: false,
-      rolloutPercentage: 0,
-      environment: 'production',
-      createdAt: '2024-03-01',
-      updatedAt: '2024-03-01'
-    },
-    { 
-      id: 'ff_4', 
-      key: 'webhooks_v2', 
-      name: 'Webhooks V2', 
-      description: 'New webhook system with retry logic and delivery guarantees',
-      enabled: true,
-      rolloutPercentage: 50,
-      environment: 'all',
-      createdAt: '2024-03-15',
-      updatedAt: '2024-04-01'
-    },
-    { 
-      id: 'ff_5', 
-      key: 'dark_mode', 
-      name: 'Dark Mode', 
-      description: 'Enable dark theme support across the platform',
-      enabled: true,
-      rolloutPercentage: 100,
-      environment: 'all',
-      createdAt: '2024-01-01',
-      updatedAt: '2024-01-01'
-    }
-  ];
+  }, []);
 
   const handleToggle = async (flagId, currentState) => {
+    setActionLoading(prev => ({ ...prev, [flagId]: 'toggle' }));
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -139,16 +86,17 @@ function FeatureFlags() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success(`Flag ${!currentState ? 'enabled' : 'disabled'}`);
         loadFlags();
       } else {
-        toast.error(data.error || 'Failed to toggle flag');
+        throw new Error(data.error || 'Failed to toggle flag');
       }
     } catch (err) {
       console.error('Toggle failed:', err);
-      toast.success(`Flag ${!currentState ? 'enabled' : 'disabled'}`);
-      setFlags(flags.map(f => f.id === flagId ? { ...f, enabled: !currentState } : f));
+      toast.error(err.message || 'Failed to toggle flag');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [flagId]: null }));
     }
   };
 
@@ -171,26 +119,17 @@ function FeatureFlags() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Feature flag created');
         setShowCreateModal(false);
         resetForm();
         loadFlags();
       } else {
-        toast.error(data.error || 'Failed to create flag');
+        throw new Error(data.error || 'Failed to create flag');
       }
     } catch (err) {
       console.error('Create failed:', err);
-      toast.success('Feature flag created');
-      const newFlag = {
-        id: `ff_${Date.now()}`,
-        ...formData,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      setFlags([...flags, newFlag]);
-      setShowCreateModal(false);
-      resetForm();
+      toast.error(err.message || 'Failed to create flag');
     }
   };
 
@@ -208,26 +147,24 @@ function FeatureFlags() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Feature flag updated');
         setEditingFlag(null);
         resetForm();
         loadFlags();
       } else {
-        toast.error(data.error || 'Failed to update flag');
+        throw new Error(data.error || 'Failed to update flag');
       }
     } catch (err) {
       console.error('Update failed:', err);
-      toast.success('Feature flag updated');
-      setFlags(flags.map(f => f.id === editingFlag.id ? { ...f, ...formData, updatedAt: new Date().toISOString() } : f));
-      setEditingFlag(null);
-      resetForm();
+      toast.error(err.message || 'Failed to update flag');
     }
   };
 
   const handleDelete = async (flagId) => {
     if (!window.confirm('Are you sure you want to delete this feature flag?')) return;
 
+    setActionLoading(prev => ({ ...prev, [flagId]: 'delete' }));
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -237,16 +174,17 @@ function FeatureFlags() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Feature flag deleted');
         loadFlags();
       } else {
-        toast.error(data.error || 'Failed to delete flag');
+        throw new Error(data.error || 'Failed to delete flag');
       }
     } catch (err) {
       console.error('Delete failed:', err);
-      toast.success('Feature flag deleted');
-      setFlags(flags.filter(f => f.id !== flagId));
+      toast.error(err.message || 'Failed to delete flag');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [flagId]: null }));
     }
   };
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import {
   Users,
@@ -21,6 +21,7 @@ import { API_BASE_URL } from '../../config';
 function UserManagement() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -30,13 +31,15 @@ function UserManagement() {
   const [totalPages, setTotalPages] = useState(1);
   const [suspendReason, setSuspendReason] = useState('');
   const [showSuspendModal, setShowSuspendModal] = useState(false);
+  const [actionLoading, setActionLoading] = useState({});
 
   useEffect(() => {
     loadUsers();
   }, [page, filter]);
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -46,28 +49,20 @@ function UserManagement() {
       );
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         setUsers(data.users || []);
         setTotalPages(data.totalPages || 1);
       } else {
-        // Use mock data for demo
-        setUsers(getMockUsers());
+        throw new Error(data.error || 'Failed to load users');
       }
     } catch (err) {
       console.error('Failed to load users:', err);
-      setUsers(getMockUsers());
+      setError('Failed to load users. Please try again.');
+      toast.error('Failed to load users');
     } finally {
       setLoading(false);
     }
-  };
-
-  const getMockUsers = () => [
-    { id: 'usr_1', email: 'alice@example.com', createdAt: '2024-01-15', apiKeyCount: 2, totalRequests: 15420, isSuspended: false, isSuperAdmin: false },
-    { id: 'usr_2', email: 'bob@example.com', createdAt: '2024-02-20', apiKeyCount: 1, totalRequests: 8930, isSuspended: false, isSuperAdmin: false },
-    { id: 'usr_3', email: 'charlie@example.com', createdAt: '2024-03-10', apiKeyCount: 3, totalRequests: 22100, isSuspended: true, suspendReason: 'Rate limit abuse', isSuperAdmin: false },
-    { id: 'usr_4', email: 'admin@veroapi.com', createdAt: '2023-12-01', apiKeyCount: 1, totalRequests: 5000, isSuspended: false, isSuperAdmin: true },
-    { id: 'usr_5', email: 'dev@startup.io', createdAt: '2024-04-05', apiKeyCount: 5, totalRequests: 45000, isSuspended: false, isSuperAdmin: false },
-  ];
+  }, [page, filter]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -77,6 +72,7 @@ function UserManagement() {
     }
 
     setSearching(true);
+    setError(null);
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -85,10 +81,15 @@ function UserManagement() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await res.json();
-      setUsers(data.users || []);
+      
+      if (res.ok && data.ok !== false) {
+        setUsers(data.users || []);
+      } else {
+        throw new Error(data.error || 'Search failed');
+      }
     } catch (err) {
       console.error('Search failed:', err);
-      toast.error('Search failed');
+      toast.error(err.message || 'Search failed');
     } finally {
       setSearching(false);
     }
@@ -100,6 +101,7 @@ function UserManagement() {
       return;
     }
 
+    setActionLoading(prev => ({ ...prev, [userId]: 'suspend' }));
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -113,25 +115,24 @@ function UserManagement() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('User suspended successfully');
         setShowSuspendModal(false);
         setSuspendReason('');
         loadUsers();
       } else {
-        toast.error(data.error || 'Failed to suspend user');
+        throw new Error(data.error || 'Failed to suspend user');
       }
     } catch (err) {
       console.error('Suspend failed:', err);
-      // Mock success for demo
-      toast.success('User suspended successfully');
-      setShowSuspendModal(false);
-      setSuspendReason('');
-      setUsers(users.map(u => u.id === userId ? { ...u, isSuspended: true, suspendReason } : u));
+      toast.error(err.message || 'Failed to suspend user');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [userId]: null }));
     }
   };
 
   const handleUnsuspend = async (userId) => {
+    setActionLoading(prev => ({ ...prev, [userId]: 'unsuspend' }));
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -141,23 +142,24 @@ function UserManagement() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('User unsuspended successfully');
         loadUsers();
       } else {
-        toast.error(data.error || 'Failed to unsuspend user');
+        throw new Error(data.error || 'Failed to unsuspend user');
       }
     } catch (err) {
       console.error('Unsuspend failed:', err);
-      // Mock success for demo
-      toast.success('User unsuspended successfully');
-      setUsers(users.map(u => u.id === userId ? { ...u, isSuspended: false, suspendReason: null } : u));
+      toast.error(err.message || 'Failed to unsuspend user');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [userId]: null }));
     }
   };
 
   const handleRevokeKeys = async (userId) => {
     if (!window.confirm('Are you sure you want to revoke all API keys for this user?')) return;
 
+    setActionLoading(prev => ({ ...prev, [userId]: 'revoke' }));
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -167,22 +169,24 @@ function UserManagement() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success(`Revoked ${data.revokedCount || 'all'} API keys`);
         loadUsers();
       } else {
-        toast.error(data.error || 'Failed to revoke keys');
+        throw new Error(data.error || 'Failed to revoke keys');
       }
     } catch (err) {
       console.error('Revoke failed:', err);
-      toast.success('API keys revoked successfully');
-      setUsers(users.map(u => u.id === userId ? { ...u, apiKeyCount: 0 } : u));
+      toast.error(err.message || 'Failed to revoke keys');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [userId]: null }));
     }
   };
 
   const handleDeleteUser = async (userId) => {
     if (!window.confirm('Are you sure you want to permanently delete this user? This action cannot be undone.')) return;
 
+    setActionLoading(prev => ({ ...prev, [userId]: 'delete' }));
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -192,16 +196,17 @@ function UserManagement() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('User deleted successfully');
         loadUsers();
       } else {
-        toast.error(data.error || 'Failed to delete user');
+        throw new Error(data.error || 'Failed to delete user');
       }
     } catch (err) {
       console.error('Delete failed:', err);
-      toast.success('User deleted successfully');
-      setUsers(users.filter(u => u.id !== userId));
+      toast.error(err.message || 'Failed to delete user');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [userId]: null }));
     }
   };
 
