@@ -1,6 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { 
+  Eye, 
+  EyeOff, 
+  Mail, 
+  Lock, 
+  Sparkles, 
+  Check, 
+  AlertCircle,
+  Zap,
+  Shield,
+  TrendingUp,
+  ArrowRight
+} from "lucide-react";
 import { API_BASE_URL } from "../config";
 import "./AuthPage.css";
 
@@ -12,6 +25,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -31,6 +45,8 @@ function AuthPage() {
     setMode(nextMode);
     setError("");
     setSuccess("");
+    setPassword("");
+    setConfirmPassword("");
   };
 
   const validateForm = () => {
@@ -70,8 +86,6 @@ function AuthPage() {
       const path = mode === "login" ? "/v1/auth/login" : "/v1/auth/signup";
       const url = `${API_BASE_URL}${path}`;
       
-      console.log('[Auth] Attempting to connect to:', url);
-      
       const res = await fetch(url, {
         method: "POST",
         headers: { 
@@ -83,14 +97,10 @@ function AuthPage() {
         }),
       });
 
-      console.log('[Auth] Response status:', res.status);
-
       let data;
       try {
         data = await res.json();
-        console.log('[Auth] Response data:', data);
       } catch (jsonError) {
-        console.error('[Auth] Failed to parse JSON:', jsonError);
         throw new Error("Server returned invalid response");
       }
 
@@ -116,12 +126,10 @@ function AuthPage() {
       }, 700);
       
     } catch (err) {
-      console.error('[Auth] Error:', err);
-      
       let message = "Something went wrong. Please try again.";
       
       if (err.message.includes("Failed to fetch")) {
-        message = `Cannot connect to API server at ${API_BASE_URL}. Please check if the server is running.`;
+        message = `Cannot connect to API server. Please check if the server is running.`;
       } else if (err.message) {
         message = err.message;
       }
@@ -133,188 +141,305 @@ function AuthPage() {
     }
   };
 
-  const passwordStrength = (() => {
-    if (!password) return "";
+  const getPasswordStrength = () => {
+    if (!password) return { text: "", color: "", progress: 0 };
     let score = 0;
     if (password.length >= 8) score++;
+    if (password.length >= 12) score++;
     if (/[A-Z]/.test(password)) score++;
     if (/[0-9]/.test(password)) score++;
     if (/[^A-Za-z0-9]/.test(password)) score++;
 
-    if (score <= 1) return "Weak";
-    if (score === 2) return "Okay";
-    if (score === 3) return "Strong";
-    return "Very strong";
-  })();
+    if (score <= 2) return { text: "Weak", color: "#f97373", progress: 33 };
+    if (score === 3) return { text: "Fair", color: "#FF9F1C", progress: 66 };
+    if (score === 4) return { text: "Strong", color: "#22c55e", progress: 85 };
+    return { text: "Very Strong", color: "#2EC4B6", progress: 100 };
+  };
+
+  const passwordStrength = getPasswordStrength();
+
+  const features = [
+    {
+      icon: Zap,
+      title: "Lightning Fast",
+      description: "Sub-100ms response times"
+    },
+    {
+      icon: Shield,
+      title: "Secure",
+      description: "Enterprise-grade security"
+    },
+    {
+      icon: TrendingUp,
+      title: "Reliable",
+      description: "99.9% uptime guaranteed"
+    }
+  ];
 
   return (
-    <section className="auth-page">
-      <div className="auth-shell">
-        {/* Left column – copy */}
-        <div className="auth-copy">
-          <span className="auth-pill">
-            <span className="auth-pill-dot" />
-            VeroAPI Console
-          </span>
-          <h1>{mode === "login" ? "Welcome back" : "Create your account"}</h1>
-          <p>
-            Sign in to manage your API key, explore random endpoints, and plug
-            VeroAPI straight into your apps, bots, and internal tools.
-          </p>
+    <div className="auth-page-redesign">
+      <div className="auth-container">
+        {/* Left Column - Hero Section */}
+        <div className="auth-hero">
+          <div className="auth-hero-content">
+            <div className="auth-hero-badge">
+              <Sparkles size={14} />
+              <span>VeroAPI Platform</span>
+            </div>
+            
+            <h1 className="auth-hero-title">
+              {mode === "login" ? "Welcome back" : "Get started today"}
+            </h1>
+            
+            <p className="auth-hero-description">
+              {mode === "login" 
+                ? "Sign in to access your API keys, monitor usage, and manage your account."
+                : "Create your account and get instant access to powerful API endpoints for your applications."}
+            </p>
 
-          <ul className="auth-points">
-            <li>One API key per account with simple rate limiting.</li>
-            <li>No dashboards to build — just plug into your existing stack.</li>
-            <li>Perfect for Discord bots, cron jobs, and small SaaS utilities.</li>
-          </ul>
+            {/* Features Grid */}
+            <div className="auth-features-grid">
+              {features.map((feature, idx) => {
+                const Icon = feature.icon;
+                return (
+                  <div key={idx} className="auth-feature-card">
+                    <div className="auth-feature-icon">
+                      <Icon size={20} />
+                    </div>
+                    <div className="auth-feature-content">
+                      <h3>{feature.title}</h3>
+                      <p>{feature.description}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
 
-          <div className="auth-footnote">
-            Need help?{" "}
-            <button
-              type="button"
-              className="auth-link-button"
-              onClick={() => navigate("/docs")}
-            >
-              Read the docs
-            </button>
+            {/* Benefits List */}
+            <div className="auth-benefits">
+              <h3 className="auth-benefits-title">What you get:</h3>
+              <ul className="auth-benefits-list">
+                <li>
+                  <Check size={18} />
+                  <span>1,000 free API calls per month</span>
+                </li>
+                <li>
+                  <Check size={18} />
+                  <span>Access to all random endpoints</span>
+                </li>
+                <li>
+                  <Check size={18} />
+                  <span>Real-time usage analytics</span>
+                </li>
+                <li>
+                  <Check size={18} />
+                  <span>24/7 API availability</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
-        {/* Right column – card */}
-        <div className="auth-card">
-          {/* Tabs */}
-          <div className="auth-tabs">
-            <button
-              type="button"
-              className={`auth-tab ${mode === "login" ? "active" : ""}`}
-              onClick={() => handleModeChange("login")}
-            >
-              Sign in
-            </button>
-            <button
-              type="button"
-              className={`auth-tab ${mode === "signup" ? "active" : ""}`}
-              onClick={() => handleModeChange("signup")}
-            >
-              Create account
-            </button>
-          </div>
-
-          {/* Status badges */}
-          <div className="auth-badges">
-            <span className="auth-badge">
-              <span className="auth-badge-dot" />
-              Email + password only
-            </span>
-            <span className="auth-badge ghost">
-              No social login (yet)
-            </span>
-          </div>
-
-          {/* Messages */}
-          {error && <p className="auth-alert error">{error}</p>}
-          {success && <p className="auth-alert success">{success}</p>}
-
-          {/* Form */}
-          <form className="auth-form" onSubmit={handleSubmit}>
-            <div className="auth-field">
-              <label htmlFor="email">Email</label>
-              <input
-                id="email"
-                className="auth-input"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-              />
+        {/* Right Column - Auth Form */}
+        <div className="auth-form-section">
+          <div className="auth-form-wrapper">
+            {/* Mode Tabs */}
+            <div className="auth-tabs-redesign">
+              <button
+                type="button"
+                className={`auth-tab-redesign ${mode === "login" ? "active" : ""}`}
+                onClick={() => handleModeChange("login")}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                className={`auth-tab-redesign ${mode === "signup" ? "active" : ""}`}
+                onClick={() => handleModeChange("signup")}
+              >
+                Create Account
+              </button>
             </div>
 
-            <div className="auth-field">
-              <label htmlFor="password">Password</label>
-              <div className="auth-input-row">
-                <input
-                  id="password"
-                  className="auth-input"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete={mode === "login" ? "current-password" : "new-password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 8 characters"
-                />
-                <button
-                  type="button"
-                  className="auth-toggle-visibility"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                >
-                  {showPassword ? "Hide" : "Show"}
-                </button>
+            {/* Status Messages */}
+            {error && (
+              <div className="auth-alert auth-alert-error">
+                <AlertCircle size={18} />
+                <span>{error}</span>
               </div>
-              {password && (
-                <div className="auth-password-strength">
-                  Password strength: <span>{passwordStrength}</span>
+            )}
+
+            {success && (
+              <div className="auth-alert auth-alert-success">
+                <Check size={18} />
+                <span>{success}</span>
+              </div>
+            )}
+
+            {/* Auth Form */}
+            <form className="auth-form-redesign" onSubmit={handleSubmit}>
+              {/* Email Field */}
+              <div className="auth-input-group">
+                <label htmlFor="email" className="auth-label">
+                  Email Address
+                </label>
+                <div className="auth-input-wrapper">
+                  <Mail size={18} className="auth-input-icon" />
+                  <input
+                    id="email"
+                    type="email"
+                    className="auth-input-redesign"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div className="auth-input-group">
+                <label htmlFor="password" className="auth-label">
+                  Password
+                </label>
+                <div className="auth-input-wrapper">
+                  <Lock size={18} className="auth-input-icon" />
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    className="auth-input-redesign"
+                    autoComplete={mode === "login" ? "current-password" : "new-password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    className="auth-input-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                
+                {/* Password Strength Indicator */}
+                {mode === "signup" && password && (
+                  <div className="auth-password-strength">
+                    <div className="auth-strength-bar">
+                      <div 
+                        className="auth-strength-fill"
+                        style={{ 
+                          width: `${passwordStrength.progress}%`,
+                          background: passwordStrength.color
+                        }}
+                      />
+                    </div>
+                    <span 
+                      className="auth-strength-text"
+                      style={{ color: passwordStrength.color }}
+                    >
+                      {passwordStrength.text}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Confirm Password Field (Signup only) */}
+              {mode === "signup" && (
+                <div className="auth-input-group">
+                  <label htmlFor="confirm-password" className="auth-label">
+                    Confirm Password
+                  </label>
+                  <div className="auth-input-wrapper">
+                    <Lock size={18} className="auth-input-icon" />
+                    <input
+                      id="confirm-password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      className="auth-input-redesign"
+                      autoComplete="new-password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirm your password"
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      className="auth-input-toggle"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      tabIndex={-1}
+                    >
+                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
               )}
-            </div>
 
-            {mode === "signup" && (
-              <div className="auth-field">
-                <label htmlFor="confirm">Confirm password</label>
-                <input
-                  id="confirm"
-                  className="auth-input"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Repeat your password"
-                />
+              {/* Forgot Password (Login only) */}
+              {mode === "login" && (
+                <div className="auth-forgot-password">
+                  <button type="button" className="auth-link-button">
+                    Forgot password?
+                  </button>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="btn primary auth-submit-redesign"
+                disabled={loading}
+              >
+                {loading ? (
+                  <span>
+                    {mode === "login" ? "Signing in..." : "Creating account..."}
+                  </span>
+                ) : (
+                  <>
+                    <span>
+                      {mode === "login" ? "Sign In" : "Create Account"}
+                    </span>
+                    <ArrowRight size={18} />
+                  </>
+                )}
+              </button>
+
+              {/* Switch Mode */}
+              <div className="auth-switch-mode">
+                <span>
+                  {mode === "login" 
+                    ? "Don't have an account?" 
+                    : "Already have an account?"}
+                </span>
+                <button
+                  type="button"
+                  className="auth-link-button accent"
+                  onClick={() => handleModeChange(mode === "login" ? "signup" : "login")}
+                >
+                  {mode === "login" ? "Create one" : "Sign in"}
+                </button>
               </div>
-            )}
+            </form>
 
-            <button
-              type="submit"
-              className="btn primary auth-submit"
-              disabled={loading}
-            >
-              {loading
-                ? mode === "login"
-                  ? "Signing in…"
-                  : "Creating account…"
-                : mode === "login"
-                ? "Sign in"
-                : "Create account"}
-            </button>
-
-            {mode === "login" && (
-              <p className="auth-secondary-text">
-                Don&apos;t have an account?{" "}
-                <button
-                  type="button"
-                  className="auth-link-button"
-                  onClick={() => handleModeChange("signup")}
-                >
-                  Create one
-                </button>
-              </p>
-            )}
-
-            {mode === "signup" && (
-              <p className="auth-secondary-text">
-                Already have an account?{" "}
-                <button
-                  type="button"
-                  className="auth-link-button"
-                  onClick={() => handleModeChange("login")}
-                >
-                  Sign in
-                </button>
-              </p>
-            )}
-          </form>
+            {/* Footer Info */}
+            <div className="auth-footer-info">
+              <div className="auth-footer-badges">
+                <div className="auth-footer-badge">
+                  <Check size={14} />
+                  <span>No credit card required</span>
+                </div>
+                <div className="auth-footer-badge">
+                  <Check size={14} />
+                  <span>Cancel anytime</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 
