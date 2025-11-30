@@ -28,6 +28,7 @@ import {
   X,
   UserX,
   UserCheck,
+  Menu,
   RefreshCw,
   Trash2,
   Plus,
@@ -91,6 +92,7 @@ function Admin() {
   const [stats, setStats] = useState(null);
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // User search state (for overview)
   const [searchQuery, setSearchQuery] = useState('');
@@ -251,6 +253,7 @@ function Admin() {
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
+    setSidebarOpen(false); // Close sidebar on mobile when tab is selected
   };
 
   if (loading) {
@@ -621,8 +624,25 @@ function Admin() {
 
   return (
     <div className="admin-layout">
+      {/* Mobile Menu Toggle */}
+      <button 
+        className="admin-mobile-menu-btn"
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        aria-label="Toggle menu"
+      >
+        <Menu size={24} />
+      </button>
+
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="admin-sidebar-overlay open" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Admin Sidebar Navigation */}
-      <aside className={`admin-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+      <aside className={`admin-sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${sidebarOpen ? 'open' : ''}`}>
         <div className="admin-sidebar-header">
           <div className="admin-sidebar-brand">
             <Shield size={24} />
@@ -667,29 +687,31 @@ function Admin() {
 
       {/* Main Content */}
       <main className={`admin-main ${sidebarCollapsed ? 'expanded' : ''}`}>
-        {/* Header */}
-        <div className="admin-header">
-          <div>
-            <div className="admin-breadcrumb">
-              <Shield size={14} />
-              <span>Admin</span>
-              <ChevronRight size={14} />
-              <span>{ADMIN_TABS.find(t => t.id === activeTab)?.label}</span>
+        <div className="admin-main-inner">
+          {/* Header */}
+          <div className="admin-header">
+            <div>
+              <div className="admin-breadcrumb">
+                <Shield size={14} />
+                <span>Admin</span>
+                <ChevronRight size={14} />
+                <span>{ADMIN_TABS.find(t => t.id === activeTab)?.label}</span>
+              </div>
+              <h1>{ADMIN_TABS.find(t => t.id === activeTab)?.label}</h1>
+              <p>{ADMIN_TABS.find(t => t.id === activeTab)?.description}</p>
             </div>
-            <h1>{ADMIN_TABS.find(t => t.id === activeTab)?.label}</h1>
-            <p>{ADMIN_TABS.find(t => t.id === activeTab)?.description}</p>
+            <div className="admin-header-actions">
+              <button className="btn outline" onClick={checkAdminAccess}>
+                <RefreshCw size={16} />
+                Refresh
+              </button>
+            </div>
           </div>
-          <div className="admin-header-actions">
-            <button className="btn outline" onClick={checkAdminAccess}>
-              <RefreshCw size={16} />
-              Refresh
-            </button>
-          </div>
-        </div>
 
-        {/* Tab Content */}
-        <div className="admin-content">
-          {renderTabContent()}
+          {/* Tab Content */}
+          <div className="admin-content">
+            {renderTabContent()}
+          </div>
         </div>
       </main>
     </div>
