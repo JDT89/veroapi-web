@@ -613,4 +613,124 @@ const EndpointsPageRedesign = () => {
                       </pre>
                     </div>
 
-                    {/* Re
+                    {/* Response */}
+                    <div>
+                      <div style={{
+                        fontSize: '0.75rem',
+                        fontWeight: '600',
+                        textTransform: 'uppercase',
+                        color: 'rgba(246, 247, 248, 0.5)',
+                        marginBottom: '8px',
+                        letterSpacing: '0.05em'
+                      }}>
+                        Response
+                      </div>
+                      <pre style={{
+                        padding: '12px',
+                        background: 'rgba(15, 19, 24, 0.8)',
+                        border: '1px solid rgba(46, 196, 182, 0.2)',
+                        borderRadius: '8px',
+                        fontSize: '0.8rem',
+                        color: '#FF9F1C',
+                        fontFamily: 'monospace',
+                        margin: 0,
+                        overflow: 'auto'
+                      }}>
+                        {endpoint.example.response}
+                      </pre>
+                    </div>
+                  </div>
+
+                  <button style={{
+                    width: '100%',
+                    padding: '10px',
+                    background: 'rgba(46, 196, 182, 0.1)',
+                    border: '1px solid rgba(46, 196, 182, 0.3)',
+                    borderRadius: '8px',
+                    color: '#2EC4B6',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}>
+                    <Code size={16} />
+                    View Full Documentation
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Empty state */}
+        {filteredEndpoints.length === 0 && (
+          <div style={{
+            textAlign: 'center',
+            padding: '80px 20px',
+            color: 'rgba(246, 247, 248, 0.5)'
+          }}>
+            <Filter size={48} style={{ marginBottom: '16px', opacity: 0.3 }} />
+            <h3 style={{
+              fontSize: '1.25rem',
+              fontWeight: '600',
+              marginBottom: '8px',
+              color: 'rgba(246, 247, 248, 0.7)'
+            }}>
+              No endpoints found
+            </h3>
+            <p>Try adjusting your search or filters</p>
+          </div>
+        )}
+
+        {/* CTA Section */}
+        <div style={{
+          marginTop: '80px',
+          padding: '48px',
+          background: 'linear-gradient(135deg, rgba(46, 196, 182, 0.1) 0%, rgba(255, 159, 28, 0.1) 100%)',
+          border: '1px solid rgba(46, 196, 182, 0.2)',
+          borderRadius: '20px',
+          textAlign: 'center'
+        }}>
+          <h2 style={{
+            fontSize: '2rem',
+            fontWeight: '800',
+            marginBottom: '16px',
+            letterSpacing: '-0.02em'
+          }}>
+            Ready to integrate?
+          </h2>
+          <p style={{
+            fontSize: '1.1rem',
+            color: 'rgba(246, 247, 248, 0.6)',
+            marginBottom: '32px'
+          }}>
+            Get your API key and start building in under 2 minutes
+          </p>
+          <button style={{
+            padding: '16px 32px',
+            fontSize: '1rem',
+            fontWeight: '600',
+            background: 'linear-gradient(135deg, #FF9F1C 0%, #ffb347 100%)',
+            color: '#171D23',
+            border: 'none',
+            borderRadius: '12px',
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            boxShadow: '0 8px 32px rgba(255, 159, 28, 0.4)'
+          }}>
+            Get Started Free
+            <ArrowRight size={20} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default EndpointsPageRedesign;
