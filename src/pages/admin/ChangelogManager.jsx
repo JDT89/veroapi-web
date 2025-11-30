@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import {
   FileText,
@@ -23,9 +23,11 @@ import { API_BASE_URL } from '../../config';
 function ChangelogManager() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingEntry, setEditingEntry] = useState(null);
   const [filter, setFilter] = useState('all');
+  const [actionLoading, setActionLoading] = useState({});
 
   const [formData, setFormData] = useState({
     version: '',
@@ -44,12 +46,9 @@ function ChangelogManager() {
     { value: 'deprecation', label: 'Deprecation', color: '#a855f7' }
   ];
 
-  useEffect(() => {
-    loadEntries();
-  }, []);
-
-  const loadEntries = async () => {
+  const loadEntries = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -58,81 +57,23 @@ function ChangelogManager() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         setEntries(data.entries || []);
       } else {
-        setEntries(getMockEntries());
+        throw new Error(data.error || 'Failed to load changelog');
       }
     } catch (err) {
       console.error('Failed to load changelog:', err);
-      setEntries(getMockEntries());
+      setError('Failed to load changelog entries. Please try again.');
+      toast.error('Failed to load changelog entries');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const getMockEntries = () => [
-    {
-      id: 'cl_1',
-      version: 'v2.5.0',
-      title: 'API Playground Launch',
-      description: 'Interactive API testing environment for developers',
-      type: 'feature',
-      details: [
-        'Real-time request/response preview',
-        'Save and share API test configurations',
-        'Auto-generated code snippets for multiple languages'
-      ],
-      isPublished: true,
-      createdAt: '2024-04-01',
-      publishedAt: '2024-04-01'
-    },
-    {
-      id: 'cl_2',
-      version: 'v2.4.2',
-      title: 'Performance Improvements',
-      description: 'Reduced average response time by 35%',
-      type: 'improvement',
-      details: [
-        'Optimized database queries',
-        'Added response caching layer',
-        'Improved connection pooling'
-      ],
-      isPublished: true,
-      createdAt: '2024-03-25',
-      publishedAt: '2024-03-25'
-    },
-    {
-      id: 'cl_3',
-      version: 'v2.4.1',
-      title: 'Rate Limit Fix',
-      description: 'Fixed incorrect rate limit calculation for burst requests',
-      type: 'fix',
-      details: [
-        'Corrected burst window calculation',
-        'Added better error messages for rate limit responses',
-        'Fixed edge case with concurrent requests'
-      ],
-      isPublished: true,
-      createdAt: '2024-03-20',
-      publishedAt: '2024-03-20'
-    },
-    {
-      id: 'cl_4',
-      version: 'v2.5.1',
-      title: 'Enhanced Admin Panel',
-      description: 'New admin features and improvements',
-      type: 'feature',
-      details: [
-        'User suspension controls',
-        'Feature flag management',
-        'System health dashboard'
-      ],
-      isPublished: false,
-      createdAt: '2024-04-10',
-      publishedAt: null
-    }
-  ];
+  useEffect(() => {
+    loadEntries();
+  }, [loadEntries]);
 
   const handleCreate = async () => {
     if (!formData.version || !formData.title) {
@@ -156,27 +97,17 @@ function ChangelogManager() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Changelog entry created');
         setShowCreateModal(false);
         resetForm();
         loadEntries();
       } else {
-        toast.error(data.error || 'Failed to create entry');
+        throw new Error(data.error || 'Failed to create entry');
       }
     } catch (err) {
       console.error('Create failed:', err);
-      toast.success('Changelog entry created');
-      const newEntry = {
-        id: `cl_${Date.now()}`,
-        ...formData,
-        details: formData.details.filter(d => d.trim()),
-        createdAt: new Date().toISOString(),
-        publishedAt: formData.isPublished ? new Date().toISOString() : null
-      };
-      setEntries([newEntry, ...entries]);
-      setShowCreateModal(false);
-      resetForm();
+      toast.error(err.message || 'Failed to create entry');
     }
   };
 
@@ -197,30 +128,24 @@ function ChangelogManager() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Changelog entry updated');
         setEditingEntry(null);
         resetForm();
         loadEntries();
       } else {
-        toast.error(data.error || 'Failed to update entry');
+        throw new Error(data.error || 'Failed to update entry');
       }
     } catch (err) {
       console.error('Update failed:', err);
-      toast.success('Changelog entry updated');
-      setEntries(entries.map(e => 
-        e.id === editingEntry.id 
-          ? { ...e, ...formData, details: formData.details.filter(d => d.trim()) }
-          : e
-      ));
-      setEditingEntry(null);
-      resetForm();
+      toast.error(err.message || 'Failed to update entry');
     }
   };
 
   const handleDelete = async (entryId) => {
     if (!window.confirm('Are you sure you want to delete this changelog entry?')) return;
 
+    setActionLoading(prev => ({ ...prev, [entryId]: 'delete' }));
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -230,20 +155,22 @@ function ChangelogManager() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Entry deleted');
         loadEntries();
       } else {
-        toast.error(data.error || 'Failed to delete entry');
+        throw new Error(data.error || 'Failed to delete entry');
       }
     } catch (err) {
       console.error('Delete failed:', err);
-      toast.success('Entry deleted');
-      setEntries(entries.filter(e => e.id !== entryId));
+      toast.error(err.message || 'Failed to delete entry');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [entryId]: null }));
     }
   };
 
   const handlePublish = async (entryId, publish) => {
+    setActionLoading(prev => ({ ...prev, [entryId]: publish ? 'publish' : 'unpublish' }));
     const token = window.localStorage.getItem('veroapi_token');
     const endpoint = publish ? 'publish' : 'unpublish';
 
@@ -254,20 +181,17 @@ function ChangelogManager() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success(publish ? 'Entry published' : 'Entry unpublished');
         loadEntries();
       } else {
-        toast.error(data.error || `Failed to ${endpoint} entry`);
+        throw new Error(data.error || `Failed to ${endpoint} entry`);
       }
     } catch (err) {
       console.error(`${endpoint} failed:`, err);
-      toast.success(publish ? 'Entry published' : 'Entry unpublished');
-      setEntries(entries.map(e => 
-        e.id === entryId 
-          ? { ...e, isPublished: publish, publishedAt: publish ? new Date().toISOString() : null }
-          : e
-      ));
+      toast.error(err.message || `Failed to ${endpoint} entry`);
+    } finally {
+      setActionLoading(prev => ({ ...prev, [entryId]: null }));
     }
   };
 

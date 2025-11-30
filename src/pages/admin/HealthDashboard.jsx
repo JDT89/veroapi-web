@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import {
   Heart,
@@ -26,8 +26,63 @@ function HealthDashboard() {
   const [metrics, setMetrics] = useState(null);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
+
+  const loadHealthData = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    setRefreshing(true);
+    setError(null);
+    
+    const token = window.localStorage.getItem('veroapi_token');
+
+    try {
+      // Load health status
+      const healthRes = await fetch(`${API_BASE_URL}/v1/health`);
+      
+      if (!healthRes.ok) {
+        throw new Error('Failed to fetch health status');
+      }
+      
+      const healthData = await healthRes.json();
+      
+      setHealth({
+        ok: healthData.ok !== false,
+        uptime: healthData.uptime || 0,
+        version: healthData.version || '2.0.0',
+        timestamp: new Date().toISOString()
+      });
+
+      // Try to load detailed metrics
+      try {
+        const metricsRes = await fetch(`${API_BASE_URL}/v1/admin/health/metrics`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (metricsRes.ok) {
+          const metricsData = await metricsRes.json();
+          if (metricsData.ok !== false) {
+            setMetrics(metricsData.metrics || null);
+            setServices(metricsData.services || []);
+          }
+        }
+      } catch (metricsErr) {
+        console.warn('Could not load detailed metrics:', metricsErr);
+        // Metrics are optional, don't fail the whole operation
+      }
+    } catch (err) {
+      console.error('Failed to load health data:', err);
+      if (!silent) {
+        setError('Failed to load health data. Please try again.');
+        toast.error('Failed to load health data');
+      }
+      setHealth({ ok: false, uptime: 0 });
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
     loadHealthData();
@@ -40,81 +95,7 @@ function HealthDashboard() {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [autoRefresh]);
-
-  const loadHealthData = async (silent = false) => {
-    if (!silent) setLoading(true);
-    setRefreshing(true);
-    
-    const token = window.localStorage.getItem('veroapi_token');
-
-    try {
-      // Load health status
-      const healthRes = await fetch(`${API_BASE_URL}/v1/health`);
-      const healthData = await healthRes.json();
-      
-      setHealth({
-        ok: healthData.ok,
-        uptime: healthData.uptime || 0,
-        version: healthData.version || '2.0.0',
-        timestamp: new Date().toISOString()
-      });
-
-      // Try to load detailed metrics
-      try {
-        const metricsRes = await fetch(`${API_BASE_URL}/v1/admin/health/metrics`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const metricsData = await metricsRes.json();
-        
-        if (metricsData.ok) {
-          setMetrics(metricsData.metrics);
-          setServices(metricsData.services || []);
-        } else {
-          setMetrics(getMockMetrics());
-          setServices(getMockServices());
-        }
-      } catch {
-        setMetrics(getMockMetrics());
-        setServices(getMockServices());
-      }
-    } catch (err) {
-      console.error('Failed to load health data:', err);
-      setHealth({ ok: false, uptime: 0 });
-      setMetrics(getMockMetrics());
-      setServices(getMockServices());
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  const getMockMetrics = () => ({
-    cpu: { usage: 23.5, cores: 4 },
-    memory: { used: 2.1, total: 8, percentage: 26.25 },
-    disk: { used: 45, total: 100, percentage: 45 },
-    network: { bytesIn: 1250000, bytesOut: 3400000 },
-    requests: {
-      total: 1523400,
-      last24h: 45230,
-      avgResponseTime: 45,
-      errorRate: 0.12
-    },
-    database: {
-      connections: 25,
-      maxConnections: 100,
-      queryTime: 12
-    }
-  });
-
-  const getMockServices = () => [
-    { name: 'API Server', status: 'healthy', uptime: 99.99, lastCheck: new Date().toISOString() },
-    { name: 'Database', status: 'healthy', uptime: 99.95, lastCheck: new Date().toISOString() },
-    { name: 'Redis Cache', status: 'healthy', uptime: 99.99, lastCheck: new Date().toISOString() },
-    { name: 'Worker Queue', status: 'healthy', uptime: 99.90, lastCheck: new Date().toISOString() },
-    { name: 'Email Service', status: 'degraded', uptime: 95.5, lastCheck: new Date().toISOString() },
-    { name: 'CDN', status: 'healthy', uptime: 99.99, lastCheck: new Date().toISOString() }
-  ];
+  }, [autoRefresh, loadHealthData]);
 
   const formatUptime = (seconds) => {
     const days = Math.floor(seconds / 86400);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import {
   UserCog,
@@ -25,11 +25,13 @@ function TeamManagement() {
   const [teams, setTeams] = useState([]);
   const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
   const [showAddAdminModal, setShowAddAdminModal] = useState(false);
   const [editingTeam, setEditingTeam] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [actionLoading, setActionLoading] = useState({});
 
   const [teamFormData, setTeamFormData] = useState({
     name: '',
@@ -42,13 +44,9 @@ function TeamManagement() {
     teamId: ''
   });
 
-  useEffect(() => {
-    loadTeams();
-    loadAdmins();
-  }, []);
-
-  const loadTeams = async () => {
+  const loadTeams = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -57,20 +55,21 @@ function TeamManagement() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         setTeams(data.teams || []);
       } else {
-        setTeams(getMockTeams());
+        throw new Error(data.error || 'Failed to load teams');
       }
     } catch (err) {
       console.error('Failed to load teams:', err);
-      setTeams(getMockTeams());
+      setError('Failed to load teams. Please try again.');
+      toast.error('Failed to load teams');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const loadAdmins = async () => {
+  const loadAdmins = useCallback(async () => {
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -79,83 +78,21 @@ function TeamManagement() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         setAdmins(data.admins || []);
       } else {
-        setAdmins(getMockAdmins());
+        throw new Error(data.error || 'Failed to load admins');
       }
     } catch (err) {
       console.error('Failed to load admins:', err);
-      setAdmins(getMockAdmins());
+      toast.error('Failed to load admins');
     }
-  };
+  }, []);
 
-  const getMockTeams = () => [
-    {
-      id: 'team_1',
-      name: 'Core Team',
-      description: 'Main development and operations team',
-      memberCount: 5,
-      createdAt: '2024-01-01'
-    },
-    {
-      id: 'team_2',
-      name: 'Support Team',
-      description: 'Customer support and ticket handling',
-      memberCount: 8,
-      createdAt: '2024-02-01'
-    },
-    {
-      id: 'team_3',
-      name: 'Analytics Team',
-      description: 'Data analysis and reporting',
-      memberCount: 3,
-      createdAt: '2024-03-01'
-    }
-  ];
-
-  const getMockAdmins = () => [
-    {
-      id: 'admin_1',
-      email: 'super@veroapi.com',
-      role: 'super_admin',
-      roleName: 'Super Admin',
-      teamId: 'team_1',
-      teamName: 'Core Team',
-      lastActive: '2024-04-10T15:30:00Z',
-      createdAt: '2024-01-01'
-    },
-    {
-      id: 'admin_2',
-      email: 'john@veroapi.com',
-      role: 'admin',
-      roleName: 'Admin',
-      teamId: 'team_1',
-      teamName: 'Core Team',
-      lastActive: '2024-04-10T14:20:00Z',
-      createdAt: '2024-01-15'
-    },
-    {
-      id: 'admin_3',
-      email: 'sarah@veroapi.com',
-      role: 'support',
-      roleName: 'Support Agent',
-      teamId: 'team_2',
-      teamName: 'Support Team',
-      lastActive: '2024-04-10T12:00:00Z',
-      createdAt: '2024-02-20'
-    },
-    {
-      id: 'admin_4',
-      email: 'mike@veroapi.com',
-      role: 'analyst',
-      roleName: 'Analyst',
-      teamId: 'team_3',
-      teamName: 'Analytics Team',
-      lastActive: '2024-04-09T18:45:00Z',
-      createdAt: '2024-03-10'
-    }
-  ];
+  useEffect(() => {
+    loadTeams();
+    loadAdmins();
+  }, [loadTeams, loadAdmins]);
 
   const handleCreateTeam = async () => {
     if (!teamFormData.name) {
@@ -176,26 +113,17 @@ function TeamManagement() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Team created successfully');
         setShowCreateTeamModal(false);
         resetTeamForm();
         loadTeams();
       } else {
-        toast.error(data.error || 'Failed to create team');
+        throw new Error(data.error || 'Failed to create team');
       }
     } catch (err) {
       console.error('Create failed:', err);
-      toast.success('Team created successfully');
-      const newTeam = {
-        id: `team_${Date.now()}`,
-        ...teamFormData,
-        memberCount: 0,
-        createdAt: new Date().toISOString()
-      };
-      setTeams([...teams, newTeam]);
-      setShowCreateTeamModal(false);
-      resetTeamForm();
+      toast.error(err.message || 'Failed to create team');
     }
   };
 
@@ -213,20 +141,17 @@ function TeamManagement() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Team updated successfully');
         setEditingTeam(null);
         resetTeamForm();
         loadTeams();
       } else {
-        toast.error(data.error || 'Failed to update team');
+        throw new Error(data.error || 'Failed to update team');
       }
     } catch (err) {
       console.error('Update failed:', err);
-      toast.success('Team updated successfully');
-      setTeams(teams.map(t => t.id === editingTeam.id ? { ...t, ...teamFormData } : t));
-      setEditingTeam(null);
-      resetTeamForm();
+      toast.error(err.message || 'Failed to update team');
     }
   };
 
@@ -238,6 +163,7 @@ function TeamManagement() {
     }
     if (!window.confirm('Are you sure you want to delete this team?')) return;
 
+    setActionLoading(prev => ({ ...prev, [teamId]: 'delete' }));
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -247,16 +173,17 @@ function TeamManagement() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Team deleted');
         loadTeams();
       } else {
-        toast.error(data.error || 'Failed to delete team');
+        throw new Error(data.error || 'Failed to delete team');
       }
     } catch (err) {
       console.error('Delete failed:', err);
-      toast.success('Team deleted');
-      setTeams(teams.filter(t => t.id !== teamId));
+      toast.error(err.message || 'Failed to delete team');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [teamId]: null }));
     }
   };
 
@@ -279,33 +206,17 @@ function TeamManagement() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Admin invited successfully');
         setShowAddAdminModal(false);
         resetAdminForm();
         loadAdmins();
       } else {
-        toast.error(data.error || 'Failed to add admin');
+        throw new Error(data.error || 'Failed to add admin');
       }
     } catch (err) {
       console.error('Add admin failed:', err);
-      toast.success('Admin invited successfully');
-      const team = teams.find(t => t.id === adminFormData.teamId);
-      const newAdmin = {
-        id: `admin_${Date.now()}`,
-        email: adminFormData.email,
-        role: adminFormData.role,
-        roleName: adminFormData.role === 'super_admin' ? 'Super Admin' : 
-                  adminFormData.role === 'admin' ? 'Admin' : 
-                  adminFormData.role === 'support' ? 'Support Agent' : 'Analyst',
-        teamId: adminFormData.teamId,
-        teamName: team?.name || 'Unassigned',
-        lastActive: null,
-        createdAt: new Date().toISOString()
-      };
-      setAdmins([...admins, newAdmin]);
-      setShowAddAdminModal(false);
-      resetAdminForm();
+      toast.error(err.message || 'Failed to add admin');
     }
   };
 
@@ -317,6 +228,7 @@ function TeamManagement() {
     }
     if (!window.confirm(`Remove ${admin?.email} from the admin team?`)) return;
 
+    setActionLoading(prev => ({ ...prev, [adminId]: 'remove' }));
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -326,16 +238,17 @@ function TeamManagement() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Admin removed');
         loadAdmins();
       } else {
-        toast.error(data.error || 'Failed to remove admin');
+        throw new Error(data.error || 'Failed to remove admin');
       }
     } catch (err) {
       console.error('Remove failed:', err);
-      toast.success('Admin removed');
-      setAdmins(admins.filter(a => a.id !== adminId));
+      toast.error(err.message || 'Failed to remove admin');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [adminId]: null }));
     }
   };
 

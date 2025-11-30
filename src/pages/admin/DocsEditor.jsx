@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import {
   BookOpen,
@@ -24,50 +24,10 @@ function DocsEditor() {
   const [markdownContent, setMarkdownContent] = useState('');
   const [swaggerSpec, setSwaggerSpec] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-
-  useEffect(() => {
-    loadContent();
-  }, []);
-
-  const loadContent = async () => {
-    setLoading(true);
-    const token = window.localStorage.getItem('veroapi_token');
-
-    try {
-      const [docsRes, swaggerRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/v1/admin/docs`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        fetch(`${API_BASE_URL}/v1/admin/docs/swagger`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-      ]);
-
-      const docsData = await docsRes.json();
-      const swaggerData = await swaggerRes.json();
-      
-      if (docsData.ok) {
-        setMarkdownContent(docsData.content || getDefaultMarkdown());
-      } else {
-        setMarkdownContent(getDefaultMarkdown());
-      }
-
-      if (swaggerData.ok) {
-        setSwaggerSpec(swaggerData.spec || getDefaultSwagger());
-      } else {
-        setSwaggerSpec(getDefaultSwagger());
-      }
-    } catch (err) {
-      console.error('Failed to load docs:', err);
-      setMarkdownContent(getDefaultMarkdown());
-      setSwaggerSpec(getDefaultSwagger());
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getDefaultMarkdown = () => `# VeroAPI Documentation
 
@@ -110,30 +70,6 @@ GET /v1/health
 }
 \`\`\`
 
-### Text Scrambler
-
-Scramble text with various patterns.
-
-\`\`\`
-POST /v1/text/scramble
-\`\`\`
-
-**Request Body:**
-\`\`\`json
-{
-  "text": "Hello World"
-}
-\`\`\`
-
-**Response:**
-\`\`\`json
-{
-  "ok": true,
-  "original": "Hello World",
-  "scrambled": "Hlleo Wrdol"
-}
-\`\`\`
-
 ## Rate Limits
 
 - **Free Tier:** 60 requests per minute
@@ -150,16 +86,6 @@ All errors follow a consistent format:
   "error": "Error message here"
 }
 \`\`\`
-
-### Common Error Codes
-
-| Code | Description |
-|------|-------------|
-| 400 | Bad Request - Invalid parameters |
-| 401 | Unauthorized - Invalid or missing API key |
-| 403 | Forbidden - Insufficient permissions |
-| 429 | Too Many Requests - Rate limit exceeded |
-| 500 | Internal Server Error |
 
 ## Support
 
@@ -186,29 +112,52 @@ Need help? Contact us at support@veroapi.com
             }
           }
         }
-      },
-      "/text/scramble": {
-        post: {
-          summary: "Scramble Text",
-          requestBody: {
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                  properties: {
-                    text: { type: "string" }
-                  }
-                }
-              }
-            }
-          },
-          responses: {
-            200: { description: "Success" }
-          }
-        }
       }
     }
   }, null, 2);
+
+  const loadContent = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    const token = window.localStorage.getItem('veroapi_token');
+
+    try {
+      const [docsRes, swaggerRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/v1/admin/docs`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${API_BASE_URL}/v1/admin/docs/swagger`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+
+      const docsData = await docsRes.json();
+      const swaggerData = await swaggerRes.json();
+      
+      if (docsRes.ok && docsData.ok !== false) {
+        setMarkdownContent(docsData.content || getDefaultMarkdown());
+      } else {
+        setMarkdownContent(getDefaultMarkdown());
+      }
+
+      if (swaggerRes.ok && swaggerData.ok !== false) {
+        setSwaggerSpec(swaggerData.spec || getDefaultSwagger());
+      } else {
+        setSwaggerSpec(getDefaultSwagger());
+      }
+    } catch (err) {
+      console.error('Failed to load docs:', err);
+      setError('Failed to load documentation. Using default content.');
+      setMarkdownContent(getDefaultMarkdown());
+      setSwaggerSpec(getDefaultSwagger());
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadContent();
+  }, [loadContent]);
 
   const handleSaveMarkdown = async () => {
     setSaving(true);
@@ -225,16 +174,15 @@ Need help? Contact us at support@veroapi.com
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Documentation saved');
         setHasChanges(false);
       } else {
-        toast.error(data.error || 'Failed to save documentation');
+        throw new Error(data.error || 'Failed to save documentation');
       }
     } catch (err) {
       console.error('Save failed:', err);
-      toast.success('Documentation saved');
-      setHasChanges(false);
+      toast.error(err.message || 'Failed to save documentation');
     } finally {
       setSaving(false);
     }
@@ -263,16 +211,15 @@ Need help? Contact us at support@veroapi.com
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Swagger spec saved');
         setHasChanges(false);
       } else {
-        toast.error(data.error || 'Failed to save Swagger spec');
+        throw new Error(data.error || 'Failed to save Swagger spec');
       }
     } catch (err) {
       console.error('Save failed:', err);
-      toast.success('Swagger spec saved');
-      setHasChanges(false);
+      toast.error(err.message || 'Failed to save Swagger spec');
     } finally {
       setSaving(false);
     }
@@ -291,14 +238,14 @@ Need help? Contact us at support@veroapi.com
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Documentation published successfully');
       } else {
-        toast.error(data.error || 'Failed to publish documentation');
+        throw new Error(data.error || 'Failed to publish documentation');
       }
     } catch (err) {
       console.error('Publish failed:', err);
-      toast.success('Documentation published successfully');
+      toast.error(err.message || 'Failed to publish documentation');
     } finally {
       setSaving(false);
     }

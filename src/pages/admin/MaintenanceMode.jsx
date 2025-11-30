@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import {
   Wrench,
@@ -26,6 +26,7 @@ function MaintenanceMode() {
     scheduledMaintenance: null
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
   
   const [message, setMessage] = useState('');
@@ -34,12 +35,9 @@ function MaintenanceMode() {
   const [scheduleEnd, setScheduleEnd] = useState('');
   const [scheduleMessage, setScheduleMessage] = useState('');
 
-  useEffect(() => {
-    loadStatus();
-  }, []);
-
-  const loadStatus = async () => {
+  const loadStatus = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -48,27 +46,33 @@ function MaintenanceMode() {
       });
       const data = await res.json();
       
-      if (data.ok) {
-        setStatus(data.status || status);
-        if (data.status?.message) {
-          setMessage(data.status.message);
-        }
-      } else {
-        // Mock data
-        setStatus({
+      if (res.ok && data.ok !== false) {
+        const newStatus = data.status || {
           enabled: false,
           message: '',
           startedAt: null,
           estimatedEndTime: null,
           scheduledMaintenance: null
-        });
+        };
+        setStatus(newStatus);
+        if (newStatus.message) {
+          setMessage(newStatus.message);
+        }
+      } else {
+        throw new Error(data.error || 'Failed to load maintenance status');
       }
     } catch (err) {
       console.error('Failed to load maintenance status:', err);
+      setError('Failed to load maintenance status. Please try again.');
+      toast.error('Failed to load maintenance status');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadStatus();
+  }, [loadStatus]);
 
   const handleEnable = async () => {
     if (!message.trim()) {
@@ -91,22 +95,15 @@ function MaintenanceMode() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Maintenance mode enabled');
         loadStatus();
       } else {
-        toast.error(data.error || 'Failed to enable maintenance mode');
+        throw new Error(data.error || 'Failed to enable maintenance mode');
       }
     } catch (err) {
       console.error('Enable failed:', err);
-      toast.success('Maintenance mode enabled');
-      setStatus({
-        ...status,
-        enabled: true,
-        message,
-        startedAt: new Date().toISOString(),
-        estimatedEndTime
-      });
+      toast.error(err.message || 'Failed to enable maintenance mode');
     } finally {
       setSaving(false);
     }
@@ -127,22 +124,15 @@ function MaintenanceMode() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Maintenance mode disabled');
         loadStatus();
       } else {
-        toast.error(data.error || 'Failed to disable maintenance mode');
+        throw new Error(data.error || 'Failed to disable maintenance mode');
       }
     } catch (err) {
       console.error('Disable failed:', err);
-      toast.success('Maintenance mode disabled');
-      setStatus({
-        ...status,
-        enabled: false,
-        message: '',
-        startedAt: null,
-        estimatedEndTime: null
-      });
+      toast.error(err.message || 'Failed to disable maintenance mode');
     } finally {
       setSaving(false);
     }
@@ -177,29 +167,18 @@ function MaintenanceMode() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Maintenance scheduled successfully');
         loadStatus();
         setScheduleStart('');
         setScheduleEnd('');
         setScheduleMessage('');
       } else {
-        toast.error(data.error || 'Failed to schedule maintenance');
+        throw new Error(data.error || 'Failed to schedule maintenance');
       }
     } catch (err) {
       console.error('Schedule failed:', err);
-      toast.success('Maintenance scheduled successfully');
-      setStatus({
-        ...status,
-        scheduledMaintenance: {
-          startTime: scheduleStart,
-          endTime: scheduleEnd,
-          message: scheduleMessage || 'Scheduled maintenance'
-        }
-      });
-      setScheduleStart('');
-      setScheduleEnd('');
-      setScheduleMessage('');
+      toast.error(err.message || 'Failed to schedule maintenance');
     } finally {
       setSaving(false);
     }

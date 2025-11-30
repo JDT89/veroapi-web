@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import {
   Bell,
@@ -24,6 +24,7 @@ import { API_BASE_URL } from '../../config';
 function NotificationManager() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingNotification, setEditingNotification] = useState(null);
   const [filter, setFilter] = useState('all');
@@ -39,12 +40,9 @@ function NotificationManager() {
     priority: 'normal'
   });
 
-  useEffect(() => {
-    loadNotifications();
-  }, []);
-
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const token = window.localStorage.getItem('veroapi_token');
 
     try {
@@ -53,66 +51,23 @@ function NotificationManager() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         setNotifications(data.notifications || []);
       } else {
-        setNotifications(getMockNotifications());
+        throw new Error(data.error || 'Failed to load notifications');
       }
     } catch (err) {
       console.error('Failed to load notifications:', err);
-      setNotifications(getMockNotifications());
+      setError('Failed to load notifications. Please try again.');
+      toast.error('Failed to load notifications');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const getMockNotifications = () => [
-    { 
-      id: 'notif_1', 
-      title: 'System Update Complete', 
-      message: 'The latest system update has been successfully deployed. Check out the new features!',
-      type: 'success',
-      targetType: 'all',
-      priority: 'normal',
-      sentAt: '2024-04-01T10:00:00Z',
-      readCount: 150,
-      totalRecipients: 200
-    },
-    { 
-      id: 'notif_2', 
-      title: 'Scheduled Maintenance', 
-      message: 'We will be performing scheduled maintenance on April 15th from 2-4 AM UTC.',
-      type: 'warning',
-      targetType: 'all',
-      priority: 'high',
-      sentAt: '2024-04-05T14:30:00Z',
-      readCount: 89,
-      totalRecipients: 200
-    },
-    { 
-      id: 'notif_3', 
-      title: 'API Rate Limit Increase', 
-      message: 'Your API rate limit has been increased to 1000 requests per minute.',
-      type: 'info',
-      targetType: 'users',
-      targetIds: ['usr_1', 'usr_2'],
-      priority: 'normal',
-      sentAt: '2024-04-08T09:15:00Z',
-      readCount: 2,
-      totalRecipients: 2
-    },
-    { 
-      id: 'notif_4', 
-      title: 'New API Endpoints Available', 
-      message: 'We have launched 5 new API endpoints. Check the documentation for details.',
-      type: 'info',
-      targetType: 'all',
-      priority: 'normal',
-      sentAt: '2024-04-10T16:45:00Z',
-      readCount: 45,
-      totalRecipients: 200
-    }
-  ];
+  useEffect(() => {
+    loadNotifications();
+  }, [loadNotifications]);
 
   const handleCreate = async () => {
     if (!formData.title || !formData.message) {
@@ -137,28 +92,17 @@ function NotificationManager() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Notification sent successfully');
         setShowCreateModal(false);
         resetForm();
         loadNotifications();
       } else {
-        toast.error(data.error || 'Failed to send notification');
+        throw new Error(data.error || 'Failed to send notification');
       }
     } catch (err) {
       console.error('Create failed:', err);
-      toast.success('Notification sent successfully');
-      const newNotification = {
-        id: `notif_${Date.now()}`,
-        ...formData,
-        targetIds: formData.targetIds ? formData.targetIds.split(',').map(id => id.trim()) : [],
-        sentAt: new Date().toISOString(),
-        readCount: 0,
-        totalRecipients: formData.targetType === 'all' ? 200 : formData.targetIds.split(',').length
-      };
-      setNotifications([newNotification, ...notifications]);
-      setShowCreateModal(false);
-      resetForm();
+      toast.error(err.message || 'Failed to send notification');
     } finally {
       setSending(false);
     }
@@ -188,17 +132,16 @@ function NotificationManager() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success(`Broadcast sent to ${data.recipientCount || 'all'} users`);
         resetForm();
         loadNotifications();
       } else {
-        toast.error(data.error || 'Failed to send broadcast');
+        throw new Error(data.error || 'Failed to send broadcast');
       }
     } catch (err) {
       console.error('Broadcast failed:', err);
-      toast.success('Broadcast sent successfully');
-      resetForm();
+      toast.error(err.message || 'Failed to send broadcast');
     } finally {
       setSending(false);
     }
@@ -216,16 +159,15 @@ function NotificationManager() {
       });
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.ok && data.ok !== false) {
         toast.success('Notification deleted');
         loadNotifications();
       } else {
-        toast.error(data.error || 'Failed to delete notification');
+        throw new Error(data.error || 'Failed to delete notification');
       }
     } catch (err) {
       console.error('Delete failed:', err);
-      toast.success('Notification deleted');
-      setNotifications(notifications.filter(n => n.id !== notificationId));
+      toast.error(err.message || 'Failed to delete notification');
     }
   };
 
