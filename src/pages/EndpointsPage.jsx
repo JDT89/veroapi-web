@@ -9,8 +9,8 @@ const EndpointsPageRedesign = () => {
 
   const categories = [
     { id: 'all', label: 'All Endpoints', count: 11 },
-    { id: 'text', label: 'Text Utils', count: 5, color: '#FF9F1C' },
-    { id: 'random', label: 'Randomness', count: 7, color: '#2EC4B6' },
+    { id: 'text', label: 'Text Utils', count: 3, color: '#FF9F1C' },
+    { id: 'random', label: 'Randomness', count: 6, color: '#2EC4B6' },
     { id: 'utility', label: 'Utilities', count: 2, color: '#a855f7' }
   ];
 
