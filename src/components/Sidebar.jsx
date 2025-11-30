@@ -143,7 +143,7 @@ function Sidebar() {
               className="sidebar-link"
               onClick={() => {
                 closeMobile();
-                navigate("/docs");
+                navigate("/changelog");
               }}
             >
               <span className="sidebar-link-icon">💬</span>
