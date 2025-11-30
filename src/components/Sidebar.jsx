@@ -1,16 +1,40 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config";
 
 function Sidebar() {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hasToken, setHasToken] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const token = window.localStorage.getItem("veroapi_token");
-      setHasToken(!!token);
-    }
+    const checkAuth = async () => {
+      if (typeof window !== "undefined") {
+        const token = window.localStorage.getItem("veroapi_token");
+        setHasToken(!!token);
+        
+        if (token) {
+          // Check if user is super admin
+          try {
+            const res = await fetch(`${API_BASE_URL}/v1/auth/me`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            if (res.ok) {
+              const data = await res.json();
+              setIsSuperAdmin(data.user?.is_super_admin === true);
+            }
+          } catch (err) {
+            console.error("Failed to check admin status:", err);
+          }
+        }
+      }
+      setLoading(false);
+    };
+
+    checkAuth();
   }, []);
 
   const closeMobile = () => setMobileOpen(false);
@@ -133,6 +157,21 @@ function Sidebar() {
             )}
           </div>
 
+          {/* Admin Section - Only visible to super admins */}
+          {!loading && isSuperAdmin && (
+            <div className="sidebar-section">
+              <p className="sidebar-section-title">Administration</p>
+              <NavLink 
+                to="/admin" 
+                className={linkClass} 
+                onClick={closeMobile}
+              >
+                <span className="sidebar-link-icon">🛡️</span>
+                Admin Panel
+              </NavLink>
+            </div>
+          )}
+
           <div className="sidebar-section">
             <p className="sidebar-section-title">Resources</p>
             <NavLink 
@@ -148,7 +187,6 @@ function Sidebar() {
               className="sidebar-link"
               onClick={() => {
                 closeMobile();
-                // Add your support link/action here
                 window.open('mailto:support@veroapi.com', '_blank');
               }}
             >
