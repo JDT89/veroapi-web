@@ -16,6 +16,16 @@
         h1 {
             color: #2EC4B6;
         }
+        .url-input {
+            width: 100%;
+            padding: 12px;
+            margin: 20px 0;
+            font-size: 14px;
+            background: #1e252c;
+            color: #F6F7F8;
+            border: 1px solid rgba(46, 196, 182, 0.2);
+            border-radius: 8px;
+        }
         button {
             background: #2EC4B6;
             color: #171D23;
@@ -41,6 +51,8 @@
             font-family: monospace;
             font-size: 14px;
             line-height: 1.6;
+            max-height: 600px;
+            overflow-y: auto;
         }
         .success {
             color: #22c55e;
@@ -55,19 +67,31 @@
 </head>
 <body>
     <h1>VeroAPI Connection Test</h1>
-    <p>Use these buttons to test your API connection:</p>
     
+    <p>Enter your API URL below (get it from your Render dashboard):</p>
+    <input 
+        type="text" 
+        id="apiUrlInput" 
+        class="url-input" 
+        placeholder="https://your-service.onrender.com or https://api.vero-api.com"
+        value="https://api.vero-api.com"
+    />
+    
+    <p>Test different URLs to see which one works:</p>
     <button onclick="testHealth()">1. Test Health Endpoint</button>
     <button onclick="testSignup()">2. Test Signup</button>
-    <button onclick="testLogin()">3. Test Login</button>
+    <button onclick="testWithRenderURL()">3. Try Common Render URL</button>
     <button onclick="showDebugInfo()">4. Show Debug Info</button>
     <button onclick="clearResults()">Clear Results</button>
     
     <div id="results"></div>
 
     <script>
-        const API_URL = 'https://api.vero-api.com';
         const resultsDiv = document.getElementById('results');
+
+        function getApiUrl() {
+            return document.getElementById('apiUrlInput').value.trim().replace(/\/$/, '');
+        }
 
         function log(message, type = 'info') {
             const timestamp = new Date().toLocaleTimeString();
@@ -82,7 +106,7 @@
 
         async function showDebugInfo() {
             log('=== DEBUG INFORMATION ===', 'info');
-            log(`API URL: ${API_URL}`, 'info');
+            log(`Current API URL: ${getApiUrl()}`, 'info');
             log(`Current page: ${window.location.href}`, 'info');
             log(`Origin: ${window.location.origin}`, 'info');
             log(`Protocol: ${window.location.protocol}`, 'info');
@@ -91,9 +115,14 @@
         }
 
         async function testHealth() {
-            log('Testing health endpoint...', 'info');
+            const apiUrl = getApiUrl();
+            log(`Testing health endpoint at: ${apiUrl}/v1/health`, 'info');
+            
             try {
-                const response = await fetch(`${API_URL}/v1/health`);
+                const response = await fetch(`${apiUrl}/v1/health`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
                 const data = await response.json();
                 
                 if (response.ok) {
@@ -106,16 +135,19 @@
                 }
             } catch (err) {
                 log(`❌ ERROR: ${err.message}`, 'error');
-                log(`This usually means:`, 'error');
-                log(`- CORS is blocking the request`, 'error');
-                log(`- The API server is not accessible`, 'error');
-                log(`- Network/DNS issue`, 'error');
+                log(`Full error: ${err.toString()}`, 'error');
+                log(`\nPossible causes:`, 'info');
+                log(`1. CORS is blocking (backend needs to allow this origin)`, 'info');
+                log(`2. DNS not configured correctly for custom domain`, 'info');
+                log(`3. Backend service is not running`, 'info');
+                log(`4. Wrong URL - try your Render URL instead`, 'info');
             }
             log('---\n', 'info');
         }
 
         async function testSignup() {
-            log('Testing signup endpoint...', 'info');
+            const apiUrl = getApiUrl();
+            log(`Testing signup at: ${apiUrl}/v1/auth/signup`, 'info');
             const testEmail = `test${Date.now()}@example.com`;
             const testPassword = 'TestPassword123!';
             
@@ -123,8 +155,9 @@
             log(`Password: ${testPassword}`, 'info');
             
             try {
-                const response = await fetch(`${API_URL}/v1/auth/signup`, {
+                const response = await fetch(`${apiUrl}/v1/auth/signup`, {
                     method: 'POST',
+                    mode: 'cors',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -153,48 +186,22 @@
             log('---\n', 'info');
         }
 
-        async function testLogin() {
-            log('Testing login endpoint...', 'info');
-            const testEmail = 'test@example.com';
-            const testPassword = 'password123';
+        async function testWithRenderURL() {
+            log('Trying common Render URL pattern...', 'info');
+            log('NOTE: Replace "veroapi-api" with your actual service name from Render', 'info');
             
-            log(`Attempting login with:`, 'info');
-            log(`Email: ${testEmail}`, 'info');
-            log(`Password: ${testPassword}`, 'info');
+            const guessedUrl = 'https://veroapi-api.onrender.com';
+            document.getElementById('apiUrlInput').value = guessedUrl;
             
-            try {
-                const response = await fetch(`${API_URL}/v1/auth/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: testEmail,
-                        password: testPassword
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok && data.ok) {
-                    log(`✅ SUCCESS: Login successful`, 'success');
-                    log(`Status: ${response.status}`, 'success');
-                    log(`Token received: ${data.token ? 'Yes' : 'No'}`, 'success');
-                } else {
-                    log(`❌ FAILED: ${data.error || 'Unknown error'}`, 'error');
-                    log(`Status: ${response.status}`, 'error');
-                    log(`(This is expected if you haven't created this account)`, 'info');
-                }
-            } catch (err) {
-                log(`❌ ERROR: ${err.message}`, 'error');
-            }
-            log('---\n', 'info');
+            log(`Testing: ${guessedUrl}`, 'info');
+            await testHealth();
         }
 
         // Auto-run debug info on load
         window.onload = () => {
             showDebugInfo();
-            log('Ready! Click the buttons above to test your API.\n', 'info');
+            log('Ready! Enter your backend URL above and click test buttons.\n', 'info');
+            log('TIP: Get your backend URL from Render dashboard\n', 'info');
         };
     </script>
 </body>
