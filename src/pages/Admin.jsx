@@ -105,6 +105,71 @@ function Admin() {
     }
   };
 
+  const handleRevokeAllKeys = async (userId) => {
+    if (!window.confirm('Are you sure you want to revoke ALL API keys for this user? This cannot be undone.')) {
+      return;
+    }
+
+    const token = window.localStorage.getItem('veroapi_token');
+
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/v1/admin/users/${userId}/revoke-keys`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      const data = await res.json();
+      
+      if (data.ok) {
+        alert(`Successfully revoked ${data.revokedCount} key(s)`);
+        loadUserDetails(userId); // Refresh details
+      } else {
+        alert(`Failed: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Failed to revoke keys:', err);
+      alert('Failed to revoke keys');
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    const userEmail = userDetails?.user?.email || 'this user';
+    
+    if (!window.confirm(`Are you sure you want to DELETE ${userEmail}? This will permanently delete all their data and cannot be undone.`)) {
+      return;
+    }
+
+    const token = window.localStorage.getItem('veroapi_token');
+
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/v1/admin/users/${userId}`,
+        {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      const data = await res.json();
+      
+      if (data.ok) {
+        alert(data.message);
+        setSelectedUser(null);
+        setUserDetails(null);
+        // Refresh stats
+        checkAdminAccess();
+      } else {
+        alert(`Failed: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Failed to delete user:', err);
+      alert('Failed to delete user');
+    }
+  };
+
   if (loading) {
     return (
       <div className="admin-loading">
@@ -363,6 +428,33 @@ function Admin() {
                 ) : (
                   <p className="admin-empty-state">No recent activity</p>
                 )}
+              </div>
+
+              {/* Admin Actions */}
+              <div className="admin-detail-section">
+                <h3>Admin Actions</h3>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                  <button
+                    className="btn outline"
+                    onClick={() => handleRevokeAllKeys(selectedUser)}
+                    style={{
+                      borderColor: '#FF9F1C',
+                      color: '#FF9F1C'
+                    }}
+                  >
+                    Revoke All API Keys
+                  </button>
+                  <button
+                    className="btn outline"
+                    onClick={() => handleDeleteUser(selectedUser)}
+                    style={{
+                      borderColor: '#f97373',
+                      color: '#f97373'
+                    }}
+                  >
+                    Delete User
+                  </button>
+                </div>
               </div>
             </div>
           </div>
