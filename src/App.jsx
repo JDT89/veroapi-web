@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import AuthPage from "./pages/AuthPage";
 import Pricing from "./pages/Pricing";
 import Changelog from "./pages/Changelog";
+import Admin from "./pages/Admin";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/changelog" element={<Changelog />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/admin" element={<Admin />} />
           </Routes>
         </main>
         <Footer />
