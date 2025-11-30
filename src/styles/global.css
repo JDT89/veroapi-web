@@ -28,7 +28,9 @@
   --highlight-glow: rgba(255, 159, 28, 0.4);
 
   --danger: #f97373;
+  --danger-hover: #e55c5c;
   --success: #22c55e;
+  --success-hover: #1ea34f;
 
   /* Sidebar */
   --sidebar-width: 260px;
@@ -181,6 +183,54 @@ button {
 .btn.ghost:hover {
   background: var(--bg-elevated);
   color: var(--text-main);
+}
+
+.btn.outline.warning {
+  border-color: var(--highlight);
+  color: var(--highlight);
+}
+
+.btn.outline.warning:hover {
+  background: var(--highlight-soft);
+  border-color: var(--highlight);
+}
+
+.btn.outline.danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.btn.outline.danger:hover {
+  background: rgba(249, 115, 115, 0.15);
+  border-color: var(--danger);
+}
+
+.btn.danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: white;
+}
+
+.btn.danger:hover {
+  background: var(--danger-hover);
+  transform: translateY(-1px);
+}
+
+.btn.success {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+
+.btn.success:hover {
+  background: var(--success-hover);
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .btn.block {
