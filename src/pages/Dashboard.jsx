@@ -94,22 +94,36 @@ function Dashboard() {
       setHealthLoading(true);
       setHealthError("");
       try {
+        console.log('[Dashboard] Checking API health at:', `${API_BASE_URL}/v1/health`);
         const res = await fetch(`${API_BASE_URL}/v1/health`);
+        console.log('[Dashboard] Health check response status:', res.status);
+        
         const data = await res.json();
+        console.log('[Dashboard] Health check data:', data);
 
         if (!res.ok || !data.ok) {
           throw new Error("API health check failed");
         }
 
         setHealthData(data);
+        console.log('[Dashboard] API health loaded successfully');
       } catch (err) {
-        setHealthError(err.message || "Could not check API health");
+        console.error('[Dashboard] Health check error:', err);
+        const message = err.message || "Could not check API health";
+        setHealthError(message);
+        
+        // Set a fallback health data for better UX
+        setHealthData({ ok: false, service: 'veroapi', uptime: 0 });
       } finally {
         setHealthLoading(false);
       }
     };
 
     loadHealth();
+    
+    // Refresh health check every 30 seconds
+    const interval = setInterval(loadHealth, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   // Load API keys
@@ -149,16 +163,27 @@ function Dashboard() {
     const loadStats = async () => {
       setStatsLoading(true);
       try {
+        console.log('[Dashboard] Loading stats from:', `${API_BASE_URL}/v1/stats/overview`);
         const res = await fetch(`${API_BASE_URL}/v1/stats/overview`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        console.log('[Dashboard] Stats response status:', res.status);
+        
         const data = await res.json();
+        console.log('[Dashboard] Stats data:', data);
 
         if (res.ok && data.ok) {
           setRequestsLast24h(data.requests_last_24h || 0);
+          console.log('[Dashboard] Stats loaded successfully');
+        } else {
+          console.warn('[Dashboard] Stats response not OK:', data);
+          // Set default value instead of failing
+          setRequestsLast24h(0);
         }
       } catch (err) {
         console.error("[Dashboard] Stats load error:", err);
+        // Set default value on error
+        setRequestsLast24h(0);
       } finally {
         setStatsLoading(false);
       }
@@ -274,7 +299,12 @@ function Dashboard() {
           <h1>Dashboard</h1>
           <div className="header-status">
             <div className={`status-indicator ${apiOnline ? 'online' : 'offline'}`} />
-            <span>{apiOnline ? 'All systems operational' : 'API unavailable'}</span>
+            <span>
+              {apiOnline ? 'All systems operational' : 'API unavailable'}
+            </span>
+            <span className="api-url-badge" title={`Connected to: ${API_BASE_URL}`}>
+              {API_BASE_URL.includes('localhost') ? '🔧 Local' : '🌐 Production'}
+            </span>
           </div>
         </div>
         <div className="dashboard-header-right">
@@ -324,9 +354,9 @@ function Dashboard() {
               <Zap size={24} />
             </div>
             <div className="stat-content">
-              <div className="stat-label">Uptime</div>
+              <div className="stat-label">API Status</div>
               <div className="stat-value">
-                {healthData?.uptime ? `${Math.floor(healthData.uptime / 3600)}h` : '—'}
+                {healthLoading ? '...' : (apiOnline ? 'Online' : 'Offline')}
               </div>
             </div>
           </div>
