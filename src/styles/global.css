@@ -538,3 +538,46 @@ button {
     display: block;
   }
 }
+
+/* Add to the end of the file */
+
+/* ========= TOAST NOTIFICATIONS ========= */
+
+.toast-item {
+  font-family: inherit !important;
+  font-size: 0.875rem !important;
+  padding: 1rem !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+
+[data-sonner-toast][data-type="success"] {
+  border-color: var(--success) !important;
+}
+
+[data-sonner-toast][data-type="success"] [data-icon] {
+  color: var(--success) !important;
+}
+
+[data-sonner-toast][data-type="error"] {
+  border-color: var(--danger) !important;
+}
+
+[data-sonner-toast][data-type="error"] [data-icon] {
+  color: var(--danger) !important;
+}
+
+[data-sonner-toast][data-type="warning"] {
+  border-color: var(--highlight) !important;
+}
+
+[data-sonner-toast][data-type="warning"] [data-icon] {
+  color: var(--highlight) !important;
+}
+
+[data-sonner-toast][data-type="info"] {
+  border-color: var(--accent) !important;
+}
+
+[data-sonner-toast][data-type="info"] [data-icon] {
+  color: var(--accent) !important;
+}
