@@ -11,6 +11,7 @@ import DocsPage from "./pages/DocsPage";
 import EndpointsPage from "./pages/EndpointsPage";
 import Dashboard from "./pages/Dashboard";
 import AuthPage from "./pages/AuthPage";
+import AuthPage from "./pages/Changelog";
 
 // Updated layout: Sidebar is fixed, content + footer stack vertically with left margin
 function App() {
@@ -26,6 +27,7 @@ function App() {
             <Route path="/endpoints" element={<EndpointsPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/changelog" element={<Changelog />} />
           </Routes>
         </main>
 
