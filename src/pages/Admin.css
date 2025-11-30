@@ -718,8 +718,6 @@
   border-radius: var(--radius-md);
   color: var(--text-main);
   cursor: pointer;
-  align-items: center;
-  justify-content: center;
   transition: all 0.2s ease;
 }
 
@@ -3887,6 +3885,8 @@
   
   .admin-mobile-menu-btn {
     display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .admin-main {

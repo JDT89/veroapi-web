@@ -28,6 +28,7 @@ import {
   X,
   UserX,
   UserCheck,
+  Menu,
   RefreshCw,
   Trash2,
   Plus,
@@ -47,8 +48,7 @@ import {
   Terminal,
   Copy,
   ExternalLink,
-  Filter,
-  Menu
+  Filter
 } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import './Admin.css';
