@@ -75,6 +75,16 @@
   color: var(--text-soft);
 }
 
+.api-url-badge {
+  padding: 0.25rem 0.5rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+  cursor: help;
+}
+
 .status-indicator {
   width: 8px;
   height: 8px;
