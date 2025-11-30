@@ -28,7 +28,9 @@
   --highlight-glow: rgba(255, 159, 28, 0.4);
 
   --danger: #f97373;
+  --danger-hover: #e55c5c;
   --success: #22c55e;
+  --success-hover: #1ea34f;
 
   /* Sidebar */
   --sidebar-width: 260px;
@@ -210,7 +212,7 @@ button {
 }
 
 .btn.danger:hover {
-  background: #e55c5c;
+  background: var(--danger-hover);
   transform: translateY(-1px);
 }
 
@@ -221,7 +223,7 @@ button {
 }
 
 .btn.success:hover {
-  background: #1ea34f;
+  background: var(--success-hover);
   transform: translateY(-1px);
 }
 
