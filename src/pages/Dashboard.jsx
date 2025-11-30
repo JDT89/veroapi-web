@@ -93,51 +93,51 @@ function Dashboard() {
 
   // Load API health
   useEffect(() => {
+    const loadHealth = async () => {
+      setHealthLoading(true);
+      setHealthError("");
+      try {
+        console.log('[Dashboard] Checking API health at:', `${API_BASE_URL}/v1/health`);
+        const res = await fetch(`${API_BASE_URL}/v1/health`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+          cache: 'no-cache'
+        });
+        console.log('[Dashboard] Health check response status:', res.status);
+        console.log('[Dashboard] Health check response headers:', Object.fromEntries(res.headers.entries()));
+        
+        const data = await res.json();
+        console.log('[Dashboard] Health check data:', data);
+
+        // The health endpoint returns { ok: true, service: "veroapi", uptime: number }
+        // So we check if the response is OK (200) AND data.ok is true
+        if (res.ok && data.ok === true) {
+          setHealthData(data);
+          setHealthError("");
+          console.log('[Dashboard] ✅ API health loaded successfully:', data);
+        } else {
+          throw new Error(`API health check failed: status=${res.status}, data.ok=${data.ok}`);
+        }
+      } catch (err) {
+        console.error('[Dashboard] ❌ Health check error:', err);
+        const message = err.message || "Could not check API health";
+        setHealthError(message);
+        
+        // Set a fallback indicating the API is down
+        setHealthData({ ok: false, service: 'veroapi', uptime: 0 });
+      } finally {
+        setHealthLoading(false);
+      }
+    };
+
     loadHealth();
     
     // Refresh health check every 30 seconds
     const interval = setInterval(loadHealth, 30000);
     return () => clearInterval(interval);
   }, []);
-
-  const loadHealth = async () => {
-    setHealthLoading(true);
-    setHealthError("");
-    try {
-      console.log('[Dashboard] Checking API health at:', `${API_BASE_URL}/v1/health`);
-      const res = await fetch(`${API_BASE_URL}/v1/health`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-        cache: 'no-cache'
-      });
-      console.log('[Dashboard] Health check response status:', res.status);
-      console.log('[Dashboard] Health check response headers:', Object.fromEntries(res.headers.entries()));
-      
-      const data = await res.json();
-      console.log('[Dashboard] Health check data:', data);
-
-      // The health endpoint returns { ok: true, service: "veroapi", uptime: number }
-      // So we check if the response is OK (200) AND data.ok is true
-      if (res.ok && data.ok === true) {
-        setHealthData(data);
-        setHealthError("");
-        console.log('[Dashboard] ✅ API health loaded successfully:', data);
-      } else {
-        throw new Error(`API health check failed: status=${res.status}, data.ok=${data.ok}`);
-      }
-    } catch (err) {
-      console.error('[Dashboard] ❌ Health check error:', err);
-      const message = err.message || "Could not check API health";
-      setHealthError(message);
-      
-      // Set a fallback indicating the API is down
-      setHealthData({ ok: false, service: 'veroapi', uptime: 0 });
-    } finally {
-      setHealthLoading(false);
-    }
-  };
 
   // Load API keys
   useEffect(() => {
