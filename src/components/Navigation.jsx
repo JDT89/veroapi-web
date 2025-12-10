@@ -62,6 +62,11 @@ const Navigation = ({ variant = 'default' }) => {
               Dashboard
             </Link>
           </li>
+           <li>
+            <Link to="/login" className={isActive('/login') ? 'active' : ''}>
+              Login
+            </Link>
+          </li>
           <li>
             <Link to="/admin" className={isActive('/admin') ? 'active' : ''}>
               Admin
