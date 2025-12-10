@@ -48,7 +48,7 @@ const Navigation = ({ variant = 'default' }) => {
               </linearGradient>
             </defs>
           </svg>
-          <span className="gradient-text">NEXUS</span>
+          <span className="gradient-text">VeroAPI</span>
         </Link>
         
         <ul className="nav-links desktop-only">
