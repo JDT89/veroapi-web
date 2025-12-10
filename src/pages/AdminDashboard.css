@@ -1104,6 +1104,34 @@
   }
 }
 
+@media (max-width: 968px) {
+  .admin-container {
+    padding: 110px 1.5rem 3rem;
+  }
+  
+  .admin-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .header-actions {
+    width: 100%;
+  }
+  
+  .btn-primary-admin,
+  .btn-secondary-admin {
+    flex: 1;
+  }
+  
+  .services-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .resources-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .admin-container {
     padding: 100px 1.5rem 2rem;
@@ -1114,6 +1142,10 @@
     align-items: stretch;
   }
   
+  .admin-header h1 {
+    font-size: 1.75rem;
+  }
+  
   .header-actions {
     flex-direction: column;
   }
@@ -1122,14 +1154,57 @@
     grid-template-columns: 1fr;
   }
   
+  .quick-stat-card {
+    padding: 1.25rem;
+  }
+  
+  .stat-icon-admin {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .stat-value-admin {
+    font-size: 1.75rem;
+  }
+  
+  .alerts-section {
+    padding: 1.25rem;
+  }
+  
+  .alert-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .alert-dismiss {
+    align-self: flex-end;
+  }
+  
+  .system-health-section {
+    padding: 1.25rem;
+  }
+  
   .services-grid,
   .resources-grid,
   .roles-grid {
     grid-template-columns: 1fr;
   }
   
+  .revenue-section {
+    padding: 1.25rem;
+  }
+  
   .revenue-metrics {
     grid-template-columns: 1fr;
+  }
+  
+  .revenue-metric-card {
+    padding: 1rem;
+  }
+  
+  .users-section {
+    padding: 1.25rem;
   }
   
   .users-filters {
@@ -1140,6 +1215,25 @@
     min-width: 100%;
   }
   
+  .bulk-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .bulk-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .users-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .users-table {
+    min-width: 1000px;
+  }
+  
   .pagination {
     flex-direction: column;
     gap: 1rem;
@@ -1148,5 +1242,92 @@
   
   .pagination-controls {
     flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .audit-logs-section {
+    padding: 1.25rem;
+  }
+  
+  .logs-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .logs-table {
+    min-width: 800px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-container {
+    padding: 90px 1rem 2rem;
+  }
+  
+  .admin-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .header-subtitle {
+    font-size: 0.85rem;
+  }
+  
+  .btn-primary-admin,
+  .btn-secondary-admin {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.85rem;
+  }
+  
+  .stat-value-admin {
+    font-size: 1.5rem;
+  }
+  
+  .stat-label-admin {
+    font-size: 0.8rem;
+  }
+  
+  .section-header-admin h3 {
+    font-size: 1.1rem;
+  }
+  
+  .service-card,
+  .resource-card,
+  .role-card {
+    padding: 1rem;
+  }
+  
+  .revenue-chart-card {
+    padding: 1rem;
+  }
+  
+  .metric-value-big {
+    font-size: 1.25rem;
+  }
+  
+  .date-range-picker select {
+    font-size: 0.8rem;
+  }
+  
+  .users-table {
+    font-size: 0.85rem;
+  }
+  
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+  
+  .role-badge,
+  .status-badge,
+  .plan-badge {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.65rem;
+  }
+  
+  .pagination-controls select,
+  .pagination-controls button {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.75rem;
   }
 }
