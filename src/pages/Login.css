@@ -124,3 +124,34 @@
     font-size: 1.8rem;
   }
 }
+
+/* Make sure login content is not hidden under fixed nav */
+.login-page {
+  padding-top: 120px; /* Adjust as needed depending on nav height */
+}
+
+/* Row for remember me + forgot password */
+.login-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: -0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.remember-me {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Bottom text under buttons */
+.login-bottom-text {
+  margin-top: 1.8rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
