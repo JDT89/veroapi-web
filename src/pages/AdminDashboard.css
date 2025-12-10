@@ -344,12 +344,12 @@
 }
 
 .plan-badge.starter {
-  background: rgba(0, 255, 245, 0.1);
+  background: rgba(0, 212, 255, 0.1);
   color: var(--accent-primary);
 }
 
 .plan-badge.pro {
-  background: rgba(183, 148, 246, 0.1);
+  background: rgba(0, 102, 255, 0.1);
   color: var(--accent-secondary);
 }
 
