@@ -48,11 +48,13 @@
   display: flex;
   gap: 1rem;
   transition: all 0.3s;
+  box-shadow: var(--shadow-sm);
 }
 
 .stat-card:hover {
   border-color: var(--accent-primary);
-  box-shadow: 0 10px 40px rgba(0, 212, 255, 0.2);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
 }
 
 .stat-icon {
@@ -178,6 +180,7 @@
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 2rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .chart-selector {
