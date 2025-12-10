@@ -1,7 +1,7 @@
+import React, { useState, useRef, useEffect } from "react";
 import Navigation from "../components/Navigation";
 import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
-import { useState, useRef } from "react";
 import "./Login.css";
 
 const Login = () => {
@@ -15,14 +15,14 @@ const Login = () => {
   const emailRef = useRef(null);
 
   // Auto-focus email field on mount
-  React.useEffect(() => {
+  useEffect(() => {
     if (emailRef.current) {
       emailRef.current.focus();
     }
   }, []);
 
   function validateEmail(val) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val); // simple email regex
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
   }
 
   const handleSubmit = async (e) => {
@@ -42,18 +42,10 @@ const Login = () => {
     setSubmitting(true);
 
     // Simulate async authentication (replace with real logic)
-    try {
-      // await loginApi({ email, password, rememberMe });
-      // On failed auth, throw error:
-      // throw new Error();
-      setTimeout(() => {
-        setSubmitting(false);
-        setFormError("Invalid email or password.");
-      }, 1500);
-    } catch {
+    setTimeout(() => {
       setSubmitting(false);
-      setFormError("Invalid email or password."); // generic message
-    }
+      setFormError("Invalid email or password.");
+    }, 1500);
   };
 
   return (
