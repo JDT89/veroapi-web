@@ -1,6 +1,6 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef, useState, useEffect } from 'react';
-import { Code2, Zap, Shield, BarChart3, Terminal, Sparkles } from 'lucide-react';
+import { Code2, Zap, Shield, BarChart3, Terminal, Sparkles, ArrowRight, CheckCircle2, Star } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import './Landing.css';
 
@@ -76,140 +76,156 @@ const Landing = () => {
     <div className="landing">
       <Navigation />
       
-      {/* Hero Section */}
+      {/* Hero Section - Completely Rebuilt */}
       <section className="hero" ref={heroRef}>
-        <div className="hero-bg"></div>
+        <div className="hero-bg">
+          <div className="hero-gradient-orb hero-gradient-orb-1"></div>
+          <div className="hero-gradient-orb hero-gradient-orb-2"></div>
+        </div>
+        
         <div className="container">
-          <motion.div 
-            className="hero-content"
-            initial={{ opacity: 0, y: 30 }}
-            animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
+          <div className="hero-center">
+            {/* Badge */}
             <motion.div 
-              className="hero-badge"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={isHeroInView ? { opacity: 1, scale: 1 } : {}}
+              className="hero-badge-new"
+              initial={{ opacity: 0, y: 20 }}
+              animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Star size={14} className="badge-star" />
+              <span>Trusted by 50,000+ developers worldwide</span>
+            </motion.div>
+
+            {/* Main Headline */}
+            <motion.h1
+              className="hero-title-new"
+              initial={{ opacity: 0, y: 20 }}
+              animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              The API platform
+              <br />
+              built for <span className="title-highlight">scale</span>
+            </motion.h1>
+
+            {/* Subheadline */}
+            <motion.p
+              className="hero-subtitle-new"
+              initial={{ opacity: 0, y: 20 }}
+              animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              Ship production-ready APIs in minutes. Scale to millions of requests.
+              <br />
+              Monitor everything. All from one powerful platform.
+            </motion.p>
+
+            {/* CTAs */}
+            <motion.div 
+              className="hero-ctas-new"
+              initial={{ opacity: 0, y: 20 }}
+              animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <Sparkles size={16} className="sparkle-icon" />
-              <span>Now with AI-powered scaling</span>
+              <a href="#" className="btn-new btn-primary-new">
+                <span>Start Building Free</span>
+                <ArrowRight size={18} />
+              </a>
+              <a href="#" className="btn-new btn-secondary-new">
+                <span>View Live Demo</span>
+              </a>
             </motion.div>
-            
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.5 }}
-            >
-              Build APIs that
-              <br />
-              <span className="gradient-text-hero">developers love</span>
-            </motion.h1>
-            
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.6 }}
-            >
-              The most powerful API platform for modern applications. Deploy in seconds,
-              scale to millions, monitor everything.
-            </motion.p>
-            
+
+            {/* Trust Indicators */}
             <motion.div 
-              className="hero-actions"
-              initial={{ opacity: 0, y: 20 }}
+              className="hero-trust"
+              initial={{ opacity: 0 }}
+              animate={isHeroInView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
+              <div className="trust-item">
+                <CheckCircle2 size={16} />
+                <span>No credit card required</span>
+              </div>
+              <div className="trust-item">
+                <CheckCircle2 size={16} />
+                <span>Free forever plan</span>
+              </div>
+              <div className="trust-item">
+                <CheckCircle2 size={16} />
+                <span>5-minute setup</span>
+              </div>
+            </motion.div>
+
+            {/* Stats */}
+            <motion.div 
+              className="hero-stats-new"
+              ref={statsRef}
+              initial={{ opacity: 0, y: 30 }}
+              animate={isStatsInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.6 }}
+            >
+              <div className="stat-new">
+                <div className="stat-number">
+                  {isStatsInView ? <AnimatedCounter end={99.99} suffix="%" /> : '99.99%'}
+                </div>
+                <div className="stat-text">Uptime SLA</div>
+              </div>
+              <div className="stat-divider"></div>
+              <div className="stat-new">
+                <div className="stat-number">
+                  {isStatsInView ? <AnimatedCounter end={2} suffix="M+" /> : '2M+'}
+                </div>
+                <div className="stat-text">Requests/sec</div>
+              </div>
+              <div className="stat-divider"></div>
+              <div className="stat-new">
+                <div className="stat-number">
+                  {isStatsInView ? <AnimatedCounter end={10} prefix="<" suffix="ms" /> : '<10ms'}
+                </div>
+                <div className="stat-text">Response time</div>
+              </div>
+            </motion.div>
+
+            {/* Code Preview */}
+            <motion.div 
+              className="hero-code-preview"
+              initial={{ opacity: 0, y: 30 }}
               animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.7 }}
             >
-              <a href="#" className="btn btn-primary btn-hero">Start Building Free</a>
-              <a href="#" className="btn btn-secondary btn-hero">View Documentation</a>
-            </motion.div>
-            
-            <motion.div 
-              className="hero-stats"
-              ref={statsRef}
-              initial={{ opacity: 0 }}
-              animate={isStatsInView ? { opacity: 1 } : {}}
-              transition={{ duration: 0.8, delay: 0.8 }}
-            >
-              <motion.div 
-                className="stat"
-                initial={{ opacity: 0, y: 20 }}
-                animate={isStatsInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.9 }}
-              >
-                <div className="stat-icon">
-                  <Shield size={20} />
+              <div className="code-window-new">
+                <div className="code-header-new">
+                  <div className="code-dots-new">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                  <span className="code-title">quickstart.js</span>
+                  <div className="code-actions">
+                    <span className="code-language">JavaScript</span>
+                  </div>
                 </div>
-                <div className="stat-value">
-                  {isStatsInView ? <AnimatedCounter end={99.99} suffix="%" /> : '99.99%'}
+                <div className="code-body-new">
+                  <pre>
+<span className="code-line"><span className="line-number">1</span><span className="code-keyword">import</span> <span className="code-variable">nexus</span> <span className="code-keyword">from</span> <span className="code-string">'@nexus/sdk'</span>;</span>
+<span className="code-line"><span className="line-number">2</span></span>
+<span className="code-line"><span className="line-number">3</span><span className="code-keyword">const</span> <span className="code-variable">client</span> <span className="code-operator">=</span> <span className="code-keyword">new</span> <span className="code-function">nexus</span>.<span className="code-function">Client</span>({'{'}
+</span>
+<span className="code-line"><span className="line-number">4</span>  <span className="code-property">apiKey</span>: <span className="code-variable">process</span>.<span className="code-variable">env</span>.<span className="code-constant">NEXUS_API_KEY</span></span>
+<span className="code-line"><span className="line-number">5</span>{'}'});</span>
+<span className="code-line"><span className="line-number">6</span></span>
+<span className="code-line"><span className="line-number">7</span><span className="code-comment">// Make your first API call</span></span>
+<span className="code-line"><span className="line-number">8</span><span className="code-keyword">const</span> <span className="code-variable">response</span> <span className="code-operator">=</span> <span className="code-keyword">await</span> <span className="code-variable">client</span>.<span className="code-variable">users</span>.<span className="code-function">create</span>({'{'}
+</span>
+<span className="code-line"><span className="line-number">9</span>  <span className="code-property">name</span>: <span className="code-string">'John Doe'</span>,</span>
+<span className="code-line"><span className="line-number">10</span>  <span className="code-property">email</span>: <span className="code-string">'john@example.com'</span></span>
+<span className="code-line"><span className="line-number">11</span>{'}'});</span>
+                  </pre>
                 </div>
-                <div className="stat-label">Uptime SLA</div>
-              </motion.div>
-              <motion.div 
-                className="stat"
-                initial={{ opacity: 0, y: 20 }}
-                animate={isStatsInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 1.0 }}
-              >
-                <div className="stat-icon">
-                  <Zap size={20} />
-                </div>
-                <div className="stat-value">
-                  {isStatsInView ? <AnimatedCounter end={2} suffix="M+" /> : '2M+'}
-                </div>
-                <div className="stat-label">API Calls/sec</div>
-              </motion.div>
-              <motion.div 
-                className="stat"
-                initial={{ opacity: 0, y: 20 }}
-                animate={isStatsInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 1.1 }}
-              >
-                <div className="stat-icon">
-                  <BarChart3 size={20} />
-                </div>
-                <div className="stat-value">
-                  {isStatsInView ? <AnimatedCounter end={10} prefix="<" suffix="ms" /> : '<10ms'}
-                </div>
-                <div className="stat-label">Avg Response</div>
-              </motion.div>
-            </motion.div>
-          </motion.div>
-          
-          <motion.div 
-            className="hero-code"
-            initial={{ opacity: 0, x: 30 }}
-            animate={isHeroInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.6 }}
-          >
-            <div className="code-window">
-              <div className="code-header">
-                <div className="code-dots">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-                <span>quickstart.js</span>
               </div>
-              <pre className="code-content">
-<span className="code-keyword">const</span> <span className="code-variable">nexus</span> <span className="code-operator">=</span> <span className="code-function">require</span>(<span className="code-string">'@nexus/sdk'</span>);
-
-<span className="code-keyword">const</span> <span className="code-variable">client</span> <span className="code-operator">=</span> <span className="code-keyword">new</span> <span className="code-variable">nexus</span>.<span className="code-function">Client</span>({'{'}
-  <span className="code-property">apiKey</span>: <span className="code-variable">process</span>.<span className="code-variable">env</span>.<span className="code-constant">NEXUS_API_KEY</span>
-{'}'});
-
-<span className="code-comment">// Make your first API call</span>
-<span className="code-keyword">const</span> <span className="code-variable">response</span> <span className="code-operator">=</span> <span className="code-keyword">await</span> <span className="code-variable">client</span>.<span className="code-variable">users</span>.<span className="code-function">create</span>({'{'}
-  <span className="code-property">name</span>: <span className="code-string">'John Doe'</span>,
-  <span className="code-property">email</span>: <span className="code-string">'john@example.com'</span>
-{'}'});
-
-<span className="code-variable">console</span>.<span className="code-function">log</span>(<span className="code-variable">response</span>.<span className="code-property">data</span>);
-<span className="code-comment">// {'{'} id: 'usr_123', name: 'John Doe', ... {'}'}</span>
-              </pre>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
