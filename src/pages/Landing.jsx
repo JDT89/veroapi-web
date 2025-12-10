@@ -1,9 +1,44 @@
-import { motion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
+import { useRef, useState, useEffect } from 'react';
 import { Code2, Zap, Shield, BarChart3, Terminal, Sparkles } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import './Landing.css';
 
 const Landing = () => {
+  const heroRef = useRef(null);
+  const statsRef = useRef(null);
+  const isHeroInView = useInView(heroRef, { once: true, margin: "-100px" });
+  const isStatsInView = useInView(statsRef, { once: true, margin: "-50px" });
+
+  // Animated counter component
+  const AnimatedCounter = ({ end, duration = 2, suffix = '', prefix = '' }) => {
+    const [count, setCount] = useState(0);
+    
+    useEffect(() => {
+      if (!isStatsInView) return;
+      
+      let startTime;
+      let animationFrame;
+      
+      const animate = (currentTime) => {
+        if (!startTime) startTime = currentTime;
+        const progress = (currentTime - startTime) / (duration * 1000);
+        
+        if (progress < 1) {
+          setCount(Math.floor(end * progress));
+          animationFrame = requestAnimationFrame(animate);
+        } else {
+          setCount(end);
+        }
+      };
+      
+      animationFrame = requestAnimationFrame(animate);
+      return () => cancelAnimationFrame(animationFrame);
+    }, [isStatsInView, end, duration]);
+    
+    return <>{prefix}{count}{suffix}</>;
+  };
+
   const features = [
     {
       icon: <Zap />,
@@ -42,67 +77,111 @@ const Landing = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="hero">
+      <section className="hero" ref={heroRef}>
         <div className="hero-bg"></div>
         <div className="container">
           <motion.div 
             className="hero-content"
             initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             <motion.div 
               className="hero-badge"
               initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
+              animate={isHeroInView ? { opacity: 1, scale: 1 } : {}}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <Sparkles size={16} />
+              <Sparkles size={16} className="sparkle-icon" />
               <span>Now with AI-powered scaling</span>
             </motion.div>
             
-            <h1>
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.5 }}
+            >
               Build APIs that
               <br />
-              <span className="gradient-text">developers love</span>
-            </h1>
+              <span className="gradient-text-hero">developers love</span>
+            </motion.h1>
             
-            <p>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.6 }}
+            >
               The most powerful API platform for modern applications. Deploy in seconds,
               scale to millions, monitor everything.
-            </p>
+            </motion.p>
             
-            <div className="hero-actions">
-              <a href="#" className="btn btn-primary">Start Building Free</a>
-              <a href="#" className="btn btn-secondary">View Documentation</a>
-            </div>
+            <motion.div 
+              className="hero-actions"
+              initial={{ opacity: 0, y: 20 }}
+              animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.7 }}
+            >
+              <a href="#" className="btn btn-primary btn-hero">Start Building Free</a>
+              <a href="#" className="btn btn-secondary btn-hero">View Documentation</a>
+            </motion.div>
             
             <motion.div 
               className="hero-stats"
+              ref={statsRef}
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
+              animate={isStatsInView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.8, delay: 0.8 }}
             >
-              <div className="stat">
-                <div className="stat-value">99.99%</div>
+              <motion.div 
+                className="stat"
+                initial={{ opacity: 0, y: 20 }}
+                animate={isStatsInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: 0.9 }}
+              >
+                <div className="stat-icon">
+                  <Shield size={20} />
+                </div>
+                <div className="stat-value">
+                  {isStatsInView ? <AnimatedCounter end={99.99} suffix="%" /> : '99.99%'}
+                </div>
                 <div className="stat-label">Uptime SLA</div>
-              </div>
-              <div className="stat">
-                <div className="stat-value">2M+</div>
+              </motion.div>
+              <motion.div 
+                className="stat"
+                initial={{ opacity: 0, y: 20 }}
+                animate={isStatsInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: 1.0 }}
+              >
+                <div className="stat-icon">
+                  <Zap size={20} />
+                </div>
+                <div className="stat-value">
+                  {isStatsInView ? <AnimatedCounter end={2} suffix="M+" /> : '2M+'}
+                </div>
                 <div className="stat-label">API Calls/sec</div>
-              </div>
-              <div className="stat">
-                <div className="stat-value">&lt;10ms</div>
+              </motion.div>
+              <motion.div 
+                className="stat"
+                initial={{ opacity: 0, y: 20 }}
+                animate={isStatsInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: 1.1 }}
+              >
+                <div className="stat-icon">
+                  <BarChart3 size={20} />
+                </div>
+                <div className="stat-value">
+                  {isStatsInView ? <AnimatedCounter end={10} prefix="<" suffix="ms" /> : '<10ms'}
+                </div>
                 <div className="stat-label">Avg Response</div>
-              </div>
+              </motion.div>
             </motion.div>
           </motion.div>
           
           <motion.div 
             className="hero-code"
             initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+            animate={isHeroInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.6 }}
           >
             <div className="code-window">
               <div className="code-header">
@@ -114,20 +193,20 @@ const Landing = () => {
                 <span>quickstart.js</span>
               </div>
               <pre className="code-content">
-{`const nexus = require('@nexus/sdk');
+<span className="code-keyword">const</span> <span className="code-variable">nexus</span> <span className="code-operator">=</span> <span className="code-function">require</span>(<span className="code-string">'@nexus/sdk'</span>);
 
-const client = new nexus.Client({
-  apiKey: process.env.NEXUS_API_KEY
-});
+<span className="code-keyword">const</span> <span className="code-variable">client</span> <span className="code-operator">=</span> <span className="code-keyword">new</span> <span className="code-variable">nexus</span>.<span className="code-function">Client</span>({'{'}
+  <span className="code-property">apiKey</span>: <span className="code-variable">process</span>.<span className="code-variable">env</span>.<span className="code-constant">NEXUS_API_KEY</span>
+{'}'});
 
-// Make your first API call
-const response = await client.users.create({
-  name: 'John Doe',
-  email: 'john@example.com'
-});
+<span className="code-comment">// Make your first API call</span>
+<span className="code-keyword">const</span> <span className="code-variable">response</span> <span className="code-operator">=</span> <span className="code-keyword">await</span> <span className="code-variable">client</span>.<span className="code-variable">users</span>.<span className="code-function">create</span>({'{'}
+  <span className="code-property">name</span>: <span className="code-string">'John Doe'</span>,
+  <span className="code-property">email</span>: <span className="code-string">'john@example.com'</span>
+{'}'});
 
-console.log(response.data);
-// { id: 'usr_123', name: 'John Doe', ... }`}
+<span className="code-variable">console</span>.<span className="code-function">log</span>(<span className="code-variable">response</span>.<span className="code-property">data</span>);
+<span className="code-comment">// {'{'} id: 'usr_123', name: 'John Doe', ... {'}'}</span>
               </pre>
             </div>
           </motion.div>
@@ -221,7 +300,7 @@ console.log(response.data);
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2025 Vero API. All rights reserved.</p>
+            <p>&copy; 2024 Nexus API. All rights reserved.</p>
           </div>
         </div>
       </footer>
