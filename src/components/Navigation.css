@@ -381,3 +381,38 @@
     gap: 0.5rem;
   }
 }
+
+@media (max-width: 480px) {
+  .nav .container {
+    padding: 0.875rem 1rem;
+  }
+  
+  .logo {
+    font-size: 1.1rem;
+  }
+  
+  .logo-icon {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .mobile-menu-content {
+    padding: 1rem 1.25rem;
+  }
+  
+  .mobile-menu-item {
+    padding: 0.75rem 0.875rem;
+    font-size: 0.9rem;
+  }
+  
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+  }
+  
+  .notification-bell {
+    width: 36px;
+    height: 36px;
+  }
+}
