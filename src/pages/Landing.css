@@ -587,9 +587,17 @@
   .features-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+  
+  .code-window-new {
+    font-size: 0.85rem;
+  }
 }
 
 @media (max-width: 768px) {
+  .container {
+    padding: 0 1.5rem;
+  }
+  
   .hero {
     padding: 120px 0 60px;
   }
@@ -619,6 +627,7 @@
   
   .hero-stats-row {
     gap: 1.5rem;
+    flex-direction: column;
   }
   
   .stat-number-inline {
@@ -631,5 +640,42 @@
   
   .footer-content {
     grid-template-columns: 1fr;
+    text-align: center;
+  }
+  
+  .footer-links {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .code-window-new {
+    font-size: 0.8rem;
+  }
+  
+  .code-body-new {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title-new {
+    font-size: 2rem;
+  }
+  
+  .hero-subtitle-new {
+    font-size: 0.95rem;
+  }
+  
+  .hero-badge-new {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .stat-number-inline {
+    font-size: 1.5rem;
+  }
+  
+  .feature-card {
+    padding: 1.5rem;
   }
 }
