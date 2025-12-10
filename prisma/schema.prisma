@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  image         String?
+  createdAt     DateTime  @default(now())
+  templates     Template[]
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model Template {
+  id           String          @id @default(cuid())
+  name         String
+  description  String?
+  category     String?
+  tags         String[]        @default([])
+  images       String[]        @default([])
+  authorId     String
+  author       User            @relation(fields: [authorId], references: [id])
+  codes        TemplateCode[]
+  variables    TemplateVariable[]
+  setupSteps   TemplateSetupStep[]
+  downloads    Int             @default(0)
+  rating       Float?          @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+model TemplateCode {
+  id          String   @id @default(cuid())
+  templateId  String
+  template    Template @relation(fields: [templateId], references: [id])
+  type        String   // 'command' or 'event'
+  title       String?
+  shareCode   String   @db.Text
+  orderIndex  Int      @default(0)
+}
+
+model TemplateVariable {
+  id         String  @id @default(cuid())
+  templateId String
+  template   Template @relation(fields: [templateId], references: [id])
+  name       String
+  type       String
+  defaultValue String?
+}
+
+model TemplateSetupStep {
+  id         String  @id @default(cuid())
+  templateId String
+  template   Template @relation(fields: [templateId], references: [id])
+  stepNumber Int
+  content    String
+}
+
+// NextAuth models (minimal)
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  user               User    @relation(fields: [userId], references: [id])
+  providerType       String
+  providerId         String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  expires      DateTime
+}
