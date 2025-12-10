@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Landing from './pages/Landing';
 import Docs from './pages/Docs';
 import Dashboard from './pages/Dashboard';
+import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
@@ -10,6 +11,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/docs" element={<Docs />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
