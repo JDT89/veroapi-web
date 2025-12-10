@@ -76,7 +76,7 @@ const Landing = () => {
     <div className="landing">
       <Navigation />
       
-      {/* Hero Section - Completely Rebuilt */}
+      {/* Hero Section - Left/Right Layout */}
       <section className="hero" ref={heroRef}>
         <div className="hero-bg">
           <div className="hero-gradient-orb hero-gradient-orb-1"></div>
@@ -84,115 +84,104 @@ const Landing = () => {
         </div>
         
         <div className="container">
-          <div className="hero-center">
-            {/* Badge */}
-            <motion.div 
-              className="hero-badge-new"
-              initial={{ opacity: 0, y: 20 }}
-              animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <Star size={14} className="badge-star" />
-              <span>Trusted by 50,000+ developers worldwide</span>
-            </motion.div>
+          <div className="hero-grid">
+            {/* Left: Content */}
+            <div className="hero-left">
+              <motion.div 
+                className="hero-badge-new"
+                initial={{ opacity: 0, y: 20 }}
+                animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
+                <Star size={14} className="badge-star" />
+                <span>Trusted by 50,000+ developers</span>
+              </motion.div>
 
-            {/* Main Headline */}
-            <motion.h1
-              className="hero-title-new"
-              initial={{ opacity: 0, y: 20 }}
-              animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              The API platform
-              <br />
-              built for <span className="title-highlight">scale</span>
-            </motion.h1>
+              <motion.h1
+                className="hero-title-new"
+                initial={{ opacity: 0, y: 20 }}
+                animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                The API platform
+                <br />
+                built for <span className="title-highlight">scale</span>
+              </motion.h1>
 
-            {/* Subheadline */}
-            <motion.p
-              className="hero-subtitle-new"
-              initial={{ opacity: 0, y: 20 }}
-              animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              Ship production-ready APIs in minutes. Scale to millions of requests.
-              <br />
-              Monitor everything. All from one powerful platform.
-            </motion.p>
+              <motion.p
+                className="hero-subtitle-new"
+                initial={{ opacity: 0, y: 20 }}
+                animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
+                Ship production-ready APIs in minutes. Scale to millions of requests. Monitor everything in real-time.
+              </motion.p>
 
-            {/* CTAs */}
-            <motion.div 
-              className="hero-ctas-new"
-              initial={{ opacity: 0, y: 20 }}
-              animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              <a href="#" className="btn-new btn-primary-new">
-                <span>Start Building Free</span>
-                <ArrowRight size={18} />
-              </a>
-              <a href="#" className="btn-new btn-secondary-new">
-                <span>View Live Demo</span>
-              </a>
-            </motion.div>
+              <motion.div 
+                className="hero-ctas-new"
+                initial={{ opacity: 0, y: 20 }}
+                animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: 0.4 }}
+              >
+                <a href="#" className="btn-new btn-primary-new">
+                  <span>Start Building Free</span>
+                  <ArrowRight size={18} />
+                </a>
+                <a href="#" className="btn-new btn-secondary-new">
+                  <span>View Live Demo</span>
+                </a>
+              </motion.div>
 
-            {/* Trust Indicators */}
-            <motion.div 
-              className="hero-trust"
-              initial={{ opacity: 0 }}
-              animate={isHeroInView ? { opacity: 1 } : {}}
-              transition={{ duration: 0.6, delay: 0.5 }}
-            >
-              <div className="trust-item">
-                <CheckCircle2 size={16} />
-                <span>No credit card required</span>
-              </div>
-              <div className="trust-item">
-                <CheckCircle2 size={16} />
-                <span>Free forever plan</span>
-              </div>
-              <div className="trust-item">
-                <CheckCircle2 size={16} />
-                <span>5-minute setup</span>
-              </div>
-            </motion.div>
-
-            {/* Stats */}
-            <motion.div 
-              className="hero-stats-new"
-              ref={statsRef}
-              initial={{ opacity: 0, y: 30 }}
-              animate={isStatsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.6 }}
-            >
-              <div className="stat-new">
-                <div className="stat-number">
-                  {isStatsInView ? <AnimatedCounter end={99.99} suffix="%" /> : '99.99%'}
+              <motion.div 
+                className="hero-trust"
+                initial={{ opacity: 0 }}
+                animate={isHeroInView ? { opacity: 1 } : {}}
+                transition={{ duration: 0.6, delay: 0.5 }}
+              >
+                <div className="trust-item">
+                  <CheckCircle2 size={16} />
+                  <span>No credit card required</span>
                 </div>
-                <div className="stat-text">Uptime SLA</div>
-              </div>
-              <div className="stat-divider"></div>
-              <div className="stat-new">
-                <div className="stat-number">
-                  {isStatsInView ? <AnimatedCounter end={2} suffix="M+" /> : '2M+'}
+                <div className="trust-item">
+                  <CheckCircle2 size={16} />
+                  <span>Free forever plan</span>
                 </div>
-                <div className="stat-text">Requests/sec</div>
-              </div>
-              <div className="stat-divider"></div>
-              <div className="stat-new">
-                <div className="stat-number">
-                  {isStatsInView ? <AnimatedCounter end={10} prefix="<" suffix="ms" /> : '<10ms'}
-                </div>
-                <div className="stat-text">Response time</div>
-              </div>
-            </motion.div>
+              </motion.div>
 
-            {/* Code Preview */}
+              <motion.div 
+                className="hero-stats-row"
+                ref={statsRef}
+                initial={{ opacity: 0, y: 20 }}
+                animate={isStatsInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: 0.6 }}
+              >
+                <div className="stat-inline">
+                  <div className="stat-number-inline">
+                    {isStatsInView ? <AnimatedCounter end={99.99} suffix="%" /> : '99.99%'}
+                  </div>
+                  <div className="stat-text-inline">Uptime SLA</div>
+                </div>
+                <div className="stat-inline">
+                  <div className="stat-number-inline">
+                    {isStatsInView ? <AnimatedCounter end={2} suffix="M+" /> : '2M+'}
+                  </div>
+                  <div className="stat-text-inline">Requests/sec</div>
+                </div>
+                <div className="stat-inline">
+                  <div className="stat-number-inline">
+                    {isStatsInView ? <AnimatedCounter end={10} prefix="<" suffix="ms" /> : '<10ms'}
+                  </div>
+                  <div className="stat-text-inline">Response</div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Right: API Example */}
             <motion.div 
-              className="hero-code-preview"
-              initial={{ opacity: 0, y: 30 }}
-              animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.7 }}
+              className="hero-right"
+              initial={{ opacity: 0, x: 30 }}
+              animate={isHeroInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.4 }}
             >
               <div className="code-window-new">
                 <div className="code-header-new">
@@ -221,6 +210,9 @@ const Landing = () => {
 <span className="code-line"><span className="line-number">9</span>  <span className="code-property">name</span>: <span className="code-string">'John Doe'</span>,</span>
 <span className="code-line"><span className="line-number">10</span>  <span className="code-property">email</span>: <span className="code-string">'john@example.com'</span></span>
 <span className="code-line"><span className="line-number">11</span>{'}'});</span>
+<span className="code-line"><span className="line-number">12</span></span>
+<span className="code-line"><span className="line-number">13</span><span className="code-variable">console</span>.<span className="code-function">log</span>(<span className="code-variable">response</span>);</span>
+<span className="code-line"><span className="line-number">14</span><span className="code-comment">// {'{'} id: 'usr_123', name: 'John Doe' {'}'}</span></span>
                   </pre>
                 </div>
               </div>
