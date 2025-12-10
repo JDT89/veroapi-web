@@ -51,8 +51,8 @@
 }
 
 .stat-card:hover {
-  border-color: var(--accent-primary);
-  box-shadow: 0 10px 40px rgba(0, 240, 255, 0.2);
+  border-color: var(--accent-secondary);
+  box-shadow: 0 10px 40px rgba(183, 148, 246, 0.2);
 }
 
 .stat-icon {
