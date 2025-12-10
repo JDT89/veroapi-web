@@ -3,10 +3,11 @@
   top: 0;
   left: 0;
   right: 0;
-  background: rgba(10, 10, 15, 0.8);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-color);
   z-index: 1000;
+  box-shadow: var(--shadow-sm);
 }
 
 .nav .container {
@@ -82,12 +83,12 @@
 .btn-primary {
   background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
   color: #ffffff;
-  box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.25);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0 40px rgba(0, 102, 255, 0.6);
+  box-shadow: 0 6px 20px rgba(0, 102, 255, 0.35);
 }
 
 .btn-secondary {
@@ -99,4 +100,5 @@
 .btn-secondary:hover {
   border-color: var(--accent-primary);
   color: var(--accent-primary);
+  background: rgba(0, 102, 255, 0.05);
 }
