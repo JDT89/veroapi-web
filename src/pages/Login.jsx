@@ -1,51 +1,73 @@
+import Navigation from "../components/Navigation";
+import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import "./Login.css";
 
 const Login = () => {
   return (
-    <div className="login-page">
-      <motion.div
-        className="login-card"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h1 className="login-title gradient-text">Welcome Back</h1>
-        <p className="login-subtitle">Sign in to access your dashboard</p>
+    <>
+      {/* Navigation */}
+      <Navigation variant="default" />
 
-        <form className="login-form">
-          <div className="form-group">
-            <label>Email</label>
-            <input type="email" placeholder="you@example.com" required />
+      {/* Login Page */}
+      <div className="login-page">
+        <div className="login-card">
+          <h1 className="login-title">Welcome Back</h1>
+          <p className="login-subtitle">Sign in to access your dashboard</p>
+
+          <form>
+            <div className="form-group">
+              <label>Email Address</label>
+              <input type="email" placeholder="your@email.com" />
+            </div>
+
+            <div className="form-group">
+              <label>Password</label>
+              <input type="password" placeholder="••••••••" />
+            </div>
+
+            <div className="login-row">
+              <label className="remember-me">
+                <input type="checkbox" /> Remember me
+              </label>
+
+              <Link to="/forgot-password" className="login-link">
+                Forgot password?
+              </Link>
+            </div>
+
+            <button type="submit" className="btn btn-primary login-btn">
+              Sign In
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="login-divider">
+            <span>or continue with</span>
           </div>
 
-          <div className="form-group">
-            <label>Password</label>
-            <input type="password" placeholder="••••••••" required />
-          </div>
-
-          <div className="login-links-row">
-            <Link to="/forgot-password" className="login-link">
-              Forgot password?
-            </Link>
-          </div>
-
-          <button type="submit" className="btn btn-primary login-btn">
-            Sign In
+          {/* Social Login Buttons */}
+          <button className="btn login-secondary-btn">
+            Continue with Google
+          </button>
+          <button className="btn login-secondary-btn">
+            Continue with GitHub
           </button>
 
-          <div className="login-divider">
-            <span>or</span>
-          </div>
+          <p className="login-bottom-text">
+            Don’t have an account?{" "}
+            <Link to="/register" className="login-link">
+              Create one
+            </Link>
+          </p>
+        </div>
+      </div>
 
-          <Link to="/register" className="btn btn-outline login-secondary-btn">
-            Create an Account
-          </Link>
-        </form>
-      </motion.div>
-    </div>
+      {/* Footer */}
+      <Footer />
+    </>
   );
 };
 
 export default Login;
+
