@@ -10,10 +10,10 @@ const AdminDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const adminStats = [
-    { label: 'Total Users', value: '12,543', change: '+324', icon: <Users />, color: '#00f0ff' },
-    { label: 'Revenue (MRR)', value: '$54,320', change: '+$2,100', icon: <DollarSign />, color: '#00ff88' },
-    { label: 'API Requests', value: '245M', change: '+12M', icon: <Server />, color: '#ff006e' },
-    { label: 'Error Rate', value: '0.12%', change: '-0.03%', icon: <AlertTriangle />, color: '#ffaa00' }
+    { label: 'Total Users', value: '12,543', change: '+324', icon: <Users />, color: '#00fff5' },
+    { label: 'Revenue (MRR)', value: '$54,320', change: '+$2,100', icon: <DollarSign />, color: '#00ff9f' },
+    { label: 'API Requests', value: '245M', change: '+12M', icon: <Server />, color: '#b794f6' },
+    { label: 'Error Rate', value: '0.12%', change: '-0.03%', icon: <AlertTriangle />, color: '#f6e27f' }
   ];
 
   const userGrowthData = [
@@ -26,10 +26,10 @@ const AdminDashboard = () => {
   ];
 
   const planDistribution = [
-    { name: 'Free', value: 8234, color: '#6b6b85' },
-    { name: 'Starter', value: 2891, color: '#00f0ff' },
-    { name: 'Pro', value: 1245, color: '#ff006e' },
-    { name: 'Enterprise', value: 173, color: '#00ff88' }
+    { name: 'Free', value: 8234, color: '#8a8aa0' },
+    { name: 'Starter', value: 2891, color: '#00fff5' },
+    { name: 'Pro', value: 1245, color: '#b794f6' },
+    { name: 'Enterprise', value: 173, color: '#00ff9f' }
   ];
 
   const topUsers = [
@@ -117,8 +117,8 @@ const AdminDashboard = () => {
             <div className="card-header">
               <h3>User Growth & Revenue</h3>
               <div className="chart-legend">
-                <span><span className="legend-dot" style={{background: '#00f0ff'}}></span> Users</span>
-                <span><span className="legend-dot" style={{background: '#ff006e'}}></span> Revenue</span>
+                <span><span className="legend-dot" style={{background: '#00fff5'}}></span> Users</span>
+                <span><span className="legend-dot" style={{background: '#b794f6'}}></span> Revenue</span>
               </div>
             </div>
             <div className="chart-container">
@@ -140,17 +140,17 @@ const AdminDashboard = () => {
                     yAxisId="left"
                     type="monotone" 
                     dataKey="users" 
-                    stroke="#00f0ff" 
+                    stroke="#00fff5" 
                     strokeWidth={3}
-                    dot={{ fill: '#00f0ff', r: 5 }}
+                    dot={{ fill: '#00fff5', r: 5 }}
                   />
                   <Line 
                     yAxisId="right"
                     type="monotone" 
                     dataKey="revenue" 
-                    stroke="#ff006e" 
+                    stroke="#b794f6" 
                     strokeWidth={3}
-                    dot={{ fill: '#ff006e', r: 5 }}
+                    dot={{ fill: '#b794f6', r: 5 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
