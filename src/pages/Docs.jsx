@@ -1,306 +1,270 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Book, Code2, Rocket, Shield, Search, ChevronRight } from 'lucide-react';
+import { 
+  Book, Code2, Rocket, Shield, Search, ChevronDown, 
+  Copy, Check, Play, ExternalLink, FileCode, Layers, Zap, Terminal
+} from 'lucide-react';
 import Navigation from '../components/Navigation';
 import './Docs.css';
 
 const Docs = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSection, setActiveSection] = useState('getting-started');
+  const [activeLanguage, setActiveLanguage] = useState('javascript');
+  const [copiedCode, setCopiedCode] = useState(null);
+  const [expandedSections, setExpandedSections] = useState(['getting-started', 'api-reference']);
+
+  const languages = ['javascript', 'python', 'go', 'php'];
+
+  const languageLabels = {
+    javascript: 'JavaScript',
+    python: 'Python',
+    go: 'Go',
+    php: 'PHP'
+  };
+
+  const copyToClipboard = (code, id) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(id);
+    setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  const toggleSection = (sectionId) => {
+    setExpandedSections(prev => 
+      prev.includes(sectionId) 
+        ? prev.filter(id => id !== sectionId)
+        : [...prev, sectionId]
+    );
+  };
 
   const sections = [
-    { id: 'getting-started', name: 'Getting Started', icon: <Rocket size={18} /> },
-    { id: 'authentication', name: 'Authentication', icon: <Shield size={18} /> },
-    { id: 'api-reference', name: 'API Reference', icon: <Code2 size={18} /> },
-    { id: 'guides', name: 'Guides', icon: <Book size={18} /> }
+    { 
+      id: 'getting-started', 
+      name: 'Getting Started', 
+      icon: <Rocket size={18} />,
+      children: [
+        { id: 'installation', name: 'Installation' },
+        { id: 'quickstart', name: 'Quick Start' },
+        { id: 'authentication', name: 'Authentication' }
+      ]
+    },
+    { 
+      id: 'api-reference', 
+      name: 'API Reference', 
+      icon: <Code2 size={18} />,
+      children: [
+        { id: 'users', name: 'Users API' },
+        { id: 'posts', name: 'Posts API' },
+        { id: 'auth', name: 'Auth API' }
+      ]
+    },
+    { 
+      id: 'guides', 
+      name: 'Guides', 
+      icon: <Book size={18} />,
+      children: [
+        { id: 'webhooks', name: 'Webhooks' },
+        { id: 'rate-limiting', name: 'Rate Limiting' },
+        { id: 'error-handling', name: 'Error Handling' }
+      ]
+    },
+    { 
+      id: 'examples', 
+      name: 'Code Examples', 
+      icon: <FileCode size={18} />,
+      children: [
+        { id: 'crud-operations', name: 'CRUD Operations' },
+        { id: 'real-time', name: 'Real-time Updates' },
+        { id: 'batch-requests', name: 'Batch Requests' }
+      ]
+    }
   ];
 
-  const docContent = {
-    'getting-started': {
-      title: 'Getting Started',
-      content: `# Quick Start Guide
-
-Welcome to Nexus API! This guide will help you make your first API call in minutes.
-
-## Installation
-
-Install the SDK for your preferred language:
-
-\`\`\`bash
-# Node.js
-npm install @nexus/sdk
-
-# Python
-pip install nexus-sdk
-
-# Ruby
-gem install nexus-sdk
-\`\`\`
-
-## Authentication
-
-Get your API key from the dashboard and set it as an environment variable:
-
-\`\`\`bash
-export NEXUS_API_KEY="your_api_key_here"
-\`\`\`
-
-## Make Your First Request
-
-\`\`\`javascript
-const nexus = require('@nexus/sdk');
+  // Code examples for different languages
+  const codeExamples = {
+    installation: {
+      javascript: `npm install @nexus/sdk`,
+      python: `pip install nexus-sdk`,
+      go: `go get github.com/nexus/sdk-go`,
+      php: `composer require nexus/sdk`
+    },
+    quickstart: {
+      javascript: `import nexus from '@nexus/sdk';
 
 const client = new nexus.Client({
   apiKey: process.env.NEXUS_API_KEY
 });
 
-async function createUser() {
-  const response = await client.users.create({
-    name: 'John Doe',
-    email: 'john@example.com'
-  });
-  
-  console.log(response.data);
-}
-
-createUser();
-\`\`\`
-
-## Next Steps
-
-- Explore the [API Reference](#api-reference)
-- Check out our [Guides](#guides)
-- Learn about [Authentication](#authentication)
-`
-    },
-    'authentication': {
-      title: 'Authentication',
-      content: `# Authentication
-
-Nexus API uses API keys to authenticate requests. You can manage your API keys in the dashboard.
-
-## API Keys
-
-Your API keys carry many privileges, so be sure to keep them secure! Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, and so on.
-
-## Bearer Authentication
-
-Include your API key in the Authorization header:
-
-\`\`\`bash
-curl https://api.nexus.dev/v1/users \\
-  -H "Authorization: Bearer YOUR_API_KEY"
-\`\`\`
-
-## OAuth 2.0
-
-For user-facing applications, we support OAuth 2.0 flows:
-
-\`\`\`javascript
-const oauth = new nexus.OAuth({
-  clientId: 'your_client_id',
-  clientSecret: 'your_client_secret',
-  redirectUri: 'https://yourapp.com/callback'
+// Create a user
+const user = await client.users.create({
+  name: 'John Doe',
+  email: 'john@example.com'
 });
 
-// Generate authorization URL
-const authUrl = oauth.getAuthorizationUrl({
-  scope: ['users:read', 'users:write']
-});
+console.log(user);`,
+      python: `from nexus import Client
 
-// Exchange code for access token
-const token = await oauth.exchangeCodeForToken(code);
-\`\`\`
+client = Client(api_key=os.getenv('NEXUS_API_KEY'))
 
-## Rate Limiting
+# Create a user
+user = client.users.create(
+    name='John Doe',
+    email='john@example.com'
+)
 
-API requests are rate limited per API key:
+print(user)`,
+      go: `package main
 
-- **Free tier**: 1,000 requests/hour
-- **Pro tier**: 10,000 requests/hour
-- **Enterprise**: Custom limits
-`
+import (
+    "github.com/nexus/sdk-go"
+    "os"
+)
+
+func main() {
+    client := nexus.NewClient(os.Getenv("NEXUS_API_KEY"))
+    
+    // Create a user
+    user, err := client.Users.Create(&nexus.UserParams{
+        Name:  "John Doe",
+        Email: "john@example.com",
+    })
+}`,
+      php: `<?php
+require 'vendor/autoload.php';
+
+use Nexus\\Client;
+
+$client = new Client(getenv('NEXUS_API_KEY'));
+
+// Create a user
+$user = $client->users->create([
+    'name' => 'John Doe',
+    'email' => 'john@example.com'
+]);
+
+print_r($user);`
     },
-    'api-reference': {
-      title: 'API Reference',
-      content: `# API Reference
+    usersCreate: {
+      javascript: `const user = await client.users.create({
+  name: 'John Doe',
+  email: 'john@example.com',
+  role: 'admin'
+});`,
+      python: `user = client.users.create(
+    name='John Doe',
+    email='john@example.com',
+    role='admin'
+)`,
+      go: `user, err := client.Users.Create(&nexus.UserParams{
+    Name:  "John Doe",
+    Email: "john@example.com",
+    Role:  "admin",
+})`,
+      php: `$user = $client->users->create([
+    'name' => 'John Doe',
+    'email' => 'john@example.com',
+    'role' => 'admin'
+]);`
+    }
+  };
 
-Complete reference for all Nexus API endpoints.
-
-## Base URL
-
-\`\`\`
-https://api.nexus.dev/v1
-\`\`\`
-
-## Users
-
-### Create User
-
-\`\`\`http
-POST /users
-\`\`\`
-
-**Request Body:**
-
-\`\`\`json
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "metadata": {
-    "plan": "pro"
-  }
-}
-\`\`\`
-
-**Response:**
-
-\`\`\`json
-{
+  const apiEndpoints = [
+    {
+      method: 'POST',
+      endpoint: '/users',
+      description: 'Create a new user',
+      params: [
+        { name: 'name', type: 'string', required: true, description: 'User full name' },
+        { name: 'email', type: 'string', required: true, description: 'User email address' },
+        { name: 'role', type: 'string', required: false, description: 'User role (admin, user)' }
+      ],
+      response: `{
   "id": "usr_123abc",
   "name": "John Doe",
   "email": "john@example.com",
-  "created_at": "2024-01-15T10:30:00Z",
-  "metadata": {
-    "plan": "pro"
-  }
-}
-\`\`\`
-
-### Get User
-
-\`\`\`http
-GET /users/:id
-\`\`\`
-
-**Parameters:**
-
-- \`id\` (required): The user ID
-
-**Response:**
-
-\`\`\`json
-{
-  "id": "usr_123abc",
-  "name": "John Doe",
-  "email": "john@example.com",
+  "role": "user",
   "created_at": "2024-01-15T10:30:00Z"
-}
-\`\`\`
-
-### Update User
-
-\`\`\`http
-PATCH /users/:id
-\`\`\`
-
-### Delete User
-
-\`\`\`http
-DELETE /users/:id
-\`\`\`
-
-## Error Codes
-
-| Code | Description |
-|------|-------------|
-| 200  | Success |
-| 400  | Bad Request |
-| 401  | Unauthorized |
-| 404  | Not Found |
-| 429  | Rate Limited |
-| 500  | Server Error |
-`
+}`
     },
-    'guides': {
-      title: 'Guides',
-      content: `# Guides
+    {
+      method: 'GET',
+      endpoint: '/users/:id',
+      description: 'Get a user by ID',
+      params: [
+        { name: 'id', type: 'string', required: true, description: 'User ID' }
+      ],
+      response: `{
+  "id": "usr_123abc",
+  "name": "John Doe",
+  "email": "john@example.com",
+  "role": "user",
+  "created_at": "2024-01-15T10:30:00Z"
+}`
+    },
+    {
+      method: 'PUT',
+      endpoint: '/users/:id',
+      description: 'Update a user',
+      params: [
+        { name: 'id', type: 'string', required: true, description: 'User ID' },
+        { name: 'name', type: 'string', required: false, description: 'User full name' },
+        { name: 'email', type: 'string', required: false, description: 'User email address' }
+      ],
+      response: `{
+  "id": "usr_123abc",
+  "name": "Jane Doe",
+  "email": "jane@example.com",
+  "role": "user",
+  "updated_at": "2024-01-15T11:00:00Z"
+}`
+    },
+    {
+      method: 'DELETE',
+      endpoint: '/users/:id',
+      description: 'Delete a user',
+      params: [
+        { name: 'id', type: 'string', required: true, description: 'User ID' }
+      ],
+      response: `{
+  "success": true,
+  "message": "User deleted successfully"
+}`
+    }
+  ];
 
-In-depth tutorials and best practices.
+  const useCases = [
+    {
+      title: 'E-commerce Integration',
+      description: 'Build a complete e-commerce backend with user management, products, and orders',
+      icon: <Layers size={24} />,
+      link: '#'
+    },
+    {
+      title: 'Real-time Chat Application',
+      description: 'Create a scalable chat app with WebSocket support and message persistence',
+      icon: <Zap size={24} />,
+      link: '#'
+    },
+    {
+      title: 'CLI Tool Integration',
+      description: 'Build command-line tools that interact with your API for automation',
+      icon: <Terminal size={24} />,
+      link: '#'
+    }
+  ];
 
-## Building a REST API
+  const tableOfContents = [
+    { id: 'installation', title: 'Installation' },
+    { id: 'authentication', title: 'Authentication' },
+    { id: 'making-requests', title: 'Making Requests' },
+    { id: 'api-endpoints', title: 'API Endpoints' },
+    { id: 'error-handling', title: 'Error Handling' },
+    { id: 'examples', title: 'Code Examples' }
+  ];
 
-Learn how to build a production-ready REST API with Nexus.
-
-### Project Structure
-
-\`\`\`
-my-api/
-├── src/
-│   ├── routes/
-│   ├── models/
-│   ├── middleware/
-│   └── utils/
-├── tests/
-└── package.json
-\`\`\`
-
-### Setting Up Routes
-
-\`\`\`javascript
-const express = require('express');
-const nexus = require('@nexus/sdk');
-
-const app = express();
-const client = new nexus.Client({
-  apiKey: process.env.NEXUS_API_KEY
-});
-
-app.get('/api/users', async (req, res) => {
-  try {
-    const users = await client.users.list();
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.listen(3000);
-\`\`\`
-
-## Webhooks
-
-Set up webhooks to receive real-time notifications.
-
-### Configure Webhook URL
-
-1. Go to Dashboard → Settings → Webhooks
-2. Add your endpoint URL
-3. Select events to subscribe to
-4. Save and get your webhook secret
-
-### Handle Webhook Events
-
-\`\`\`javascript
-const crypto = require('crypto');
-
-app.post('/webhooks', (req, res) => {
-  const signature = req.headers['x-nexus-signature'];
-  const payload = JSON.stringify(req.body);
-  
-  const hash = crypto
-    .createHmac('sha256', webhookSecret)
-    .update(payload)
-    .digest('hex');
-  
-  if (signature === hash) {
-    // Process event
-    console.log('Event:', req.body);
-    res.sendStatus(200);
-  } else {
-    res.sendStatus(401);
-  }
-});
-\`\`\`
-
-## Best Practices
-
-1. **Error Handling**: Always wrap API calls in try-catch
-2. **Rate Limiting**: Implement exponential backoff
-3. **Security**: Never expose API keys in client code
-4. **Monitoring**: Set up alerts for failed requests
-5. **Caching**: Cache frequently accessed data
-`
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
@@ -308,97 +272,324 @@ app.post('/webhooks', (req, res) => {
     <div className="docs-page">
       <Navigation />
       
-      <div className="docs-layout">
-        {/* Sidebar */}
-        <motion.aside 
-          className="docs-sidebar"
-          initial={{ x: -50, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.6 }}
-        >
+      <div className="docs-container">
+        {/* Sidebar Navigation */}
+        <aside className="docs-sidebar">
           <div className="docs-search">
             <Search size={18} />
-            <input
+            <input 
               type="text"
               placeholder="Search documentation..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          
+
           <nav className="docs-nav">
             {sections.map((section) => (
+              <div key={section.id} className="nav-section">
+                <button 
+                  className={`nav-section-header ${expandedSections.includes(section.id) ? 'expanded' : ''}`}
+                  onClick={() => toggleSection(section.id)}
+                >
+                  <div className="nav-section-title">
+                    {section.icon}
+                    <span>{section.name}</span>
+                  </div>
+                  <ChevronDown size={16} className="chevron" />
+                </button>
+                
+                {expandedSections.includes(section.id) && section.children && (
+                  <div className="nav-section-children">
+                    {section.children.map((child) => (
+                      <button
+                        key={child.id}
+                        className={`nav-item ${activeSection === child.id ? 'active' : ''}`}
+                        onClick={() => setActiveSection(child.id)}
+                      >
+                        {child.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </nav>
+        </aside>
+
+        {/* Main Content */}
+        <main className="docs-main">
+          <div className="docs-content">
+            {/* Quick Start Section */}
+            {activeSection === 'quickstart' && (
+              <>
+                <h1 id="quick-start">Quick Start Guide</h1>
+                <p className="lead">Get started with Nexus API in under 5 minutes. This guide will walk you through installation, authentication, and making your first API call.</p>
+
+                <section id="installation" className="doc-section">
+                  <h2>Installation</h2>
+                  <p>Install the SDK for your preferred language:</p>
+                  
+                  {/* Language Switcher */}
+                  <div className="language-tabs">
+                    {languages.map((lang) => (
+                      <button
+                        key={lang}
+                        className={`language-tab ${activeLanguage === lang ? 'active' : ''}`}
+                        onClick={() => setActiveLanguage(lang)}
+                      >
+                        {languageLabels[lang]}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Code Block with Copy Button */}
+                  <div className="code-block-container">
+                    <div className="code-block-header">
+                      <span className="code-block-language">{languageLabels[activeLanguage]}</span>
+                      <button 
+                        className="copy-button"
+                        onClick={() => copyToClipboard(codeExamples.installation[activeLanguage], 'installation')}
+                      >
+                        {copiedCode === 'installation' ? <Check size={16} /> : <Copy size={16} />}
+                        {copiedCode === 'installation' ? 'Copied!' : 'Copy'}
+                      </button>
+                    </div>
+                    <pre className="code-block">
+                      <code>{codeExamples.installation[activeLanguage]}</code>
+                    </pre>
+                  </div>
+                </section>
+
+                <section id="authentication" className="doc-section">
+                  <h2>Authentication</h2>
+                  <p>Get your API key from the dashboard and initialize the client:</p>
+                  
+                  <div className="code-block-container">
+                    <div className="code-block-header">
+                      <span className="code-block-language">{languageLabels[activeLanguage]}</span>
+                      <button 
+                        className="copy-button"
+                        onClick={() => copyToClipboard(codeExamples.quickstart[activeLanguage], 'quickstart')}
+                      >
+                        {copiedCode === 'quickstart' ? <Check size={16} /> : <Copy size={16} />}
+                        {copiedCode === 'quickstart' ? 'Copied!' : 'Copy'}
+                      </button>
+                    </div>
+                    <pre className="code-block">
+                      <code>{codeExamples.quickstart[activeLanguage]}</code>
+                    </pre>
+                  </div>
+
+                  <div className="callout callout-info">
+                    <strong>💡 Tip:</strong> Never commit your API key to version control. Use environment variables instead.
+                  </div>
+                </section>
+              </>
+            )}
+
+            {/* Users API Reference */}
+            {activeSection === 'users' && (
+              <>
+                <h1 id="users-api">Users API</h1>
+                <p className="lead">Manage users in your application with our comprehensive Users API.</p>
+
+                <section id="api-endpoints" className="doc-section">
+                  <h2>API Endpoints</h2>
+                  
+                  {apiEndpoints.map((endpoint, index) => (
+                    <div key={index} className="api-endpoint">
+                      <div className="endpoint-header">
+                        <span className={`method-badge method-${endpoint.method.toLowerCase()}`}>
+                          {endpoint.method}
+                        </span>
+                        <code className="endpoint-path">{endpoint.endpoint}</code>
+                      </div>
+                      <p className="endpoint-description">{endpoint.description}</p>
+
+                      {/* Parameters Table */}
+                      <h4>Parameters</h4>
+                      <table className="params-table">
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Required</th>
+                            <th>Description</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {endpoint.params.map((param, idx) => (
+                            <tr key={idx}>
+                              <td><code>{param.name}</code></td>
+                              <td><span className="type-badge">{param.type}</span></td>
+                              <td>{param.required ? '✓ Yes' : '○ No'}</td>
+                              <td>{param.description}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+
+                      {/* Code Example */}
+                      {endpoint.method === 'POST' && (
+                        <>
+                          <h4>Example Request</h4>
+                          <div className="language-tabs">
+                            {languages.map((lang) => (
+                              <button
+                                key={lang}
+                                className={`language-tab ${activeLanguage === lang ? 'active' : ''}`}
+                                onClick={() => setActiveLanguage(lang)}
+                              >
+                                {languageLabels[lang]}
+                              </button>
+                            ))}
+                          </div>
+                          
+                          <div className="code-block-container">
+                            <div className="code-block-header">
+                              <span className="code-block-language">{languageLabels[activeLanguage]}</span>
+                              <button 
+                                className="copy-button"
+                                onClick={() => copyToClipboard(codeExamples.usersCreate[activeLanguage], `users-${index}`)}
+                              >
+                                {copiedCode === `users-${index}` ? <Check size={16} /> : <Copy size={16} />}
+                                {copiedCode === `users-${index}` ? 'Copied!' : 'Copy'}
+                              </button>
+                            </div>
+                            <pre className="code-block">
+                              <code>{codeExamples.usersCreate[activeLanguage]}</code>
+                            </pre>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Response Example */}
+                      <h4>Example Response</h4>
+                      <div className="code-block-container">
+                        <div className="code-block-header">
+                          <span className="code-block-language">JSON</span>
+                          <button 
+                            className="copy-button"
+                            onClick={() => copyToClipboard(endpoint.response, `response-${index}`)}
+                          >
+                            {copiedCode === `response-${index}` ? <Check size={16} /> : <Copy size={16} />}
+                            {copiedCode === `response-${index}` ? 'Copied!' : 'Copy'}
+                          </button>
+                        </div>
+                        <pre className="code-block">
+                          <code>{endpoint.response}</code>
+                        </pre>
+                      </div>
+                    </div>
+                  ))}
+                </section>
+
+                {/* Interactive Playground */}
+                <section id="try-it" className="doc-section">
+                  <h2>Try it Now</h2>
+                  <div className="api-playground">
+                    <div className="playground-header">
+                      <h3>API Playground</h3>
+                      <button className="btn-play">
+                        <Play size={16} />
+                        Run Request
+                      </button>
+                    </div>
+                    <div className="playground-content">
+                      <p>Test the Users API directly from your browser. Enter your API key to get started.</p>
+                      <div className="callout callout-warning">
+                        <strong>⚠️ Note:</strong> This playground uses your real API key. Be careful not to share it.
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </>
+            )}
+
+            {/* Code Examples Section */}
+            {activeSection === 'crud-operations' && (
+              <>
+                <h1 id="code-examples">Code Examples</h1>
+                <p className="lead">Real-world examples to help you get started quickly.</p>
+
+                <section className="doc-section">
+                  <h2>CRUD Operations</h2>
+                  <p>Complete example of Create, Read, Update, and Delete operations.</p>
+
+                  <div className="example-cards">
+                    {useCases.map((useCase, index) => (
+                      <div key={index} className="example-card">
+                        <div className="example-icon">{useCase.icon}</div>
+                        <h3>{useCase.title}</h3>
+                        <p>{useCase.description}</p>
+                        <a href={useCase.link} className="example-link">
+                          View Example <ExternalLink size={16} />
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </>
+            )}
+
+            {/* Default: Installation */}
+            {activeSection === 'installation' && (
+              <>
+                <h1>Installation</h1>
+                <p className="lead">Choose your preferred language and get started in seconds.</p>
+
+                <div className="language-tabs">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang}
+                      className={`language-tab ${activeLanguage === lang ? 'active' : ''}`}
+                      onClick={() => setActiveLanguage(lang)}
+                    >
+                      {languageLabels[lang]}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="code-block-container">
+                  <div className="code-block-header">
+                    <span className="code-block-language">{languageLabels[activeLanguage]}</span>
+                    <button 
+                      className="copy-button"
+                      onClick={() => copyToClipboard(codeExamples.installation[activeLanguage], 'install')}
+                    >
+                      {copiedCode === 'install' ? <Check size={16} /> : <Copy size={16} />}
+                      {copiedCode === 'install' ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+                  <pre className="code-block">
+                    <code>{codeExamples.installation[activeLanguage]}</code>
+                  </pre>
+                </div>
+
+                <div className="callout callout-info">
+                  <strong>Next Steps:</strong> After installation, check out the Quick Start guide to make your first API call.
+                </div>
+              </>
+            )}
+          </div>
+        </main>
+
+        {/* Table of Contents Sidebar */}
+        <aside className="docs-toc">
+          <h3>On this page</h3>
+          <nav className="toc-nav">
+            {tableOfContents.map((item) => (
               <button
-                key={section.id}
-                className={`docs-nav-item ${activeSection === section.id ? 'active' : ''}`}
-                onClick={() => setActiveSection(section.id)}
+                key={item.id}
+                className="toc-item"
+                onClick={() => scrollToSection(item.id)}
               >
-                {section.icon}
-                <span>{section.name}</span>
-                <ChevronRight size={16} />
+                {item.title}
               </button>
             ))}
           </nav>
-        </motion.aside>
-
-        {/* Main Content */}
-        <motion.main 
-          className="docs-content"
-          key={activeSection}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <div className="docs-header">
-            <h1>{docContent[activeSection].title}</h1>
-          </div>
-          
-          <div className="docs-body">
-            {docContent[activeSection].content.split('\n\n').map((block, index) => {
-              if (block.startsWith('# ')) {
-                return <h2 key={index}>{block.replace('# ', '')}</h2>;
-              } else if (block.startsWith('## ')) {
-                return <h3 key={index}>{block.replace('## ', '')}</h3>;
-              } else if (block.startsWith('### ')) {
-                return <h4 key={index}>{block.replace('### ', '')}</h4>;
-              } else if (block.startsWith('```')) {
-                const code = block.replace(/```\w*\n?/g, '').trim();
-                return (
-                  <div key={index} className="code-block">
-                    <pre><code>{code}</code></pre>
-                  </div>
-                );
-              } else if (block.startsWith('|')) {
-                // Simple table rendering
-                const rows = block.split('\n');
-                return (
-                  <table key={index}>
-                    <tbody>
-                      {rows.filter(row => !row.includes('---')).map((row, i) => (
-                        <tr key={i}>
-                          {row.split('|').filter(cell => cell.trim()).map((cell, j) => (
-                            i === 0 ? <th key={j}>{cell.trim()}</th> : <td key={j}>{cell.trim()}</td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                );
-              } else if (block.trim().startsWith('-')) {
-                const items = block.split('\n');
-                return (
-                  <ul key={index}>
-                    {items.map((item, i) => (
-                      <li key={i}>{item.replace(/^- /, '')}</li>
-                    ))}
-                  </ul>
-                );
-              } else {
-                return <p key={index}>{block}</p>;
-              }
-            })}
-          </div>
-        </motion.main>
+        </aside>
       </div>
     </div>
   );
