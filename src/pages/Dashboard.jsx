@@ -143,25 +143,26 @@ const Dashboard = () => {
                 <AreaChart data={requestData}>
                   <defs>
                     <linearGradient id="colorRequests" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#00d4ff" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#00d4ff" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#0066ff" stopOpacity={0.15}/>
+                      <stop offset="95%" stopColor="#0066ff" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e2d47" />
-                  <XAxis dataKey="time" stroke="#7a8ba3" />
-                  <YAxis stroke="#7a8ba3" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="time" stroke="#718096" />
+                  <YAxis stroke="#718096" />
                   <Tooltip 
                     contentStyle={{ 
-                      background: '#253654', 
-                      border: '1px solid #1e2d47',
+                      background: '#ffffff', 
+                      border: '1px solid #e2e8f0',
                       borderRadius: '8px',
-                      color: '#ffffff'
+                      color: '#1a202c',
+                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)'
                     }} 
                   />
                   <Area 
                     type="monotone" 
                     dataKey="requests" 
-                    stroke="#00d4ff" 
+                    stroke="#0066ff" 
                     strokeWidth={2}
                     fillOpacity={1} 
                     fill="url(#colorRequests)" 
@@ -188,23 +189,24 @@ const Dashboard = () => {
             <div className="chart-container">
               <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={performanceData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e2d47" />
-                  <XAxis dataKey="time" stroke="#7a8ba3" />
-                  <YAxis stroke="#7a8ba3" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="time" stroke="#718096" />
+                  <YAxis stroke="#718096" />
                   <Tooltip 
                     contentStyle={{ 
-                      background: '#253654', 
-                      border: '1px solid #1e2d47',
+                      background: '#ffffff', 
+                      border: '1px solid #e2e8f0',
                       borderRadius: '8px',
-                      color: '#ffffff'
+                      color: '#1a202c',
+                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)'
                     }} 
                   />
                   <Line 
                     type="monotone" 
                     dataKey="latency" 
-                    stroke="#0066ff" 
+                    stroke="#0052cc" 
                     strokeWidth={2}
-                    dot={{ fill: '#0066ff', r: 4 }}
+                    dot={{ fill: '#0052cc', r: 4 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
