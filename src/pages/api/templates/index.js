@@ -1,29 +1,35 @@
-import prisma from '../../../lib/prisma'
-import { getServerSession } from 'next-auth/next'
-import authOptions from './auth/[...nextauth]'
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]";
+import { prisma } from "../../../lib/prisma";
 
-export default async function handler(req, res){
-  if (req.method === 'GET'){
-    const templates = await prisma.template.findMany({ include: { codes: true } })
-    return res.json(templates)
+export default async function handler(req, res) {
+  const session = await getServerSession(req, res, authOptions);
+
+  if (!session) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
-  if (req.method === 'POST'){
-    const session = await getServerSession(req, res, authOptions)
-    if (!session) return res.status(401).json({error:'unauth'})
-    const { name, description, codes } = req.body
-    const created = await prisma.template.create({
+  if (req.method === "GET") {
+    const templates = await prisma.template.findMany({
+      where: { userId: session.user.id },
+    });
+    return res.json(templates);
+  }
+
+  if (req.method === "POST") {
+    const { name, shareCodes } = req.body;
+
+    const template = await prisma.template.create({
       data: {
         name,
-        description,
-        category: 'Uncategorized',
-        author: { connect: { email: session.user.email } },
-        codes: { create: codes.map((c, idx) => ({ type: c.type, title: c.title, shareCode: c.shareCode, orderIndex: idx })) }
+        shareCodes,
+        userId: session.user.id,
       },
-      include: { codes: true }
-    })
-    return res.json(created)
+    });
+
+    return res.status(201).json(template);
   }
 
-  res.status(405).end()
+  return res.status(405).json({ error: "Method Not Allowed" });
 }
+
