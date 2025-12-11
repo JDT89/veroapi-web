@@ -1,7 +1,7 @@
-jsx
-import '../styles/globals.css'
-import { SessionProvider } from 'next-auth/react'
-import Navbar from '../components/Navbar'
+import React from "react"; // ⬅️ REQUIRED to avoid "jsx is not defined"
+import "../styles/globals.css";
+import { SessionProvider } from "next-auth/react";
+import Navbar from "../components/Navbar";
 
 export default function App({ Component, pageProps: { session, ...pageProps } }) {
   return (
@@ -11,5 +11,5 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
         <Component {...pageProps} />
       </main>
     </SessionProvider>
-  )
+  );
 }
