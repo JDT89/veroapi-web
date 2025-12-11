@@ -2,8 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #__next { height: 100%; }
-.container { max-width: 1100px; margin: 0 auto; }
-.card { background: white; border-radius: 12px; }
-.btn { background: #5865F2; color: white; padding: 8px 12px; border-radius: 8px; }
-.input { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd }
+/* Smooth global transitions */
+* {
+  @apply transition-colors duration-200 ease-in-out;
+}
+
+/* Global dark theme */
+html, body {
+  @apply bg-[#0a0a0a] text-white antialiased;
+}
+
+/* Neon blue accent (brand color) */
+:root {
+  --accent: #3b82f6;
+}
+
+/* Remove scrollbars on WebKit */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Card base */
+.card {
+  @apply bg-[#121212] border border-[#1f1f1f] rounded-xl shadow-inner shadow-black/20;
+}
+
+/* Hover card effect */
+.card-hover {
+  @apply hover:bg-[#1a1a1a] hover:border-[#2a2a2a] hover:shadow-lg hover:shadow-black/40;
+}
+
+/* Section spacing */
+.section {
+  @apply py-16 px-6 max-w-7xl mx-auto;
+}
+
+/* Headings */
+.h-title {
+  @apply text-4xl font-extrabold mb-4 bg-gradient-to-b from-white to-gray-400 bg-clip-text text-transparent;
+}
+
+.h-subtitle {
+  @apply text-gray-400 text-lg max-w-2xl;
+}
+
+/* Button base */
+.btn-primary {
+  @apply px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 font-medium text-white shadow-md hover:shadow-blue-500/25;
+}
+
+/* Glow animations */
+.glow {
+  animation: pulseGlow 3s infinite alternate;
+}
+
+@keyframes pulseGlow {
+  0% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
